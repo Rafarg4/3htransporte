@@ -1,0 +1,245 @@
+<!-- Documento Field -->
+<div class="form-group col-sm-6">
+    {!! Form::label('documento', 'Documento:') !!}
+    {!! Form::text('documento', null, ['class' => 'form-control']) !!}
+</div>
+
+<!-- Nombre Field -->
+<div class="form-group col-sm-6">
+    {!! Form::label('nombre', 'Nombre:') !!}
+    {!! Form::text('nombre', null, ['class' => 'form-control']) !!}
+</div>
+
+<!-- Apellido Field -->
+<div class="form-group col-sm-6">
+    {!! Form::label('apellido', 'Apellido:') !!}
+    {!! Form::text('apellido', null, ['class' => 'form-control']) !!}
+</div>
+
+<!-- Estado Field -->
+<div class="form-group col-sm-6">
+    {!! Form::label('estado', 'Estado:') !!}
+    {!! Form::select('estado', ['Activo' => 'Activo', 'Inactivo' => 'Inactivo'], null, ['class' => 'form-control', 'placeholder' => 'Seleccione una opcion']) !!}
+</div>
+
+<!-- Documentos Field -->
+<div class="form-group col-sm-12">
+    {!! Form::label('documentos', 'Documentaciones:') !!}
+
+    <div id="documentos-dropzone" class="documentos-dropzone">
+        <p class="mb-0">Arrastra los documentos aquí o haz clic para seleccionar</p>
+    </div>
+    <input type="file" id="documentos-input" name="documentos[]" multiple accept="image/*,.pdf" class="d-none">
+
+    <div id="documentos-preview" class="documentos-preview"></div>
+
+    @isset($chofer)
+        @if($chofer->documentos && $chofer->documentos->count())
+            <div class="mt-3">
+                <label>Documentos ya cargados:</label>
+                <div class="documentos-preview">
+                    @foreach($chofer->documentos as $documento)
+                        <div class="documento-card">
+                            <a href="{{ asset('documento_chofer/' . $documento->nombre_archivo) }}" target="_blank">
+                                <div class="documento-icon">
+                                    @if(Str::endsWith(strtolower($documento->nombre_archivo), ['.jpg', '.jpeg', '.png', '.gif']))
+                                        <i class="fas fa-file-image"></i>
+                                    @elseif(Str::endsWith(strtolower($documento->nombre_archivo), ['.pdf']))
+                                        <i class="fas fa-file-pdf"></i>
+                                    @else
+                                        <i class="fas fa-file"></i>
+                                    @endif
+                                </div>
+                                <small class="d-block text-truncate">{{ $documento->nombre_archivo }}</small>
+                            </a>
+                            <button type="button" class="documento-remove documento-remove-existing"
+                                    data-url="{{ route('chofers.documentos.destroy', $documento->id) }}">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+    @endisset
+</div>
+
+<style>
+    .documentos-dropzone {
+        border: 2px dashed #ced4da;
+        border-radius: .25rem;
+        padding: 2rem;
+        text-align: center;
+        cursor: pointer;
+        background: #f8f9fa;
+        transition: background .2s, border-color .2s;
+    }
+    .documentos-dropzone.dragover {
+        background: #e9ecef;
+        border-color: #6c757d;
+    }
+    .documentos-preview {
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: .75rem;
+    }
+    .documento-card {
+        width: 100px;
+        border: 1px solid #dee2e6;
+        border-radius: .25rem;
+        padding: .25rem;
+        margin: .25rem;
+        text-align: center;
+        color: inherit;
+        position: relative;
+    }
+    .documento-icon {
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: #6c757d;
+    }
+    .documento-remove {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #dc3545;
+        color: #fff;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .7rem;
+        line-height: 1;
+        cursor: pointer;
+        padding: 0;
+    }
+    .documento-remove:hover {
+        background: #b02a37;
+    }
+</style>
+
+<script>
+    (function () {
+        var dropzone = document.getElementById('documentos-dropzone');
+        var input = document.getElementById('documentos-input');
+        var preview = document.getElementById('documentos-preview');
+        var selectedFiles = [];
+
+        function iconClassFor(filename) {
+            var ext = filename.split('.').pop().toLowerCase();
+
+            if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].indexOf(ext) !== -1) {
+                return 'fa-file-image';
+            }
+
+            if (ext === 'pdf') {
+                return 'fa-file-pdf';
+            }
+
+            return 'fa-file';
+        }
+
+        function syncInput() {
+            var dataTransfer = new DataTransfer();
+            selectedFiles.forEach(function (file) {
+                dataTransfer.items.add(file);
+            });
+            input.files = dataTransfer.files;
+        }
+
+        function renderPreview() {
+            preview.innerHTML = '';
+
+            selectedFiles.forEach(function (file, index) {
+                var card = document.createElement('div');
+                card.className = 'documento-card';
+
+                var icon = document.createElement('div');
+                icon.className = 'documento-icon';
+                icon.innerHTML = '<i class="fas ' + iconClassFor(file.name) + '"></i>';
+                card.appendChild(icon);
+
+                var name = document.createElement('small');
+                name.className = 'd-block text-truncate';
+                name.textContent = file.name;
+                card.appendChild(name);
+
+                var remove = document.createElement('button');
+                remove.type = 'button';
+                remove.className = 'documento-remove';
+                remove.innerHTML = '<i class="fas fa-times"></i>';
+                remove.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    selectedFiles.splice(index, 1);
+                    syncInput();
+                    renderPreview();
+                });
+                card.appendChild(remove);
+
+                preview.appendChild(card);
+            });
+        }
+
+        function addFiles(fileList) {
+            Array.from(fileList).forEach(function (file) {
+                selectedFiles.push(file);
+            });
+            syncInput();
+            renderPreview();
+        }
+
+        dropzone.addEventListener('click', function () {
+            input.click();
+        });
+
+        dropzone.addEventListener('dragover', function (e) {
+            e.preventDefault();
+            dropzone.classList.add('dragover');
+        });
+
+        dropzone.addEventListener('dragleave', function () {
+            dropzone.classList.remove('dragover');
+        });
+
+        dropzone.addEventListener('drop', function (e) {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            addFiles(e.dataTransfer.files);
+        });
+
+        input.addEventListener('change', function () {
+            addFiles(input.files);
+        });
+
+        document.querySelectorAll('.documento-remove-existing').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                if (!confirm('¿Eliminar este documento?')) {
+                    return;
+                }
+
+                var tokenField = document.querySelector('input[name="_token"]');
+                var card = btn.closest('.documento-card');
+
+                fetch(btn.dataset.url, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': tokenField ? tokenField.value : '',
+                        'Accept': 'application/json',
+                    },
+                }).then(function (response) {
+                    if (response.ok) {
+                        card.remove();
+                    } else {
+                        alert('No se pudo eliminar el documento.');
+                    }
+                });
+            });
+        });
+    })();
+</script>
