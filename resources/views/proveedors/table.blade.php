@@ -4,6 +4,7 @@
         <tr>
             <th>Documento</th>
         <th>Nombre</th>
+        <th>Apellido</th>
             <th>Acción</th>
         </tr>
         </thead>
@@ -12,6 +13,7 @@
             <tr>
                 <td>{{ $proveedor->documento }}</td>
             <td>{{ $proveedor->nombre }}</td>
+            <td>{{ $proveedor->apellido }}</td>
                 <td width="190">
                     {!! Form::open(['route' => ['proveedors.destroy', $proveedor->id], 'method' => 'delete']) !!}
                     <div class="action-buttons d-flex justify-content-center">
