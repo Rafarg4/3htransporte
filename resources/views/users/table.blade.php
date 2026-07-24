@@ -2,38 +2,28 @@
     <table class="table" id="table">
         <thead>
         <tr>
-        <th>Nombre</th>
-        <th>Apellido</th>
-        <th>Tipo Propietario</th>
-        <th>Documento</th>
-        <th>Direccion</th>
-        <th>Telefono</th>
+            <th>Nombre</th>
+        <th>Email</th>
+        <th>Creado</th>
             <th>Acciones</th>
         </tr>
         </thead>
         <tbody>
-        @foreach($clientes as $cliente)
+        @foreach($users as $user)
             <tr>
-                <td>{{ $cliente->nombre }}</td>
-            <td>{{ $cliente->apellido }}</td>
-            <td>{{ $cliente->tipo_propietario }}</td>
-            <td>{{ $cliente->documento }}</td>
-            <td>{{ $cliente->direccion }}</td>
-            <td>{{ $cliente->telefono }}</td>
-                <td width="220">
-                    {!! Form::open(['route' => ['clientes.destroy', $cliente->id], 'method' => 'delete']) !!}
+                <td>{{ $user->name }}</td>
+            <td>{{ $user->email }}</td>
+            <td>{{ $user->created_at ? $user->created_at->format('d/m/Y H:i') : '-' }}</td>
+                <td width="190">
+                    {!! Form::open(['route' => ['users.destroy', $user->id], 'method' => 'delete']) !!}
                     <div class="action-buttons d-flex justify-content-center">
-                        <a href="{{ route('clientes.show', [$cliente->id]) }}" class="btn btn-primary">
-                            <i class="fas fa-truck"></i> Camiones
-                            <span class="badge badge-light ml-1">{{ $cliente->camiones_count }}</span>
-                        </a>
-                        <a href="{{ route('clientes.edit', [$cliente->id]) }}" class="btn btn-warning">
+                        <a href="{{ route('users.edit', [$user->id]) }}" class="btn btn-warning">
                             <i class="far fa-edit"></i> Editar
                         </a>
                         {!! Form::button('<i class="far fa-trash-alt"></i> Eliminar', [
                             'type' => 'submit',
                             'class' => 'btn btn-danger',
-                            'onclick' => "return confirm('¿Estás seguro de eliminar este cliente?')",
+                            'onclick' => "return confirm('¿Estás seguro de eliminar este usuario?')",
                         ]) !!}
                     </div>
                     {!! Form::close() !!}

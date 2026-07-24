@@ -5,12 +5,12 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>Detalles del Propietario</h1>
+                    <h1>Usuarios</h1>
                 </div>
                 <div class="col-sm-6">
-                    <a class="btn btn-default float-right"
-                       href="{{ route('clientes.index') }}">
-                        Atrás
+                    <a class="btn btn-primary float-right"
+                       href="{{ route('users.create') }}">
+                        Nuevo
                     </a>
                 </div>
             </div>
@@ -18,6 +18,16 @@
     </section>
 
     <div class="content px-3">
-        @include('clientes.show_fields')
+
+        @include('flash::message')
+
+        <div class="clearfix"></div>
+
+        <div class="card">
+            <div class="card-body p-0">
+                @include('users.table')
+            </div>
+        </div>
     </div>
+
 @endsection

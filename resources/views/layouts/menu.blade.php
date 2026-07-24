@@ -55,6 +55,13 @@
     </a>
 </li>
 <li class="nav-item">
+    <a href="{{ route('valeCombustibles.index') }}"
+       class="nav-link {{ Request::is('valeCombustibles*') ? 'active' : '' }}">
+        <i class="fa fa-gas-pump"></i>
+        <p>Vales de Combustible</p>
+    </a>
+</li>
+<li class="nav-item">
     <a href="{{ route('proveedors.index') }}"
        class="nav-link {{ Request::is('proveedors*') ? 'active' : '' }}">
         <i class="nav-icon fa fa-truck"></i>
@@ -68,6 +75,13 @@
         <p>Empresas</p>
     </a>
 </li>
+<li class="nav-item">
+    <a href="{{ route('users.index') }}"
+       class="nav-link {{ Request::is('users*') ? 'active' : '' }}">
+        <i class="nav-icon fa fa-user-cog"></i>
+        <p>Usuarios</p>
+    </a>
+</li>
 {{-- SALIR --}}
 <li class="nav-item">
     <a href="#"
@@ -76,6 +90,5 @@
         <i class="nav-icon fas fa-sign-out-alt"></i>
         <p>Salir</p>
     </a>
-
 
 

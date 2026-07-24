@@ -31,7 +31,7 @@ class ClienteController extends AppBaseController
      */
     public function index(Request $request)
     {
-        $clientes = $this->clienteRepository->all();
+        $clientes = $this->clienteRepository->all()->loadCount('camiones');
 
         return view('clientes.index')
             ->with('clientes', $clientes);

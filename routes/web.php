@@ -59,3 +59,11 @@ Route::resource('proveedors', App\Http\Controllers\ProveedorController::class);
 Route::resource('ordenCargas', App\Http\Controllers\OrdenCargaController::class);
 Route::get('ordenCargas/{id}/pdf', [App\Http\Controllers\OrdenCargaController::class, 'pdf'])
     ->name('ordenCargas.pdf');
+
+
+Route::resource('valeCombustibles', App\Http\Controllers\ValeCombustibleController::class);
+Route::get('valeCombustibles/{id}/pdf', [App\Http\Controllers\ValeCombustibleController::class, 'pdf'])
+    ->name('valeCombustibles.pdf');
+
+
+Route::resource('users', App\Http\Controllers\UserController::class);

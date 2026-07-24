@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>{{ config('app.name') }}</title>
+    <title>{{ $empresa->nombre ?? config('app.name') }}</title>
     <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
 
     <!-- Font Awesome -->
@@ -39,7 +39,7 @@
     @stack('page_css')
 </head>
 
-<body class="hold-transition sidebar-mini layout-fixed">
+<body class="hold-transition sidebar-mini sidebar-collapse layout-fixed">
 <div class="wrapper">
     <!-- Main Header -->
     <nav class="main-header navbar navbar-expand navbar-white navbar-light">
@@ -51,37 +51,18 @@
         </ul>
 
         <ul class="navbar-nav ml-auto">
-            <li class="nav-item dropdown user-menu">
-                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
-                    <img src="https://assets.infyom.com/logo/blue_logo_150x150.png"
-                         class="user-image img-circle elevation-2" alt="User Image">
-                    <span class="d-none d-md-inline">{{ Auth::user()->name }}</span>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                    <!-- User image -->
-                    <li class="user-header bg-primary">
-                        <img src="https://assets.infyom.com/logo/blue_logo_150x150.png"
-                             class="img-circle elevation-2"
-                             alt="User Image">
-                        <p>
-                            {{ Auth::user()->name }}
-                            <small>Member since {{ Auth::user()->created_at->format('M. Y') }}</small>
-                        </p>
-                    </li>
-                    <!-- Menu Footer-->
-                    <li class="user-footer">
-                        <a href="#" class="btn btn-default btn-flat">Profile</a>
-                        <a href="#" class="btn btn-default btn-flat float-right"
-                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                            Sign out
-                        </a>
-                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                            @csrf
-                        </form>
-                    </li>
-                </ul>
+            <li class="nav-item d-flex align-items-center">
+                <img src="{{ asset('imagenes/user.png') }}"
+                     class="img-circle elevation-2"
+                     alt="User Image"
+                     style="width: 30px; height: 30px; object-fit: cover;">
+                <span class="d-none d-md-inline ml-2">{{ Auth::user()->name }}</span>
             </li>
         </ul>
+
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+            @csrf
+        </form>
     </nav>
 
     <!-- Left side column. contains the logo and sidebar -->
