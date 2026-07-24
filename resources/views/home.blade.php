@@ -205,7 +205,7 @@
     border-radius: 8px;
     display: flex;
     align-items: center;
-    padding: 18px;
+    padding: 12px;
     height: 100%;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     text-decoration: none;
@@ -220,26 +220,26 @@ a.stat-card:hover {
 }
 
 .stat-icon {
-    width: 58px;
-    height: 58px;
+    width: 42px;
+    height: 42px;
     border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
-    font-size: 26px;
-    margin-right: 16px;
+    font-size: 18px;
+    margin-right: 12px;
 }
 
 .stat-content h4 {
     margin: 0;
-    font-size: 22px;
+    font-size: 16px;
     font-weight: 600;
     color: #2c3e50;
 }
 
 .stat-content span {
-    font-size: 14px;
+    font-size: 12px;
     color: #6c757d;
 }
 

@@ -15,7 +15,7 @@ use App\Http\Controllers\FacturaController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('home');
 });
 
 Auth::routes();

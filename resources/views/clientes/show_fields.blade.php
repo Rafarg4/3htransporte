@@ -184,13 +184,13 @@
     }
     .cliente-avatar {
         flex-shrink: 0;
-        width: 56px;
-        height: 56px;
+        width: 42px;
+        height: 42px;
         border-radius: 50%;
         background: #007bff;
         color: #fff;
         font-weight: 600;
-        font-size: 1.1rem;
+        font-size: .9rem;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -211,15 +211,15 @@
     }
     .cliente-field-icon {
         flex-shrink: 0;
-        width: 36px;
-        height: 36px;
+        width: 28px;
+        height: 28px;
         border-radius: 50%;
         background: #f1f3f5;
         color: #007bff;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: .9rem;
+        font-size: .75rem;
     }
     .documento-card {
         width: 100px;

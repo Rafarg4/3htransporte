@@ -37,6 +37,60 @@
     @stack('third_party_stylesheets')
 
     @stack('page_css')
+
+    {{-- ESTILOS COMPACTOS GLOBALES --}}
+    <style>
+        body {
+            font-size: 13px;
+        }
+        h1 { font-size: 1.5rem; }
+        h2 { font-size: 1.3rem; }
+        h3 { font-size: 1.15rem; }
+        h4 { font-size: 1.05rem; }
+        h5 { font-size: .95rem; }
+        h6 { font-size: .8rem; }
+
+        .card {
+            font-size: 13px;
+        }
+        .card-header {
+            padding: .5rem 1rem;
+        }
+        .card-body {
+            padding: .85rem;
+        }
+        .card-footer {
+            padding: .5rem 1rem;
+        }
+
+        .table {
+            font-size: 12px;
+        }
+        .table th,
+        .table td {
+            padding: .4rem .5rem;
+        }
+
+        .btn {
+            font-size: 12px;
+            padding: .3rem .65rem;
+        }
+        .btn-sm {
+            font-size: 11px;
+        }
+
+        .form-control,
+        label {
+            font-size: 13px;
+        }
+        .form-group {
+            margin-bottom: .75rem;
+        }
+
+        .content-header h1 {
+            font-size: 1.4rem;
+        }
+    </style>
 </head>
 
 <body class="hold-transition sidebar-mini sidebar-collapse layout-fixed">
