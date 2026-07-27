@@ -62,7 +62,7 @@ class Cliente extends Model
      * @var array
      */
     public static $rules = [
-        'tipo_propietario' => 'required',
+        // Validado en el HTML5 del formulario (resources/views/clientes/fields.blade.php).
     ];
 
     public function documentos()

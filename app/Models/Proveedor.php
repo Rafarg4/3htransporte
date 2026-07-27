@@ -51,9 +51,7 @@ class Proveedor extends Model
      * @var array
      */
     public static $rules = [
-        'documento' => 'required',
-        'nombre' => 'required',
-        'apellido' => 'required'
+        // Validado en el HTML5 del formulario (resources/views/proveedors/fields.blade.php).
     ];
 
     

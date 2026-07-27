@@ -65,15 +65,7 @@ class Camion extends Model
      * @var array
      */
     public static $rules = [
-        'marca' => 'required',
-        'modelo' => 'required',
-        'tipo' => 'required',
-        'anho' => 'required',
-        'color' => 'required',
-        'ejes' => 'required',
-        'nro_chasis' => 'required',
-        'id_chofer' => 'required',
-        'chapa' => 'required'
+        // Validado en el HTML5 del formulario (resources/views/camions/fields.blade.php).
     ];
 
     public function chofer()

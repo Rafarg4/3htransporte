@@ -1,55 +1,55 @@
 <!-- Marca Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('marca', 'Marca:') !!}
-    {!! Form::text('marca', null, ['class' => 'form-control']) !!}
+    {!! Form::text('marca', null, ['class' => 'form-control', 'required' => 'required', 'maxlength' => 100]) !!}
 </div>
 
 <!-- Modelo Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('modelo', 'Modelo:') !!}
-    {!! Form::text('modelo', null, ['class' => 'form-control']) !!}
+    {!! Form::text('modelo', null, ['class' => 'form-control', 'required' => 'required', 'maxlength' => 100]) !!}
 </div>
 
 <!-- Tipo Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('tipo', 'Tipo:') !!}
-    {!! Form::text('tipo', null, ['class' => 'form-control']) !!}
+    {!! Form::text('tipo', null, ['class' => 'form-control', 'required' => 'required', 'maxlength' => 100]) !!}
 </div>
 
 <!-- Anho Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('anho', 'Año:') !!}
-    {!! Form::text('anho', null, ['class' => 'form-control']) !!}
+    {!! Form::number('anho', null, ['class' => 'form-control', 'required' => 'required', 'min' => 1900, 'max' => 2100]) !!}
 </div>
 
 <!-- Color Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('color', 'Color:') !!}
-    {!! Form::text('color', null, ['class' => 'form-control']) !!}
+    {!! Form::text('color', null, ['class' => 'form-control', 'required' => 'required', 'maxlength' => 100]) !!}
 </div>
 
 <!-- Ejes Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('ejes', 'Ejes:') !!}
-    {!! Form::text('ejes', null, ['class' => 'form-control']) !!}
+    {!! Form::number('ejes', null, ['class' => 'form-control', 'required' => 'required', 'min' => 1, 'max' => 20]) !!}
 </div>
 
 <!-- Nro Chasis Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('nro_chasis', 'Nro Chasis:') !!}
-    {!! Form::text('nro_chasis', null, ['class' => 'form-control']) !!}
+    {!! Form::text('nro_chasis', null, ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
 <!-- Id Chofer Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('id_chofer', 'Chofer:') !!}
-    {!! Form::select('id_chofer', $choferes, null, ['class' => 'form-control', 'placeholder' => 'Seleccione un chofer']) !!}
+    {!! Form::select('id_chofer', $choferes, null, ['class' => 'form-control', 'placeholder' => 'Seleccione un chofer', 'required' => 'required']) !!}
 </div>
 
 <!-- Chapa Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('chapa', 'Chapa:') !!}
-    {!! Form::text('chapa', null, ['class' => 'form-control']) !!}
+    {!! Form::text('chapa', null, ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
 <!-- Documentos Field -->

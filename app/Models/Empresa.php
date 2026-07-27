@@ -57,11 +57,9 @@ class Empresa extends Model
      * @var array
      */
     public static $rules = [
-        'ruc' => 'required',
-        'nombre' => 'required',
-        'logo' => 'required',
-        'direccion' => 'required',
-        'telefono' => 'required'
+        // ruc, nombre, direccion y telefono se validan en el HTML5 del formulario
+        // (resources/views/empresas/fields.blade.php). La regla de 'logo' (tipo/tamaño
+        // de archivo) se define en Create/UpdateEmpresaRequest, que sí se mantiene en el backend.
     ];
 
     

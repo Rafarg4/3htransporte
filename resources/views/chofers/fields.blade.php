@@ -1,25 +1,25 @@
 <!-- Documento Field -->
 <div class="form-group col-sm-6">
     {!! Form::label('documento', 'Documento:') !!}
-    {!! Form::text('documento', null, ['class' => 'form-control']) !!}
+    {!! Form::text('documento', null, ['class' => 'form-control', 'required' => 'required', 'pattern' => '[0-9]+', 'title' => 'Solo números']) !!}
 </div>
 
 <!-- Nombre Field -->
 <div class="form-group col-sm-6">
     {!! Form::label('nombre', 'Nombre:') !!}
-    {!! Form::text('nombre', null, ['class' => 'form-control']) !!}
+    {!! Form::text('nombre', null, ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
 <!-- Apellido Field -->
 <div class="form-group col-sm-6">
     {!! Form::label('apellido', 'Apellido:') !!}
-    {!! Form::text('apellido', null, ['class' => 'form-control']) !!}
+    {!! Form::text('apellido', null, ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
 <!-- Estado Field -->
 <div class="form-group col-sm-6">
     {!! Form::label('estado', 'Estado:') !!}
-    {!! Form::select('estado', ['Activo' => 'Activo', 'Inactivo' => 'Inactivo'], null, ['class' => 'form-control', 'placeholder' => 'Seleccione una opcion']) !!}
+    {!! Form::select('estado', ['Activo' => 'Activo', 'Inactivo' => 'Inactivo'], null, ['class' => 'form-control', 'placeholder' => 'Seleccione una opcion', 'required' => 'required']) !!}
 </div>
 
 <!-- Documentos Field -->

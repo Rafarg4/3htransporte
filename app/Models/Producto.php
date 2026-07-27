@@ -45,7 +45,7 @@ class Producto extends Model
      * @var array
      */
     public static $rules = [
-        'nombre' => 'required'
+        // Validado en el HTML5 del formulario (resources/views/productos/fields.blade.php).
     ];
 
     

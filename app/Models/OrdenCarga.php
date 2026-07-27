@@ -60,12 +60,7 @@ class OrdenCarga extends Model
      * @var array
      */
     public static $rules = [
-        'id_proveedor' => 'required',
-        'id_producto' => 'required',
-        'origen' => 'required',
-        'destino' => 'required',
-        'id_camion' => 'required',
-        'estado' => 'required'
+        // Validado en el HTML5 del formulario (resources/views/orden_cargas/fields.blade.php).
     ];
 
     public function proveedor()

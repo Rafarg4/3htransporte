@@ -1,67 +1,67 @@
 <!-- Numero Vale Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('numero_vale', 'Numero Vale:') !!}
-    {!! Form::text('numero_vale', null, ['class' => 'form-control']) !!}
+    {!! Form::text('numero_vale', null, ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
 <!-- Vigencia Desde Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('vigencia_desde', 'Vigencia Desde:') !!}
-    {!! Form::date('vigencia_desde', null, ['class' => 'form-control']) !!}
+    {!! Form::date('vigencia_desde', null, ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
 <!-- Vigencia Hasta Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('vigencia_hasta', 'Vigencia Hasta:') !!}
-    {!! Form::date('vigencia_hasta', null, ['class' => 'form-control']) !!}
+    {!! Form::date('vigencia_hasta', null, ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
 <!-- Id Camion Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('id_camion', 'Camión:') !!}
-    {!! Form::select('id_camion', $camions, null, ['class' => 'form-control', 'placeholder' => 'Seleccione un camión']) !!}
+    {!! Form::select('id_camion', $camions, null, ['class' => 'form-control', 'placeholder' => 'Seleccione un camión', 'required' => 'required']) !!}
 </div>
 
 <!-- Nombre Estacion Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('nombre_estacion', 'Nombre Estacion:') !!}
-    {!! Form::text('nombre_estacion', null, ['class' => 'form-control']) !!}
+    {!! Form::text('nombre_estacion', null, ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
 <!-- Codigo Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('codigo', 'Codigo:') !!}
-    {!! Form::text('codigo', null, ['class' => 'form-control']) !!}
+    {!! Form::text('codigo', null, ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
 <!-- Direccion Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('direccion', 'Direccion:') !!}
-    {!! Form::text('direccion', null, ['class' => 'form-control']) !!}
+    {!! Form::text('direccion', null, ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
 <!-- Producto Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('producto', 'Producto:') !!}
-    {!! Form::text('producto', null, ['class' => 'form-control']) !!}
+    {!! Form::text('producto', null, ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
 <!-- Importe Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('importe', 'Importe:') !!}
-    {!! Form::text('importe', null, ['class' => 'form-control', 'id' => 'importe']) !!}
+    {!! Form::text('importe', null, ['class' => 'form-control', 'id' => 'importe', 'required' => 'required']) !!}
 </div>
 
 <!-- Litros Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('litros', 'Litros:') !!}
-    {!! Form::text('litros', null, ['class' => 'form-control']) !!}
+    {!! Form::text('litros', null, ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
 <!-- Realizado Por Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('realizado_por', 'Realizado Por:') !!}
-    {!! Form::text('realizado_por', isset($valeCombustible) ? null : Auth::user()->name, ['class' => 'form-control', 'readonly' => 'readonly']) !!}
+    {!! Form::text('realizado_por', isset($valeCombustible) ? null : Auth::user()->name, ['class' => 'form-control', 'readonly' => 'readonly', 'required' => 'required']) !!}
 </div>
 
 <script>

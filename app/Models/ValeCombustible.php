@@ -75,17 +75,7 @@ class ValeCombustible extends Model
      * @var array
      */
     public static $rules = [
-        'numero_vale' => 'required',
-        'vigencia_desde' => 'required',
-        'vigencia_hasta' => 'required',
-        'id_camion' => 'required',
-        'nombre_estacion' => 'required',
-        'codigo' => 'required',
-        'direccion' => 'required',
-        'producto' => 'required',
-        'importe' => 'required',
-        'litros' => 'required',
-        'realizado_por' => 'required'
+        // Validado en el HTML5 del formulario (resources/views/vale_combustibles/fields.blade.php).
     ];
 
     public function camion()

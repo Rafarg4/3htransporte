@@ -1,14 +1,14 @@
 <!-- Id Proveedor Field -->
 <div class="form-group col-sm-6">
     {!! Form::label('id_proveedor', 'Proveedor:') !!}
-    {!! Form::select('id_proveedor', $proveedores, null, ['class' => 'form-control', 'placeholder' => 'Seleccione un proveedor']) !!}
+    {!! Form::select('id_proveedor', $proveedores, null, ['class' => 'form-control', 'placeholder' => 'Seleccione un proveedor', 'required' => 'required']) !!}
 </div>
 
 <!-- Id Producto Field -->
 <div class="form-group col-sm-6">
     {!! Form::label('id_producto', 'Producto:') !!}
     <div class="input-group">
-        {!! Form::select('id_producto', $productos, null, ['class' => 'form-control', 'placeholder' => 'Seleccione un producto', 'id' => 'id_producto']) !!}
+        {!! Form::select('id_producto', $productos, null, ['class' => 'form-control', 'placeholder' => 'Seleccione un producto', 'id' => 'id_producto', 'required' => 'required']) !!}
         <div class="input-group-append">
             <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#modal-nuevo-producto">
                 <i class="fas fa-plus"></i>
@@ -20,25 +20,25 @@
 <!-- Origen Field -->
 <div class="form-group col-sm-6">
     {!! Form::label('origen', 'Origen:') !!}
-    {!! Form::text('origen', null, ['class' => 'form-control']) !!}
+    {!! Form::text('origen', null, ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
 <!-- Destino Field -->
 <div class="form-group col-sm-6">
     {!! Form::label('destino', 'Destino:') !!}
-    {!! Form::text('destino', null, ['class' => 'form-control']) !!}
+    {!! Form::text('destino', null, ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
 <!-- Id Camion Field -->
 <div class="form-group col-sm-6">
     {!! Form::label('id_camion', 'Camión (Chapa):') !!}
-    {!! Form::select('id_camion', $camiones, null, ['class' => 'form-control', 'placeholder' => 'Seleccione un camión']) !!}
+    {!! Form::select('id_camion', $camiones, null, ['class' => 'form-control', 'placeholder' => 'Seleccione un camión', 'required' => 'required']) !!}
 </div>
 
 <!-- Estado Field -->
 <div class="form-group col-sm-6">
     {!! Form::label('estado', 'Estado:') !!}
-    {!! Form::select('estado', ['Activo' => 'Activo', 'Anulado' => 'Anulado'], 'Activo', ['class' => 'form-control']) !!}
+    {!! Form::select('estado', ['Activo' => 'Activo', 'Anulado' => 'Anulado'], 'Activo', ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
 <!-- Modal: Nuevo producto -->

@@ -23,10 +23,11 @@ class CreateUserRequest extends FormRequest
      */
     public function rules()
     {
+        // name y password se validan en el HTML5 del formulario
+        // (resources/views/users/fields.blade.php). El email requiere chequeo
+        // de unicidad contra la base de datos, que no se puede hacer por HTML5.
         return [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email',
-            'password' => 'required|string|min:8',
+            'email' => 'required|email|unique:users,email',
         ];
     }
 }

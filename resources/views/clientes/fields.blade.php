@@ -1,36 +1,36 @@
 <!-- Documento Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('documento', 'Documento:') !!}
-    {!! Form::text('documento', null, ['class' => 'form-control']) !!}
+    {!! Form::text('documento', null, ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 <!-- Nombre Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('nombre', 'Nombre:') !!}
-    {!! Form::text('nombre', null, ['class' => 'form-control']) !!}
+    {!! Form::text('nombre', null, ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
 <!-- Apellido Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('apellido', 'Apellido:') !!}
-    {!! Form::text('apellido', null, ['class' => 'form-control']) !!}
+    {!! Form::text('apellido', null, ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
 <!-- Tipo Propietario Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('tipo_propietario', 'Tipo Propietario:') !!}
-    {!! Form::select('tipo_propietario', ['Persona' => 'Persona', 'Empresa' => 'Empresa'], null, ['class' => 'form-control', 'placeholder' => 'Seleccione una opcion']) !!}
+    {!! Form::select('tipo_propietario', ['Persona' => 'Persona', 'Empresa' => 'Empresa'], null, ['class' => 'form-control', 'placeholder' => 'Seleccione una opcion', 'required' => 'required']) !!}
 </div>
 
-<!-- Direccion Field --> 
+<!-- Direccion Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('direccion', 'Direccion:') !!}
-    {!! Form::text('direccion', null, ['class' => 'form-control']) !!}
+    {!! Form::text('direccion', null, ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
 <!-- Telefono Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('telefono', 'Telefono:') !!}
-    {!! Form::text('telefono', null, ['class' => 'form-control']) !!}
+    {!! Form::text('telefono', null, ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 <!-- Documentos Field -->
 <div class="form-group col-sm-12">
