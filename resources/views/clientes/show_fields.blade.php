@@ -19,54 +19,70 @@
                 <!-- Datos de contacto -->
                 <h6 class="cliente-section-title">Datos de contacto</h6>
 
-                <div class="cliente-field">
-                    <i class="fas fa-user-tag cliente-field-icon"></i>
-                    <div>
-                        <small class="text-muted d-block">Tipo Propietario</small>
-                        <span>{{ $cliente->tipo_propietario }}</span>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="cliente-field">
+                            <i class="fas fa-user-tag cliente-field-icon"></i>
+                            <div>
+                                <small class="text-muted d-block">Tipo Propietario</small>
+                                <span>{{ $cliente->tipo_propietario }}</span>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <div class="cliente-field">
-                    <i class="fas fa-map-marker-alt cliente-field-icon"></i>
-                    <div>
-                        <small class="text-muted d-block">Dirección</small>
-                        <span>{{ $cliente->direccion }}</span>
+                    <div class="col-sm-6">
+                        <div class="cliente-field">
+                            <i class="fas fa-map-marker-alt cliente-field-icon"></i>
+                            <div>
+                                <small class="text-muted d-block">Dirección</small>
+                                <span>{{ $cliente->direccion }}</span>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <div class="cliente-field">
-                    <i class="fas fa-phone cliente-field-icon"></i>
-                    <div>
-                        <small class="text-muted d-block">Teléfono</small>
-                        <span>{{ $cliente->telefono }}</span>
+                    <div class="col-sm-6">
+                        <div class="cliente-field">
+                            <i class="fas fa-phone cliente-field-icon"></i>
+                            <div>
+                                <small class="text-muted d-block">Teléfono</small>
+                                <span>{{ $cliente->telefono }}</span>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <div class="cliente-field">
-                    <i class="fas fa-hashtag cliente-field-icon"></i>
-                    <div>
-                        <small class="text-muted d-block">Id Document Propietario</small>
-                        <span>{{ $cliente->id_document_cliente }}</span>
+                    <div class="col-sm-6">
+                        <div class="cliente-field">
+                            <i class="fas fa-hashtag cliente-field-icon"></i>
+                            <div>
+                                <small class="text-muted d-block">Id Document Propietario</small>
+                                <span>{{ $cliente->id_document_cliente }}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Registro -->
                 <h6 class="cliente-section-title">Registro</h6>
 
-                <div class="cliente-field">
-                    <i class="fas fa-calendar-plus cliente-field-icon"></i>
-                    <div>
-                        <small class="text-muted d-block">Creado</small>
-                        <span>{{ $cliente->created_at ? $cliente->created_at->format('d/m/Y H:i') : '-' }}</span>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="cliente-field">
+                            <i class="fas fa-calendar-plus cliente-field-icon"></i>
+                            <div>
+                                <small class="text-muted d-block">Creado</small>
+                                <span>{{ $cliente->created_at ? $cliente->created_at->format('d/m/Y H:i') : '-' }}</span>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <div class="cliente-field">
-                    <i class="fas fa-calendar-check cliente-field-icon"></i>
-                    <div>
-                        <small class="text-muted d-block">Actualizado</small>
-                        <span>{{ $cliente->updated_at ? $cliente->updated_at->format('d/m/Y H:i') : '-' }}</span>
+                    <div class="col-sm-6">
+                        <div class="cliente-field">
+                            <i class="fas fa-calendar-check cliente-field-icon"></i>
+                            <div>
+                                <small class="text-muted d-block">Actualizado</small>
+                                <span>{{ $cliente->updated_at ? $cliente->updated_at->format('d/m/Y H:i') : '-' }}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -257,7 +273,7 @@
         $(function () {
             $('#tabla-camiones').DataTable({
                 language: {
-                    url: '//cdn.datatables.net/plug-ins/1.10.21/i18n/es-ES.json'
+                    url: '{{ asset('vendor/datatables/i18n/es-ES.json') }}'
                 },
                 columnDefs: [
                     {orderable: false, targets: -1}

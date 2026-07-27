@@ -144,7 +144,11 @@
 <table class="data-table">
     <tr>
         <td class="label">Nombre</td>
-        <td>{{ $valeCombustible->camion && $valeCombustible->camion->chofer ? trim($valeCombustible->camion->chofer->nombre . ' ' . $valeCombustible->camion->chofer->apellido) : 'Sin asignar' }}</td>
+        <td>{{ $valeCombustible->camion->chofer->nombre ?? 'Sin asignar' }}</td>
+    </tr>
+    <tr>
+        <td class="label">Apellido</td>
+        <td>{{ $valeCombustible->camion->chofer->apellido ?? '-' }}</td>
     </tr>
     <tr>
         <td class="label">Documento</td>

@@ -60,9 +60,24 @@
             color: #666;
             width: 30%;
         }
+        .watermark {
+            position: fixed;
+            top: 45%;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 90px;
+            font-weight: bold;
+            color: rgba(200, 0, 0, 0.25);
+            transform: rotate(-30deg);
+        }
     </style>
 </head>
 <body>
+
+@if(strtolower($ordenCarga->estado) === 'anulado')
+    <div class="watermark">ANULADO</div>
+@endif
 
 <table class="header-table">
     <tr>
@@ -117,6 +132,10 @@
         <td class="label">Nombre</td>
         <td>{{ $ordenCarga->proveedor->nombre ?? '-' }}</td>
     </tr>
+    <tr>
+        <td class="label">Apellido</td>
+        <td>{{ $ordenCarga->proveedor->apellido ?? '-' }}</td>
+    </tr>
 </table>
 
 <!-- Datos del camion -->
@@ -157,7 +176,11 @@
 <table class="data-table">
     <tr>
         <td class="label">Nombre</td>
-        <td>{{ $ordenCarga->camion && $ordenCarga->camion->chofer ? trim($ordenCarga->camion->chofer->nombre . ' ' . $ordenCarga->camion->chofer->apellido) : 'Sin asignar' }}</td>
+        <td>{{ $ordenCarga->camion->chofer->nombre ?? 'Sin asignar' }}</td>
+    </tr>
+    <tr>
+        <td class="label">Apellido</td>
+        <td>{{ $ordenCarga->camion->chofer->apellido ?? '-' }}</td>
     </tr>
     <tr>
         <td class="label">Documento</td>

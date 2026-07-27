@@ -41,54 +41,82 @@
     {{-- ESTILOS COMPACTOS GLOBALES --}}
     <style>
         body {
-            font-size: 13px;
+            font-size: 13px !important;
         }
-        h1 { font-size: 1.5rem; }
-        h2 { font-size: 1.3rem; }
-        h3 { font-size: 1.15rem; }
-        h4 { font-size: 1.05rem; }
-        h5 { font-size: .95rem; }
-        h6 { font-size: .8rem; }
+        h1 { font-size: 1.5rem !important; }
+        h2 { font-size: 1.3rem !important; }
+        h3 { font-size: 1.15rem !important; }
+        h4 { font-size: 1.05rem !important; }
+        h5 { font-size: .95rem !important; }
+        h6 { font-size: .8rem !important; }
 
-        .card {
-            font-size: 13px;
+        .card,
+        .card-header,
+        .card-body,
+        .card-footer,
+        .card-title {
+            font-size: 13px !important;
         }
         .card-header {
-            padding: .5rem 1rem;
+            padding: .5rem 1rem !important;
         }
         .card-body {
-            padding: .85rem;
+            padding: .85rem !important;
         }
         .card-footer {
-            padding: .5rem 1rem;
+            padding: .5rem 1rem !important;
         }
 
-        .table {
-            font-size: 12px;
+        .table,
+        .table-sm {
+            font-size: 12px !important;
         }
         .table th,
         .table td {
-            padding: .4rem .5rem;
+            padding: .4rem .5rem !important;
         }
 
         .btn {
-            font-size: 12px;
-            padding: .3rem .65rem;
+            font-size: 12px !important;
+            padding: .3rem .65rem !important;
         }
         .btn-sm {
-            font-size: 11px;
+            font-size: 11px !important;
+            padding: .2rem .5rem !important;
         }
 
         .form-control,
-        label {
-            font-size: 13px;
+        .form-control-sm,
+        .form-select,
+        .form-label,
+        label,
+        input,
+        select,
+        textarea {
+            font-size: 13px !important;
+        }
+        .form-control,
+        .form-select,
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="number"],
+        input[type="date"],
+        input[type="search"],
+        select,
+        textarea {
+            padding: .3rem .6rem !important;
+        }
+        .form-control-sm,
+        .form-select-sm {
+            padding: .2rem .5rem !important;
         }
         .form-group {
-            margin-bottom: .75rem;
+            margin-bottom: .75rem !important;
         }
 
         .content-header h1 {
-            font-size: 1.4rem;
+            font-size: 1.4rem !important;
         }
     </style>
 </head>

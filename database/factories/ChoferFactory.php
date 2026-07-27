@@ -24,7 +24,7 @@ class ChoferFactory extends Factory
         return [
             'documento' => $this->faker->text,
         'nombre' => $this->faker->text,
-        'documento' => $this->faker->text,
+        'apellido' => $this->faker->text,
         'estado' => $this->faker->text,
         'created_at' => $this->faker->date('Y-m-d H:i:s'),
         'updated_at' => $this->faker->date('Y-m-d H:i:s')

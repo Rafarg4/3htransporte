@@ -18,7 +18,8 @@ class ProveedorRepository extends BaseRepository
      */
     protected $fieldSearchable = [
         'documento',
-        'nombre'
+        'nombre',
+        'apellido'
     ];
 
     /**

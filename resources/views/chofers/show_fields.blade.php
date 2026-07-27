@@ -6,17 +6,55 @@
         </div>
         <div>
             <h4 class="mb-0">{{ $chofer->nombre }} {{ $chofer->apellido }}</h4>
-            <span class="text-muted"><i class="fas fa-id-card mr-1"></i>{{ $chofer->documento }}</span>
         </div>
-        <span class="badge chofer-badge chofer-badge-{{ strtolower($chofer->estado) === 'activo' ? 'activo' : 'inactivo' }} ml-auto">
-            {{ $chofer->estado }}
-        </span>
     </div>
 </div>
 
-<!-- Registro -->
+<!-- Detalles -->
 <div class="col-12">
-    <h6 class="chofer-section-title">Registro</h6>
+    <h6 class="chofer-section-title">Detalles</h6>
+</div>
+
+<div class="col-sm-6 col-lg-4">
+    <div class="chofer-field">
+        <i class="fas fa-user chofer-field-icon"></i>
+        <div>
+            <small class="text-muted d-block">Nombre</small>
+            <span>{{ $chofer->nombre }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="col-sm-6 col-lg-4">
+    <div class="chofer-field">
+        <i class="fas fa-user chofer-field-icon"></i>
+        <div>
+            <small class="text-muted d-block">Apellido</small>
+            <span>{{ $chofer->apellido }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="col-sm-6 col-lg-4">
+    <div class="chofer-field">
+        <i class="fas fa-id-card chofer-field-icon"></i>
+        <div>
+            <small class="text-muted d-block">Documento</small>
+            <span>{{ $chofer->documento }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="col-sm-6 col-lg-4">
+    <div class="chofer-field">
+        <i class="fas fa-toggle-on chofer-field-icon"></i>
+        <div>
+            <small class="text-muted d-block">Estado</small>
+            <span class="badge chofer-badge chofer-badge-{{ strtolower($chofer->estado) === 'activo' ? 'activo' : 'inactivo' }}">
+                {{ $chofer->estado }}
+            </span>
+        </div>
+    </div>
 </div>
 
 <div class="col-sm-6 col-lg-4">

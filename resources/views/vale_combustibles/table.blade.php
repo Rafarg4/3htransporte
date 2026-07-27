@@ -72,7 +72,7 @@
         $(function () {
             $('#table').DataTable({
                 language: {
-                    url: '//cdn.datatables.net/plug-ins/1.10.21/i18n/es-ES.json'
+                    url: '{{ asset('vendor/datatables/i18n/es-ES.json') }}'
                 },
                 columnDefs: [
                     {orderable: false, targets: -1}
