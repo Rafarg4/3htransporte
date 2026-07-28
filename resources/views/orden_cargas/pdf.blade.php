@@ -142,6 +142,10 @@
         <td>{{ $ordenCarga->camion->chapa ?? '-' }}</td>
     </tr>
     <tr>
+        <td class="label">Carreta</td>
+        <td>{{ $ordenCarga->carreta ?? '-' }}</td>
+    </tr>
+    <tr>
         <td class="label">Marca / Modelo</td>
         <td>{{ $ordenCarga->camion->marca ?? '-' }} {{ $ordenCarga->camion->modelo ?? '' }}</td>
     </tr>

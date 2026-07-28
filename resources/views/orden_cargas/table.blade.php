@@ -7,6 +7,7 @@
         <th>Origen</th>
         <th>Destino</th>
         <th>Camion</th>
+        <th>Carreta</th>
         <th>Estado</th>
             <th>Acción</th>
         </tr>
@@ -19,6 +20,7 @@
             <td>{{ $ordenCarga->origen }}</td>
             <td>{{ $ordenCarga->destino }}</td>
             <td>{{ $ordenCarga->camion->chapa ?? '-' }}</td>
+            <td>{{ $ordenCarga->carreta ?? '-' }}</td>
             <td>{{ $ordenCarga->estado }}</td>
                 <td width="240">
                     {!! Form::open(['route' => ['ordenCargas.destroy', $ordenCarga->id], 'method' => 'delete']) !!}

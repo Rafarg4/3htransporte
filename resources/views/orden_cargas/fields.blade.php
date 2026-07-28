@@ -35,11 +35,12 @@
     {!! Form::select('id_camion', $camiones, null, ['class' => 'form-control', 'placeholder' => 'Seleccione un camión', 'required' => 'required']) !!}
 </div>
 
-<!-- Estado Field -->
+<!-- Carreta Field -->
 <div class="form-group col-sm-6">
-    {!! Form::label('estado', 'Estado:') !!}
-    {!! Form::select('estado', ['Activo' => 'Activo', 'Anulado' => 'Anulado'], 'Activo', ['class' => 'form-control', 'required' => 'required']) !!}
+    {!! Form::label('carreta', 'Carreta:') !!}
+    {!! Form::text('carreta', null, ['class' => 'form-control']) !!}
 </div>
+
 
 <!-- Modal: Nuevo producto -->
 <div class="modal fade" id="modal-nuevo-producto" tabindex="-1" role="dialog">

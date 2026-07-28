@@ -27,6 +27,7 @@ class OrdenCargaFactory extends Factory
         'origen' => $this->faker->text,
         'destino' => $this->faker->text,
         'id_camion' => $this->faker->text,
+        'carreta' => $this->faker->text,
         'estado' => $this->faker->text,
         'created_at' => $this->faker->date('Y-m-d H:i:s'),
         'updated_at' => $this->faker->date('Y-m-d H:i:s')

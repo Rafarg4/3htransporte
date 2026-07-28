@@ -28,6 +28,12 @@
     <p>{{ $ordenCarga->camion->chapa ?? '-' }}</p>
 </div>
 
+<!-- Carreta Field -->
+<div class="col-sm-12">
+    {!! Form::label('carreta', 'Carreta:') !!}
+    <p>{{ $ordenCarga->carreta ?? '-' }}</p>
+</div>
+
 <!-- Estado Field -->
 <div class="col-sm-12">
     {!! Form::label('estado', 'Estado:') !!}

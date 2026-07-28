@@ -62,6 +62,7 @@ class OrdenCargaController extends AppBaseController
     public function store(CreateOrdenCargaRequest $request)
     {
         $input = $request->all();
+        $input['estado'] = 'Activo';
 
         $ordenCarga = $this->ordenCargaRepository->create($input);
 
