@@ -61,7 +61,7 @@ class ChoferController extends AppBaseController
 
         $this->guardarDocumentos($request, $chofer->id);
 
-        Flash::success('Chofer saved successfully.');
+        Flash::success('Chofer guardado correctamente.');
 
         return redirect(route('chofers.index'));
     }
@@ -78,7 +78,7 @@ class ChoferController extends AppBaseController
         $chofer = $this->choferRepository->find($id);
 
         if (empty($chofer)) {
-            Flash::error('Chofer not found');
+            Flash::error('Chofer no encontrado');
 
             return redirect(route('chofers.index'));
         }
@@ -98,7 +98,7 @@ class ChoferController extends AppBaseController
         $chofer = $this->choferRepository->find($id);
 
         if (empty($chofer)) {
-            Flash::error('Chofer not found');
+            Flash::error('Chofer no encontrado');
 
             return redirect(route('chofers.index'));
         }
@@ -119,7 +119,7 @@ class ChoferController extends AppBaseController
         $chofer = $this->choferRepository->find($id);
 
         if (empty($chofer)) {
-            Flash::error('Chofer not found');
+            Flash::error('Chofer no encontrado');
 
             return redirect(route('chofers.index'));
         }
@@ -128,7 +128,7 @@ class ChoferController extends AppBaseController
 
         $this->guardarDocumentos($request, $chofer->id);
 
-        Flash::success('Chofer updated successfully.');
+        Flash::success('Chofer actualizado correctamente.');
 
         return redirect(route('chofers.index'));
     }
@@ -176,10 +176,10 @@ class ChoferController extends AppBaseController
 
         if (empty($documento)) {
             if ($request->expectsJson()) {
-                return response()->json(['message' => 'Documento not found'], 404);
+                return response()->json(['message' => 'Documento no encontrado'], 404);
             }
 
-            Flash::error('Documento not found');
+            Flash::error('Documento no encontrado');
 
             return redirect()->back();
         }
@@ -196,7 +196,7 @@ class ChoferController extends AppBaseController
             return response()->json(['success' => true]);
         }
 
-        Flash::success('Documento deleted successfully.');
+        Flash::success('Documento eliminado correctamente.');
 
         return redirect()->back();
     }
@@ -215,14 +215,14 @@ class ChoferController extends AppBaseController
         $chofer = $this->choferRepository->find($id);
 
         if (empty($chofer)) {
-            Flash::error('Chofer not found');
+            Flash::error('Chofer no encontrado');
 
             return redirect(route('chofers.index'));
         }
 
         $this->choferRepository->delete($id);
 
-        Flash::success('Chofer deleted successfully.');
+        Flash::success('Chofer eliminado correctamente.');
 
         return redirect(route('chofers.index'));
     }

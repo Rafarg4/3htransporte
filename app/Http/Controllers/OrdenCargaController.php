@@ -65,7 +65,7 @@ class OrdenCargaController extends AppBaseController
 
         $ordenCarga = $this->ordenCargaRepository->create($input);
 
-        Flash::success('Orden Carga saved successfully.');
+        Flash::success('Orden Carga guardada correctamente.');
 
         return redirect(route('ordenCargas.index'));
     }
@@ -82,7 +82,7 @@ class OrdenCargaController extends AppBaseController
         $ordenCarga = $this->ordenCargaRepository->find($id);
 
         if (empty($ordenCarga)) {
-            Flash::error('Orden Carga not found');
+            Flash::error('Orden Carga no encontrada');
 
             return redirect(route('ordenCargas.index'));
         }
@@ -124,7 +124,7 @@ class OrdenCargaController extends AppBaseController
         $ordenCarga = $this->ordenCargaRepository->find($id);
 
         if (empty($ordenCarga)) {
-            Flash::error('Orden Carga not found');
+            Flash::error('Orden Carga no encontrada');
 
             return redirect(route('ordenCargas.index'));
         }
@@ -169,14 +169,14 @@ class OrdenCargaController extends AppBaseController
         $ordenCarga = $this->ordenCargaRepository->find($id);
 
         if (empty($ordenCarga)) {
-            Flash::error('Orden Carga not found');
+            Flash::error('Orden Carga no encontrada');
 
             return redirect(route('ordenCargas.index'));
         }
 
         $ordenCarga = $this->ordenCargaRepository->update($request->all(), $id);
 
-        Flash::success('Orden Carga updated successfully.');
+        Flash::success('Orden Carga actualizada correctamente.');
 
         return redirect(route('ordenCargas.index'));
     }
@@ -193,7 +193,7 @@ class OrdenCargaController extends AppBaseController
         $ordenCarga = $this->ordenCargaRepository->find($id);
 
         if (empty($ordenCarga)) {
-            Flash::error('Orden Carga not found');
+            Flash::error('Orden Carga no encontrada');
 
             return redirect(route('ordenCargas.index'));
         }

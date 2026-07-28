@@ -65,7 +65,7 @@ class CamionController extends AppBaseController
 
         $this->guardarDocumentos($request, $camion->id);
 
-        Flash::success('Camion saved successfully.');
+        Flash::success('Camión guardado correctamente.');
 
         return redirect(route('camions.index'));
     }
@@ -82,7 +82,7 @@ class CamionController extends AppBaseController
         $camion = $this->camionRepository->find($id);
 
         if (empty($camion)) {
-            Flash::error('Camion not found');
+            Flash::error('Camión no encontrado');
 
             return redirect(route('camions.index'));
         }
@@ -102,7 +102,7 @@ class CamionController extends AppBaseController
         $camion = $this->camionRepository->find($id);
 
         if (empty($camion)) {
-            Flash::error('Camion not found');
+            Flash::error('Camión no encontrado');
 
             return redirect(route('camions.index'));
         }
@@ -139,7 +139,7 @@ class CamionController extends AppBaseController
         $camion = $this->camionRepository->find($id);
 
         if (empty($camion)) {
-            Flash::error('Camion not found');
+            Flash::error('Camión no encontrado');
 
             return redirect(route('camions.index'));
         }
@@ -148,7 +148,7 @@ class CamionController extends AppBaseController
 
         $this->guardarDocumentos($request, $camion->id);
 
-        Flash::success('Camion updated successfully.');
+        Flash::success('Camión actualizado correctamente.');
 
         return redirect(route('camions.index'));
     }
@@ -196,10 +196,10 @@ class CamionController extends AppBaseController
 
         if (empty($documento)) {
             if ($request->expectsJson()) {
-                return response()->json(['message' => 'Documento not found'], 404);
+                return response()->json(['message' => 'Documento no encontrado'], 404);
             }
 
-            Flash::error('Documento not found');
+            Flash::error('Documento no encontrado');
 
             return redirect()->back();
         }
@@ -216,7 +216,7 @@ class CamionController extends AppBaseController
             return response()->json(['success' => true]);
         }
 
-        Flash::success('Documento deleted successfully.');
+        Flash::success('Documento eliminado correctamente.');
 
         return redirect()->back();
     }
@@ -235,14 +235,14 @@ class CamionController extends AppBaseController
         $camion = $this->camionRepository->find($id);
 
         if (empty($camion)) {
-            Flash::error('Camion not found');
+            Flash::error('Camión no encontrado');
 
             return redirect(route('camions.index'));
         }
 
         $this->camionRepository->delete($id);
 
-        Flash::success('Camion deleted successfully.');
+        Flash::success('Camión eliminado correctamente.');
 
         return redirect(route('camions.index'));
     }

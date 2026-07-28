@@ -66,7 +66,7 @@ class ValeCombustibleController extends AppBaseController
 
         $valeCombustible = $this->valeCombustibleRepository->create($input);
 
-        Flash::success('Vale Combustible saved successfully.');
+        Flash::success('Vale Combustible guardado correctamente.');
 
         return redirect(route('valeCombustibles.index'));
     }
@@ -83,7 +83,7 @@ class ValeCombustibleController extends AppBaseController
         $valeCombustible = $this->valeCombustibleRepository->find($id);
 
         if (empty($valeCombustible)) {
-            Flash::error('Vale Combustible not found');
+            Flash::error('Vale Combustible no encontrado');
 
             return redirect(route('valeCombustibles.index'));
         }
@@ -123,7 +123,7 @@ class ValeCombustibleController extends AppBaseController
         $valeCombustible = $this->valeCombustibleRepository->find($id);
 
         if (empty($valeCombustible)) {
-            Flash::error('Vale Combustible not found');
+            Flash::error('Vale Combustible no encontrado');
 
             return redirect(route('valeCombustibles.index'));
         }
@@ -160,14 +160,14 @@ class ValeCombustibleController extends AppBaseController
         $valeCombustible = $this->valeCombustibleRepository->find($id);
 
         if (empty($valeCombustible)) {
-            Flash::error('Vale Combustible not found');
+            Flash::error('Vale Combustible no encontrado');
 
             return redirect(route('valeCombustibles.index'));
         }
 
         $valeCombustible = $this->valeCombustibleRepository->update($request->all(), $id);
 
-        Flash::success('Vale Combustible updated successfully.');
+        Flash::success('Vale Combustible actualizado correctamente.');
 
         return redirect(route('valeCombustibles.index'));
     }
@@ -186,14 +186,14 @@ class ValeCombustibleController extends AppBaseController
         $valeCombustible = $this->valeCombustibleRepository->find($id);
 
         if (empty($valeCombustible)) {
-            Flash::error('Vale Combustible not found');
+            Flash::error('Vale Combustible no encontrado');
 
             return redirect(route('valeCombustibles.index'));
         }
 
         $this->valeCombustibleRepository->delete($id);
 
-        Flash::success('Vale Combustible deleted successfully.');
+        Flash::success('Vale Combustible eliminado correctamente.');
 
         return redirect(route('valeCombustibles.index'));
     }

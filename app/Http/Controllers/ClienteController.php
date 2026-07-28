@@ -62,7 +62,7 @@ class ClienteController extends AppBaseController
 
         $this->guardarDocumentos($request, $cliente->id);
 
-        Flash::success('Propietario saved successfully.');
+        Flash::success('Propietario guardado correctamente.');
 
         return redirect(route('clientes.index'));
     }
@@ -79,7 +79,7 @@ class ClienteController extends AppBaseController
         $cliente = $this->clienteRepository->find($id);
 
         if (empty($cliente)) {
-            Flash::error('Propietario not found');
+            Flash::error('Propietario no encontrado');
 
             return redirect(route('clientes.index'));
         }
@@ -106,7 +106,7 @@ class ClienteController extends AppBaseController
         $cliente = $this->clienteRepository->find($id);
 
         if (empty($cliente)) {
-            Flash::error('Propietario not found');
+            Flash::error('Propietario no encontrado');
 
             return redirect(route('clientes.index'));
         }
@@ -158,7 +158,7 @@ class ClienteController extends AppBaseController
         $cliente = $this->clienteRepository->find($id);
 
         if (empty($cliente)) {
-            Flash::error('Propietario not found');
+            Flash::error('Propietario no encontrado');
 
             return redirect(route('clientes.index'));
         }
@@ -179,7 +179,7 @@ class ClienteController extends AppBaseController
         $cliente = $this->clienteRepository->find($id);
 
         if (empty($cliente)) {
-            Flash::error('Propietario not found');
+            Flash::error('Propietario no encontrado');
 
             return redirect(route('clientes.index'));
         }
@@ -188,7 +188,7 @@ class ClienteController extends AppBaseController
 
         $this->guardarDocumentos($request, $cliente->id);
 
-        Flash::success('Propietario updated successfully.');
+        Flash::success('Propietario actualizado correctamente.');
 
         return redirect(route('clientes.index'));
     }
@@ -236,10 +236,10 @@ class ClienteController extends AppBaseController
 
         if (empty($documento)) {
             if ($request->expectsJson()) {
-                return response()->json(['message' => 'Documento not found'], 404);
+                return response()->json(['message' => 'Documento no encontrado'], 404);
             }
 
-            Flash::error('Documento not found');
+            Flash::error('Documento no encontrado');
 
             return redirect()->back();
         }
@@ -256,7 +256,7 @@ class ClienteController extends AppBaseController
             return response()->json(['success' => true]);
         }
 
-        Flash::success('Documento deleted successfully.');
+        Flash::success('Documento eliminado correctamente.');
 
         return redirect()->back();
     }
@@ -275,14 +275,14 @@ class ClienteController extends AppBaseController
         $cliente = $this->clienteRepository->find($id);
 
         if (empty($cliente)) {
-            Flash::error('Propietario not found');
+            Flash::error('Propietario no encontrado');
 
             return redirect(route('clientes.index'));
         }
 
         $this->clienteRepository->delete($id);
 
-        Flash::success('Propietario deleted successfully.');
+        Flash::success('Propietario eliminado correctamente.');
 
         return redirect(route('clientes.index'));
     }

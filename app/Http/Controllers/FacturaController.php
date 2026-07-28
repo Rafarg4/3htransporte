@@ -131,7 +131,7 @@ class FacturaController extends AppBaseController
         $factura = $this->facturaRepository->find($id);
 
         if (empty($factura)) {
-            Flash::error('Factura not found');
+            Flash::error('Factura no encontrada');
 
             return redirect(route('facturas.index'));
         }
@@ -151,7 +151,7 @@ class FacturaController extends AppBaseController
         $factura = $this->facturaRepository->find($id);
 
         if (empty($factura)) {
-            Flash::error('Factura not found');
+            Flash::error('Factura no encontrada');
 
             return redirect(route('facturas.index'));
         }
@@ -172,14 +172,14 @@ class FacturaController extends AppBaseController
         $factura = $this->facturaRepository->find($id);
 
         if (empty($factura)) {
-            Flash::error('Factura not found');
+            Flash::error('Factura no encontrada');
 
             return redirect(route('facturas.index'));
         }
 
         $factura = $this->facturaRepository->update($request->all(), $id);
 
-        Flash::success('Factura updated successfully.');
+        Flash::success('Factura actualizada correctamente.');
 
         return redirect(route('facturas.index'));
     }
@@ -198,14 +198,14 @@ class FacturaController extends AppBaseController
         $factura = $this->facturaRepository->find($id);
 
         if (empty($factura)) {
-            Flash::error('Factura not found');
+            Flash::error('Factura no encontrada');
 
             return redirect(route('facturas.index'));
         }
 
         $this->facturaRepository->delete($id);
 
-        Flash::success('Factura deleted successfully.');
+        Flash::success('Factura eliminada correctamente.');
 
         return redirect(route('facturas.index'));
     }
