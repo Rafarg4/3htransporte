@@ -99,7 +99,7 @@ class OrdenCargaController extends AppBaseController
      */
     public function pdf($id)
     {
-        $ordenCarga = OrdenCarga::with(['proveedor', 'producto', 'camion.chofer'])->findOrFail($id);
+        $ordenCarga = OrdenCarga::with(['proveedor', 'producto', 'camion.chofer', 'camion.propietario'])->findOrFail($id);
         $empresa = Empresa::first();
         $numero = str_pad($ordenCarga->id, 6, '0', STR_PAD_LEFT);
 

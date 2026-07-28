@@ -125,16 +125,12 @@
 <div class="section-title">Datos del Proveedor</div>
 <table class="data-table">
     <tr>
-        <td class="label">Documento</td>
+        <td class="label">Doc/Ruc</td>
         <td>{{ $ordenCarga->proveedor->documento ?? '-' }}</td>
     </tr>
     <tr>
-        <td class="label">Nombre</td>
-        <td>{{ $ordenCarga->proveedor->nombre ?? '-' }}</td>
-    </tr>
-    <tr>
-        <td class="label">Apellido</td>
-        <td>{{ $ordenCarga->proveedor->apellido ?? '-' }}</td>
+        <td class="label">Cliente</td>
+        <td>{{ trim(($ordenCarga->proveedor->nombre ?? '') . ' ' . ($ordenCarga->proveedor->apellido ?? '')) ?: '-' }}</td>
     </tr>
 </table>
 
@@ -168,6 +164,10 @@
     <tr>
         <td class="label">Nro Chasis</td>
         <td>{{ $ordenCarga->camion->nro_chasis ?? '-' }}</td>
+    </tr>
+    <tr>
+        <td class="label">Propietario</td>
+        <td>{{ trim(($ordenCarga->camion->propietario->nombre ?? '') . ' ' . ($ordenCarga->camion->propietario->apellido ?? '')) ?: 'Sin asignar' }}</td>
     </tr>
 </table>
 
