@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string $documento
  * @property string $nombre
  * @property string $apellido
+ * @property string $tipo
  */
 class Proveedor extends Model
 {
@@ -31,7 +32,8 @@ class Proveedor extends Model
     public $fillable = [
         'documento',
         'nombre',
-        'apellido'
+        'apellido',
+        'tipo'
     ];
 
     /**
@@ -42,7 +44,8 @@ class Proveedor extends Model
     protected $casts = [
         'documento' => 'string',
         'nombre' => 'string',
-        'apellido' => 'string'
+        'apellido' => 'string',
+        'tipo' => 'string'
     ];
 
     /**

@@ -2,37 +2,44 @@
     <table class="table" id="table">
         <thead>
         <tr>
-            <th>Proveedor</th>
-        <th>Producto</th>
-        <th>Origen</th>
-        <th>Destino</th>
-        <th>Camion</th>
+            <th>Numero</th>
+        <th>Fecha</th>
+        <th>Chofer</th>
+        <th>Numero Remision</th>
+        <th>Descripcion</th>
+        <th>Orden de Carga</th>
+        <th>Cargado Por</th>
         <th>Estado</th>
             <th>Acción</th>
         </tr>
         </thead>
         <tbody>
-        @foreach($ordenCargas as $ordenCarga)
+        @foreach($viaticos as $viatico)
             <tr>
-                <td>{{ $ordenCarga->proveedor->nombre ?? '-' }}</td>
-            <td>{{ $ordenCarga->producto->nombre ?? '-' }}</td>
-            <td>{{ $ordenCarga->origen }}</td>
-            <td>{{ $ordenCarga->destino }}</td>
-            <td>{{ $ordenCarga->camion->chapa ?? '-' }}</td>
-            <td>{{ $ordenCarga->estado }}</td>
-                <td width="240">
-                    {!! Form::open(['route' => ['ordenCargas.destroy', $ordenCarga->id], 'method' => 'delete']) !!}
+                <td>{{ $viatico->numero }}</td>
+            <td>{{ $viatico->fecha }}</td>
+            <td>{{ $viatico->chofer ? trim($viatico->chofer->nombre . ' ' . $viatico->chofer->apellido) : '-' }}</td>
+            <td>{{ $viatico->numero_remision }}</td>
+            <td>{{ $viatico->descripcion }}</td>
+            <td>{{ $viatico->ordenCarga ? 'OC-' . str_pad($viatico->ordenCarga->id, 6, '0', STR_PAD_LEFT) : '-' }}</td>
+            <td>{{ $viatico->cargado_por }}</td>
+            <td>{{ $viatico->estado }}</td>
+                <td width="320">
+                    {!! Form::open(['route' => ['viaticos.destroy', $viatico->id], 'method' => 'delete']) !!}
                     <div class="action-buttons d-flex justify-content-center">
-                        <a href="{{ route('ordenCargas.edit', [$ordenCarga->id]) }}" class="btn btn-warning">
+                        <a href="{{ route('viaticos.show', [$viatico->id]) }}" class="btn btn-info">
+                            <i class="far fa-eye"></i> Ver
+                        </a>
+                        <a href="{{ route('viaticos.edit', [$viatico->id]) }}" class="btn btn-warning">
                             <i class="far fa-edit"></i> Editar
                         </a>
-                        <a href="{{ route('ordenCargas.pdf', $ordenCarga->id) }}" class="btn btn-danger" target="_blank">
+                        <a href="{{ route('viaticos.pdf', $viatico->id) }}" class="btn btn-danger" target="_blank">
                             <i class="far fa-file-pdf"></i> PDF
                         </a>
                         {!! Form::button('<i class="fas fa-ban"></i> Anular', [
                             'type' => 'submit',
                             'class' => 'btn btn-info',
-                            'onclick' => "return confirm('¿Anular esta orden de carga?')",
+                            'onclick' => "return confirm('¿Anular este viático?')",
                         ]) !!}
                     </div>
                     {!! Form::close() !!}

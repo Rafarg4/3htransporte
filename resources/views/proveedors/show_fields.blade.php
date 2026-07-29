@@ -1,6 +1,12 @@
+<!-- Tipo Field -->
+<div class="col-sm-12">
+    {!! Form::label('tipo', 'Tipo:') !!}
+    <p>{{ $proveedor->tipo ?? '-' }}</p>
+</div>
+
 <!-- Documento Field -->
 <div class="col-sm-12">
-    {!! Form::label('documento', 'Documento:') !!}
+    {!! Form::label('documento', 'Documento / RUC:') !!}
     <p>{{ $proveedor->documento }}</p>
 </div>
 
@@ -10,11 +16,13 @@
     <p>{{ $proveedor->nombre }}</p>
 </div>
 
+@if($proveedor->tipo !== 'Empresa')
 <!-- Apellido Field -->
 <div class="col-sm-12">
     {!! Form::label('apellido', 'Apellido:') !!}
-    <p>{{ $proveedor->apellido }}</p>
+    <p>{{ $proveedor->apellido ?? '-' }}</p>
 </div>
+@endif
 
 <!-- Created At Field -->
 <div class="col-sm-12">

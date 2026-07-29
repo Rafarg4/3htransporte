@@ -2,17 +2,17 @@
 
 namespace Database\Factories;
 
-use App\Models\OrdenCarga;
+use App\Models\Viatico;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class OrdenCargaFactory extends Factory
+class ViaticoFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = OrdenCarga::class;
+    protected $model = Viatico::class;
 
     /**
      * Define the model's default state.
@@ -22,11 +22,13 @@ class OrdenCargaFactory extends Factory
     public function definition()
     {
         return [
-            'id_proveedor' => $this->faker->text,
-        'id_producto' => $this->faker->text,
-        'origen' => $this->faker->text,
-        'destino' => $this->faker->text,
-        'id_camion' => $this->faker->text,
+            'numero' => $this->faker->text,
+        'fecha' => $this->faker->text,
+        'id_chofer' => $this->faker->text,
+        'numero_remision' => $this->faker->text,
+        'descripcion' => $this->faker->text,
+        'id_orden_carga' => $this->faker->text,
+        'cargado_por' => $this->faker->text,
         'estado' => $this->faker->text,
         'created_at' => $this->faker->date('Y-m-d H:i:s'),
         'updated_at' => $this->faker->date('Y-m-d H:i:s')

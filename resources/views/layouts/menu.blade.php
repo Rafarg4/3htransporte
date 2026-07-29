@@ -62,6 +62,13 @@
     </a>
 </li>
 <li class="nav-item">
+    <a href="{{ route('viaticos.index') }}"
+       class="nav-link {{ Request::is('viaticos*') ? 'active' : '' }}">
+        <i class="nav-icon fa fa-money-bill-wave"></i>
+        <p>Viaticos</p>
+    </a>
+</li>
+<li class="nav-item">
     <a href="{{ route('proveedors.index') }}"
        class="nav-link {{ Request::is('proveedors*') ? 'active' : '' }}">
         <i class="nav-icon fa fa-truck"></i>
@@ -72,7 +79,7 @@
     <a href="{{ route('empresas.index') }}"
        class="nav-link {{ Request::is('empresas*') ? 'active' : '' }}">
         <i class="nav-icon fa fa-building"></i>
-        <p>Empresas</p>
+        <p>3H</p>
     </a>
 </li>
 <li class="nav-item">
@@ -90,5 +97,8 @@
         <i class="nav-icon fas fa-sign-out-alt"></i>
         <p>Salir</p>
     </a>
+
+
+
 
 

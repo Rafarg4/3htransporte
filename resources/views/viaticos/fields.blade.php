@@ -1,67 +1,43 @@
-<!-- Marca Field -->
-<div class="form-group col-sm-4">
-    {!! Form::label('marca', 'Marca:') !!}
-    {!! Form::text('marca', null, ['class' => 'form-control', 'required' => 'required', 'maxlength' => 100]) !!}
+<!-- Numero Field -->
+<div class="form-group col-sm-6">
+    {!! Form::label('numero', 'Numero:') !!}
+    {!! Form::text('numero', null, ['class' => 'form-control']) !!}
 </div>
 
-<!-- Modelo Field -->
-<div class="form-group col-sm-4">
-    {!! Form::label('modelo', 'Modelo:') !!}
-    {!! Form::text('modelo', null, ['class' => 'form-control', 'required' => 'required', 'maxlength' => 100]) !!}
-</div>
-
-<!-- Anho Field -->
-<div class="form-group col-sm-4">
-    {!! Form::label('anho', 'Año:') !!}
-    {!! Form::number('anho', null, ['class' => 'form-control', 'required' => 'required', 'min' => 1900, 'max' => 2100]) !!}
-</div>
-
-<!-- Color Field -->
-<div class="form-group col-sm-4">
-    {!! Form::label('color', 'Color:') !!}
-    {!! Form::text('color', null, ['class' => 'form-control', 'required' => 'required', 'maxlength' => 100]) !!}
-</div>
-
-<!-- Nro Chasis Field -->
-<div class="form-group col-sm-4">
-    {!! Form::label('nro_chasis', 'Nro Chasis:') !!}
-    {!! Form::text('nro_chasis', null, ['class' => 'form-control', 'required' => 'required']) !!}
+<!-- Fecha Field -->
+<div class="form-group col-sm-6">
+    {!! Form::label('fecha', 'Fecha:') !!}
+    {!! Form::text('fecha', isset($viatico) ? null : now()->format('Y-m-d'), ['class' => 'form-control', 'readonly' => 'readonly', 'required' => 'required']) !!}
 </div>
 
 <!-- Id Chofer Field -->
-<div class="form-group col-sm-4">
+<div class="form-group col-sm-6">
     {!! Form::label('id_chofer', 'Chofer:') !!}
     {!! Form::select('id_chofer', $choferes, null, ['class' => 'form-control', 'placeholder' => 'Seleccione un chofer', 'required' => 'required']) !!}
 </div>
 
-<!-- Chapa Field -->
-<div class="form-group col-sm-4">
-    {!! Form::label('chapa', 'Chapa:') !!}
-    {!! Form::text('chapa', null, ['class' => 'form-control', 'required' => 'required']) !!}
+<!-- Numero Remision Field -->
+<div class="form-group col-sm-6">
+    {!! Form::label('numero_remision', 'Numero Remision:') !!}
+    {!! Form::text('numero_remision', null, ['class' => 'form-control']) !!}
 </div>
 
-<!-- Carreta -->
-<div class="col-sm-12">
-    <hr>
-    <h5>Carreta</h5>
+<!-- Descripcion Field -->
+<div class="form-group col-sm-6">
+    {!! Form::label('descripcion', 'Descripcion:') !!}
+    {!! Form::select('descripcion', ['Transferencia' => 'Transferencia', 'Giro' => 'Giro', 'Efectivo' => 'Efectivo'], null, ['class' => 'form-control', 'placeholder' => 'Seleccione una opción', 'required' => 'required']) !!}
 </div>
 
-<!-- Tipo Field -->
-<div class="form-group col-sm-4">
-    {!! Form::label('tipo', 'Tipo:') !!}
-    {!! Form::text('tipo', null, ['class' => 'form-control', 'required' => 'required', 'maxlength' => 100]) !!}
+<!-- Id Orden Carga Field -->
+<div class="form-group col-sm-6">
+    {!! Form::label('id_orden_carga', 'Orden de Carga:') !!}
+    {!! Form::select('id_orden_carga', $ordenCargas, null, ['class' => 'form-control', 'placeholder' => 'Seleccione una orden de carga', 'required' => 'required']) !!}
 </div>
 
-<!-- Ejes Field -->
-<div class="form-group col-sm-4">
-    {!! Form::label('ejes', 'Ejes:') !!}
-    {!! Form::number('ejes', null, ['class' => 'form-control', 'required' => 'required', 'min' => 1, 'max' => 20]) !!}
-</div>
-
-<!-- Carreta Chapa Field -->
-<div class="form-group col-sm-4">
-    {!! Form::label('carreta_chapa', 'Chapa de Carreta:') !!}
-    {!! Form::text('carreta_chapa', null, ['class' => 'form-control']) !!}
+<!-- Cargado Por Field -->
+<div class="form-group col-sm-6">
+    {!! Form::label('cargado_por', 'Cargado Por:') !!}
+    {!! Form::text('cargado_por', isset($viatico) ? null : Auth::user()->name, ['class' => 'form-control', 'readonly' => 'readonly', 'required' => 'required']) !!}
 </div>
 
 <!-- Documentos Field -->
@@ -75,14 +51,14 @@
 
     <div id="documentos-preview" class="documentos-preview"></div>
 
-    @isset($camion)
-        @if($camion->documentos && $camion->documentos->count())
+    @isset($viatico)
+        @if($viatico->documentos && $viatico->documentos->count())
             <div class="mt-3">
                 <label>Documentos ya cargados:</label>
                 <div class="documentos-preview">
-                    @foreach($camion->documentos as $documento)
+                    @foreach($viatico->documentos as $documento)
                         <div class="documento-card">
-                            <a href="{{ asset('documento_camiones/' . $documento->nombre_archivo) }}" target="_blank">
+                            <a href="{{ asset('documento_viatico/' . $documento->nombre_archivo) }}" target="_blank">
                                 <div class="documento-icon">
                                     @if(Str::endsWith(strtolower($documento->nombre_archivo), ['.jpg', '.jpeg', '.png', '.gif']))
                                         <i class="fas fa-file-image"></i>
@@ -95,7 +71,7 @@
                                 <small class="d-block text-truncate">{{ $documento->nombre_archivo }}</small>
                             </a>
                             <button type="button" class="documento-remove documento-remove-existing"
-                                    data-url="{{ route('camions.documentos.destroy', $documento->id) }}">
+                                    data-url="{{ route('viaticos.documentos.destroy', $documento->id) }}">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>

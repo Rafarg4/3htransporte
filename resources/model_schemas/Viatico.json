@@ -12,7 +12,7 @@
         "inView": false
     },
     {
-        "name": "id_proveedor",
+        "name": "numero",
         "dbType": "text",
         "htmlType": "text",
         "validations": "required",
@@ -24,7 +24,7 @@
         "inView": true
     },
     {
-        "name": "id_producto",
+        "name": "fecha",
         "dbType": "text",
         "htmlType": "text",
         "validations": "required",
@@ -36,19 +36,7 @@
         "inView": true
     },
     {
-        "name": "origen",
-        "dbType": "text",
-        "htmlType": "tex",
-        "validations": "required",
-        "searchable": true,
-        "fillable": true,
-        "primary": false,
-        "inForm": true,
-        "inIndex": true,
-        "inView": true
-    },
-    {
-        "name": "destino",
+        "name": "id_chofer",
         "dbType": "text",
         "htmlType": "text",
         "validations": "required",
@@ -60,7 +48,43 @@
         "inView": true
     },
     {
-        "name": "id_camion",
+        "name": "numero_remision",
+        "dbType": "text",
+        "htmlType": "text",
+        "validations": "required",
+        "searchable": true,
+        "fillable": true,
+        "primary": false,
+        "inForm": true,
+        "inIndex": true,
+        "inView": true
+    },
+    {
+        "name": "descripcion",
+        "dbType": "text",
+        "htmlType": "text",
+        "validations": "required",
+        "searchable": true,
+        "fillable": true,
+        "primary": false,
+        "inForm": true,
+        "inIndex": true,
+        "inView": true
+    },
+    {
+        "name": "id_orden_carga",
+        "dbType": "text",
+        "htmlType": "text",
+        "validations": "required",
+        "searchable": true,
+        "fillable": true,
+        "primary": false,
+        "inForm": true,
+        "inIndex": true,
+        "inView": true
+    },
+    {
+        "name": "cargado_por",
         "dbType": "text",
         "htmlType": "text",
         "validations": "required",

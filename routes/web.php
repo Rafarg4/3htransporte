@@ -67,3 +67,10 @@ Route::get('valeCombustibles/{id}/pdf', [App\Http\Controllers\ValeCombustibleCon
 
 
 Route::resource('users', App\Http\Controllers\UserController::class);
+
+
+Route::resource('viaticos', App\Http\Controllers\ViaticoController::class);
+Route::get('viaticos/{id}/pdf', [App\Http\Controllers\ViaticoController::class, 'pdf'])
+    ->name('viaticos.pdf');
+Route::delete('viaticos/documentos/{documento}', [App\Http\Controllers\ViaticoController::class, 'destroyDocumento'])
+    ->name('viaticos.documentos.destroy');

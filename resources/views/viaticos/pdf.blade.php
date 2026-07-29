@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Orden de Carga {{ $numero }}</title>
+    <title>Viatico {{ $viatico->numero }}</title>
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;
@@ -75,7 +75,7 @@
 </head>
 <body>
 
-@if(strtolower($ordenCarga->estado) === 'anulado')
+@if(strtolower($viatico->estado) === 'anulado')
     <div class="watermark">ANULADO</div>
 @endif
 
@@ -95,88 +95,29 @@
             @endif
         </td>
         <td class="documento-titulo" style="width: 35%;">
-            <h2>Orden de Carga N° {{ $numero }}</h2>
-            <div>Fecha: {{ $ordenCarga->created_at ? $ordenCarga->created_at->format('d/m/Y H:i') : '-' }}</div>
-            <div>Estado: {{ $ordenCarga->estado }}</div>
+            <h2>Viático N° {{ $viatico->numero }}</h2>
+            <div>Fecha: {{ $viatico->fecha }}</div>
+            <div>Estado: {{ $viatico->estado }}</div>
         </td>
     </tr>
 </table>
 
 <hr>
 
-<!-- Datos de la orden -->
-<div class="section-title">Datos de la Orden</div>
+<!-- Datos del viatico -->
+<div class="section-title">Datos del Viático</div>
 <table class="data-table">
     <tr>
-        <td class="label">Producto</td>
-        <td>{{ $ordenCarga->producto->nombre ?? '-' }}</td>
+        <td class="label">Numero Remision</td>
+        <td>{{ $viatico->numero_remision }}</td>
     </tr>
     <tr>
-        <td class="label">Origen</td>
-        <td>{{ $ordenCarga->origen }}</td>
+        <td class="label">Descripcion</td>
+        <td>{{ $viatico->descripcion }}</td>
     </tr>
     <tr>
-        <td class="label">Destino</td>
-        <td>{{ $ordenCarga->destino }}</td>
-    </tr>
-</table>
-
-<!-- Datos del proveedor -->
-<div class="section-title">Datos del Proveedor</div>
-<table class="data-table">
-    <tr>
-        <td class="label">Doc/Ruc</td>
-        <td>{{ $ordenCarga->proveedor->documento ?? '-' }}</td>
-    </tr>
-    <tr>
-        <td class="label">Cliente</td>
-        <td>{{ trim(($ordenCarga->proveedor->nombre ?? '') . ' ' . ($ordenCarga->proveedor->apellido ?? '')) ?: '-' }}</td>
-    </tr>
-</table>
-
-<!-- Datos del camion -->
-<div class="section-title">Datos del Camión</div>
-<table class="data-table">
-    <tr>
-        <td class="label">Chapa</td>
-        <td>{{ $ordenCarga->camion->chapa ?? '-' }}</td>
-    </tr>
-    <tr>
-        <td class="label">Marca / Modelo</td>
-        <td>{{ $ordenCarga->camion->marca ?? '-' }} {{ $ordenCarga->camion->modelo ?? '' }}</td>
-    </tr>
-    <tr>
-        <td class="label">Año</td>
-        <td>{{ $ordenCarga->camion->anho ?? '-' }}</td>
-    </tr>
-    <tr>
-        <td class="label">Color</td>
-        <td>{{ $ordenCarga->camion->color ?? '-' }}</td>
-    </tr>
-    <tr>
-        <td class="label">Nro Chasis</td>
-        <td>{{ $ordenCarga->camion->nro_chasis ?? '-' }}</td>
-    </tr>
-    <tr>
-        <td class="label">Propietario</td>
-        <td>{{ trim(($ordenCarga->camion->propietario->nombre ?? '') . ' ' . ($ordenCarga->camion->propietario->apellido ?? '')) ?: 'Sin asignar' }}</td>
-    </tr>
-</table>
-
-<!-- Datos de la carreta -->
-<div class="section-title">Datos de la Carreta</div>
-<table class="data-table">
-    <tr>
-        <td class="label">Tipo</td>
-        <td>{{ $ordenCarga->camion->tipo ?? '-' }}</td>
-    </tr>
-    <tr>
-        <td class="label">Ejes</td>
-        <td>{{ $ordenCarga->camion->ejes ?? '-' }}</td>
-    </tr>
-    <tr>
-        <td class="label">Chapa Carreta</td>
-        <td>{{ $ordenCarga->camion->carreta_chapa ?? '-' }}</td>
+        <td class="label">Cargado Por</td>
+        <td>{{ $viatico->cargado_por }}</td>
     </tr>
 </table>
 
@@ -185,15 +126,36 @@
 <table class="data-table">
     <tr>
         <td class="label">Nombre</td>
-        <td>{{ $ordenCarga->camion->chofer->nombre ?? 'Sin asignar' }}</td>
+        <td>{{ $viatico->chofer->nombre ?? 'Sin asignar' }}</td>
     </tr>
     <tr>
         <td class="label">Apellido</td>
-        <td>{{ $ordenCarga->camion->chofer->apellido ?? '-' }}</td>
+        <td>{{ $viatico->chofer->apellido ?? '-' }}</td>
     </tr>
     <tr>
         <td class="label">Documento</td>
-        <td>{{ $ordenCarga->camion->chofer->documento ?? '-' }}</td>
+        <td>{{ $viatico->chofer->documento ?? '-' }}</td>
+    </tr>
+</table>
+
+<!-- Datos de la orden de carga -->
+<div class="section-title">Datos de la Orden de Carga</div>
+<table class="data-table">
+    <tr>
+        <td class="label">Orden de Carga</td>
+        <td>{{ $viatico->ordenCarga ? 'OC-' . str_pad($viatico->ordenCarga->id, 6, '0', STR_PAD_LEFT) : '-' }}</td>
+    </tr>
+    <tr>
+        <td class="label">Origen</td>
+        <td>{{ $viatico->ordenCarga->origen ?? '-' }}</td>
+    </tr>
+    <tr>
+        <td class="label">Destino</td>
+        <td>{{ $viatico->ordenCarga->destino ?? '-' }}</td>
+    </tr>
+    <tr>
+        <td class="label">Camión</td>
+        <td>{{ $viatico->ordenCarga->camion->chapa ?? '-' }}</td>
     </tr>
 </table>
 

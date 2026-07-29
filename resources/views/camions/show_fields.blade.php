@@ -47,16 +47,6 @@
 
 <div class="col-sm-4">
     <div class="camion-field">
-        <i class="fas fa-truck-loading camion-field-icon"></i>
-        <div>
-            <small class="text-muted d-block">Tipo</small>
-            <span>{{ $camion->tipo }}</span>
-        </div>
-    </div>
-</div>
-
-<div class="col-sm-4">
-    <div class="camion-field">
         <i class="fas fa-calendar-alt camion-field-icon"></i>
         <div>
             <small class="text-muted d-block">Año</small>
@@ -77,16 +67,6 @@
 
 <div class="col-sm-4">
     <div class="camion-field">
-        <i class="fas fa-cog camion-field-icon"></i>
-        <div>
-            <small class="text-muted d-block">Ejes</small>
-            <span>{{ $camion->ejes }}</span>
-        </div>
-    </div>
-</div>
-
-<div class="col-sm-4">
-    <div class="camion-field">
         <i class="fas fa-calendar-plus camion-field-icon"></i>
         <div>
             <small class="text-muted d-block">Creado</small>
@@ -101,6 +81,41 @@
         <div>
             <small class="text-muted d-block">Actualizado</small>
             <span>{{ $camion->updated_at ? $camion->updated_at->format('d/m/Y H:i') : '-' }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- Carreta -->
+<div class="col-12">
+    <h6 class="camion-section-title">Carreta</h6>
+</div>
+
+<div class="col-sm-4">
+    <div class="camion-field">
+        <i class="fas fa-truck-loading camion-field-icon"></i>
+        <div>
+            <small class="text-muted d-block">Tipo</small>
+            <span>{{ $camion->tipo ?? '-' }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="col-sm-4">
+    <div class="camion-field">
+        <i class="fas fa-cog camion-field-icon"></i>
+        <div>
+            <small class="text-muted d-block">Ejes</small>
+            <span>{{ $camion->ejes ?? '-' }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="col-sm-4">
+    <div class="camion-field">
+        <i class="fas fa-id-card camion-field-icon"></i>
+        <div>
+            <small class="text-muted d-block">Chapa de Carreta</small>
+            <span>{{ $camion->carreta_chapa ?? '-' }}</span>
         </div>
     </div>
 </div>

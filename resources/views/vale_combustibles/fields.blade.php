@@ -1,7 +1,7 @@
 <!-- Numero Vale Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('numero_vale', 'Numero Vale:') !!}
-    {!! Form::text('numero_vale', null, ['class' => 'form-control', 'required' => 'required']) !!}
+    {!! Form::text('numero_vale', isset($valeCombustible) ? null : '138', ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
 <!-- Vigencia Desde Field -->
@@ -25,7 +25,7 @@
 <!-- Nombre Estacion Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('nombre_estacion', 'Nombre Estacion:') !!}
-    {!! Form::text('nombre_estacion', null, ['class' => 'form-control', 'required' => 'required']) !!}
+    {!! Form::select('nombre_estacion', ['Ecop' => 'Ecop', 'Petrobras' => 'Petrobras'], null, ['class' => 'form-control', 'placeholder' => 'Seleccione una opción', 'required' => 'required']) !!}
 </div>
 
 <!-- Codigo Field -->
@@ -37,13 +37,13 @@
 <!-- Direccion Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('direccion', 'Direccion:') !!}
-    {!! Form::text('direccion', null, ['class' => 'form-control', 'required' => 'required']) !!}
+    {!! Form::select('direccion', ['Encarnación' => 'Encarnación'], null, ['class' => 'form-control', 'placeholder' => 'Seleccione una opción', 'required' => 'required']) !!}
 </div>
 
 <!-- Producto Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('producto', 'Producto:') !!}
-    {!! Form::text('producto', null, ['class' => 'form-control', 'required' => 'required']) !!}
+    {!! Form::select('producto', ['Diesel S50' => 'Diesel S50', 'Nafta' => 'Nafta'], null, ['class' => 'form-control', 'placeholder' => 'Seleccione una opción', 'required' => 'required']) !!}
 </div>
 
 <!-- Importe Field -->
