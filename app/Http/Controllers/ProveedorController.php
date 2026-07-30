@@ -58,6 +58,14 @@ class ProveedorController extends AppBaseController
 
         $proveedor = $this->proveedorRepository->create($input);
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'id' => $proveedor->id,
+                'documento' => $proveedor->documento,
+                'nombre' => $proveedor->nombre,
+            ]);
+        }
+
         Flash::success('Proveedor guardado correctamente.');
 
         return redirect(route('proveedors.index'));

@@ -65,6 +65,15 @@ class CamionController extends AppBaseController
 
         $this->guardarDocumentos($request, $camion->id);
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'id' => $camion->id,
+                'chapa' => $camion->chapa,
+                'id_cliente' => $camion->id_cliente,
+                'id_chofer' => $camion->id_chofer,
+            ]);
+        }
+
         Flash::success('Camión guardado correctamente.');
 
         return redirect(route('camions.index'));

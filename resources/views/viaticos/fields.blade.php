@@ -1,7 +1,7 @@
 <!-- Numero Field -->
 <div class="form-group col-sm-6">
     {!! Form::label('numero', 'Numero:') !!}
-    {!! Form::text('numero', null, ['class' => 'form-control']) !!}
+    {!! Form::text('numero', isset($viatico) ? null : $proximoNumero, ['class' => 'form-control', 'readonly' => 'readonly', 'required' => 'required']) !!}
 </div>
 
 <!-- Fecha Field -->
@@ -16,16 +16,16 @@
     {!! Form::select('id_chofer', $choferes, null, ['class' => 'form-control', 'placeholder' => 'Seleccione un chofer', 'required' => 'required']) !!}
 </div>
 
-<!-- Numero Remision Field -->
-<div class="form-group col-sm-6">
-    {!! Form::label('numero_remision', 'Numero Remision:') !!}
-    {!! Form::text('numero_remision', null, ['class' => 'form-control']) !!}
-</div>
-
 <!-- Descripcion Field -->
 <div class="form-group col-sm-6">
     {!! Form::label('descripcion', 'Descripcion:') !!}
     {!! Form::select('descripcion', ['Transferencia' => 'Transferencia', 'Giro' => 'Giro', 'Efectivo' => 'Efectivo'], null, ['class' => 'form-control', 'placeholder' => 'Seleccione una opción', 'required' => 'required']) !!}
+</div>
+
+<!-- Monto Field -->
+<div class="form-group col-sm-6">
+    {!! Form::label('monto', 'Monto:') !!}
+    {!! Form::text('monto', null, ['class' => 'form-control', 'id' => 'monto', 'required' => 'required']) !!}
 </div>
 
 <!-- Id Orden Carga Field -->
@@ -259,5 +259,34 @@
                 });
             });
         });
+    })();
+</script>
+
+<script>
+    (function () {
+        var montoInput = document.getElementById('monto');
+        if (!montoInput) {
+            return;
+        }
+
+        function formatearMiles(valor) {
+            var digitos = valor.replace(/\D/g, '');
+            return digitos ? new Intl.NumberFormat('es-PY').format(digitos) : '';
+        }
+
+        montoInput.value = formatearMiles(montoInput.value);
+
+        montoInput.addEventListener('input', function () {
+            var posicionDesdeFinal = montoInput.value.length - montoInput.selectionStart;
+            montoInput.value = formatearMiles(montoInput.value);
+            var posicion = montoInput.value.length - posicionDesdeFinal;
+            montoInput.setSelectionRange(posicion, posicion);
+        });
+
+        if (montoInput.form) {
+            montoInput.form.addEventListener('submit', function () {
+                montoInput.value = montoInput.value.replace(/\D/g, '');
+            });
+        }
     })();
 </script>

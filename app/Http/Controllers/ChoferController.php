@@ -56,10 +56,20 @@ class ChoferController extends AppBaseController
     public function store(CreateChoferRequest $request)
     {
         $input = $request->except('documentos');
+        $input['estado'] = $input['estado'] ?? 'Activo';
 
         $chofer = $this->choferRepository->create($input);
 
         $this->guardarDocumentos($request, $chofer->id);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'id' => $chofer->id,
+                'nombre' => $chofer->nombre,
+                'apellido' => $chofer->apellido,
+                'documento' => $chofer->documento,
+            ]);
+        }
 
         Flash::success('Chofer guardado correctamente.');
 

@@ -60,6 +60,16 @@
             color: #666;
             width: 30%;
         }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 9px;
+            color: #888;
+        }
     </style>
 </head>
 <body>
@@ -120,10 +130,6 @@
         <td class="label">Litros</td>
         <td>{{ $valeCombustible->litros }}</td>
     </tr>
-    <tr>
-        <td class="label">Realizado Por</td>
-        <td>{{ $valeCombustible->realizado_por }}</td>
-    </tr>
 </table>
 
 <!-- Datos del camion -->
@@ -155,6 +161,8 @@
         <td>{{ $valeCombustible->camion->chofer->documento ?? '-' }}</td>
     </tr>
 </table>
+
+<div class="footer">Realizado por: {{ $valeCombustible->realizado_por }}</div>
 
 </body>
 </html>

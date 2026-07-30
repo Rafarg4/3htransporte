@@ -108,12 +108,12 @@
 <div class="section-title">Datos del Viático</div>
 <table class="data-table">
     <tr>
-        <td class="label">Numero Remision</td>
-        <td>{{ $viatico->numero_remision }}</td>
-    </tr>
-    <tr>
         <td class="label">Descripcion</td>
         <td>{{ $viatico->descripcion }}</td>
+    </tr>
+    <tr>
+        <td class="label">Monto</td>
+        <td>{{ number_format((float) $viatico->monto, 0, ',', '.') }}</td>
     </tr>
     <tr>
         <td class="label">Cargado Por</td>

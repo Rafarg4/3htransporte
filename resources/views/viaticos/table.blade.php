@@ -5,8 +5,8 @@
             <th>Numero</th>
         <th>Fecha</th>
         <th>Chofer</th>
-        <th>Numero Remision</th>
         <th>Descripcion</th>
+        <th>Monto</th>
         <th>Orden de Carga</th>
         <th>Cargado Por</th>
         <th>Estado</th>
@@ -19,8 +19,8 @@
                 <td>{{ $viatico->numero }}</td>
             <td>{{ $viatico->fecha }}</td>
             <td>{{ $viatico->chofer ? trim($viatico->chofer->nombre . ' ' . $viatico->chofer->apellido) : '-' }}</td>
-            <td>{{ $viatico->numero_remision }}</td>
             <td>{{ $viatico->descripcion }}</td>
+            <td>{{ number_format((float) $viatico->monto, 0, ',', '.') }}</td>
             <td>{{ $viatico->ordenCarga ? 'OC-' . str_pad($viatico->ordenCarga->id, 6, '0', STR_PAD_LEFT) : '-' }}</td>
             <td>{{ $viatico->cargado_por }}</td>
             <td>{{ $viatico->estado }}</td>

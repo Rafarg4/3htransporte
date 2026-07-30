@@ -14,11 +14,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string $numero
  * @property string $fecha
  * @property string $id_chofer
- * @property string $numero_remision
  * @property string $descripcion
+ * @property string $monto
  * @property string $id_orden_carga
  * @property string $cargado_por
  * @property string $estado
+ * @property string $id_liquidacion
+ * @property string $liquidado
  */
 class Viatico extends Model
 {
@@ -39,9 +41,12 @@ class Viatico extends Model
         'id_chofer',
         'numero_remision',
         'descripcion',
+        'monto',
         'id_orden_carga',
         'cargado_por',
-        'estado'
+        'estado',
+        'id_liquidacion',
+        'liquidado'
     ];
 
     /**
@@ -55,9 +60,12 @@ class Viatico extends Model
         'id_chofer' => 'string',
         'numero_remision' => 'string',
         'descripcion' => 'string',
+        'monto' => 'string',
         'id_orden_carga' => 'string',
         'cargado_por' => 'string',
-        'estado' => 'string'
+        'estado' => 'string',
+        'id_liquidacion' => 'string',
+        'liquidado' => 'string'
     ];
 
     /**
@@ -69,8 +77,8 @@ class Viatico extends Model
         'numero' => 'required',
         'fecha' => 'required',
         'id_chofer' => 'required',
-        'numero_remision' => 'required',
         'descripcion' => 'required',
+        'monto' => 'required',
         'id_orden_carga' => 'required',
         'cargado_por' => 'required'
     ];
@@ -88,5 +96,10 @@ class Viatico extends Model
     public function documentos()
     {
         return $this->hasMany(DocumentoViatico::class, 'id_viatico');
+    }
+
+    public function liquidacion()
+    {
+        return $this->belongsTo(Liquidacion::class, 'id_liquidacion');
     }
 }

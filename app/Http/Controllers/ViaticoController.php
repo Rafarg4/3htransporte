@@ -50,7 +50,8 @@ class ViaticoController extends AppBaseController
     {
         return view('viaticos.create')
             ->with('choferes', $this->getChoferesParaSelect())
-            ->with('ordenCargas', $this->getOrdenCargasParaSelect());
+            ->with('ordenCargas', $this->getOrdenCargasParaSelect())
+            ->with('proximoNumero', $this->getProximoNumero());
     }
 
     /**
@@ -80,6 +81,17 @@ class ViaticoController extends AppBaseController
     }
 
     /**
+     * Next numero, calculated from the amount of viaticos already registered
+     * (including soft-deleted ones, so a number is never reused).
+     *
+     * @return int
+     */
+    private function getProximoNumero()
+    {
+        return Viatico::withTrashed()->count() + 1;
+    }
+
+    /**
      * Store a newly created Viatico in storage.
      *
      * @param CreateViaticoRequest $request
@@ -90,6 +102,7 @@ class ViaticoController extends AppBaseController
     {
         $input = $request->except('documentos');
         $input['estado'] = 'Activo';
+        $input['numero'] = $this->getProximoNumero();
 
         $viatico = $this->viaticoRepository->create($input);
 

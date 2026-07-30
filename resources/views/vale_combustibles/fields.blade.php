@@ -1,7 +1,7 @@
 <!-- Numero Vale Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('numero_vale', 'Numero Vale:') !!}
-    {!! Form::text('numero_vale', isset($valeCombustible) ? null : '138', ['class' => 'form-control', 'required' => 'required']) !!}
+    {!! Form::text('numero_vale', isset($valeCombustible) ? null : $proximoNumeroVale, ['class' => 'form-control', 'readonly' => 'readonly', 'required' => 'required']) !!}
 </div>
 
 <!-- Vigencia Desde Field -->
@@ -31,13 +31,23 @@
 <!-- Codigo Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('codigo', 'Codigo:') !!}
-    {!! Form::text('codigo', null, ['class' => 'form-control', 'required' => 'required']) !!}
+    {!! Form::text('codigo', isset($valeCombustible) ? null : '138', ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
 <!-- Direccion Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('direccion', 'Direccion:') !!}
-    {!! Form::select('direccion', ['Encarnación' => 'Encarnación'], null, ['class' => 'form-control', 'placeholder' => 'Seleccione una opción', 'required' => 'required']) !!}
+    {!! Form::select('direccion', [
+        'Vacay' => 'Vacay',
+        'María Auxiliadora' => 'María Auxiliadora',
+        'Yatytay' => 'Yatytay',
+        'Edelira 60' => 'Edelira 60',
+        'Obligado' => 'Obligado',
+        'Santa Rita' => 'Santa Rita',
+        'Santa Inés' => 'Santa Inés',
+        'Capitán Meza' => 'Capitán Meza',
+        'Capitán Miranda' => 'Capitán Miranda',
+    ], null, ['class' => 'form-control', 'placeholder' => 'Seleccione una opción', 'required' => 'required']) !!}
 </div>
 
 <!-- Producto Field -->

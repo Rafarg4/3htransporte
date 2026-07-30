@@ -11,6 +11,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @package App\Models
  *
  * @property string $id_cliente
+ * @property string $id_camion
+ * @property string $id_chofer
+ * @property string $id_orden_carga
  * @property string $fecha
  * @property string $estado
  */
@@ -26,24 +29,47 @@ class Liquidacion extends Model
 
     public $fillable = [
         'id_cliente',
+        'id_camion',
+        'id_chofer',
+        'id_orden_carga',
         'fecha',
         'estado'
     ];
 
     protected $casts = [
         'id_cliente' => 'string',
+        'id_camion' => 'string',
+        'id_chofer' => 'string',
+        'id_orden_carga' => 'string',
         'fecha' => 'string',
         'estado' => 'string'
     ];
 
     public static $rules = [
         'id_cliente' => 'required',
+        'id_camion' => 'required',
+        'id_chofer' => 'required',
         'fecha' => 'required'
     ];
 
     public function cliente()
     {
         return $this->belongsTo(Cliente::class, 'id_cliente');
+    }
+
+    public function camion()
+    {
+        return $this->belongsTo(Camion::class, 'id_camion');
+    }
+
+    public function chofer()
+    {
+        return $this->belongsTo(Chofer::class, 'id_chofer');
+    }
+
+    public function ordenCarga()
+    {
+        return $this->belongsTo(OrdenCarga::class, 'id_orden_carga');
     }
 
     public function fletes()
@@ -63,12 +89,12 @@ class Liquidacion extends Model
 
     public function viaticos()
     {
-        return $this->hasMany(LiquidacionViatico::class, 'id_liquidacion');
+        return $this->hasMany(Viatico::class, 'id_liquidacion');
     }
 
     public function combustibles()
     {
-        return $this->hasMany(LiquidacionCombustible::class, 'id_liquidacion');
+        return $this->hasMany(ValeCombustible::class, 'id_liquidacion');
     }
 
     public function getTotalCreditosAttribute()
@@ -89,11 +115,11 @@ class Liquidacion extends Model
         });
 
         $viaticos = $this->viaticos->sum(function ($item) {
-            return (float) $item->valor;
+            return (float) $item->monto;
         });
 
         $combustibles = $this->combustibles->sum(function ($item) {
-            return (float) $item->valor;
+            return (float) $item->importe;
         });
 
         return $descuentos + $gastos + $viaticos + $combustibles;
@@ -105,22 +131,12 @@ class Liquidacion extends Model
     }
 
     /**
-     * Chapas usadas en las lineas de esta liquidacion, para mostrar en el listado.
+     * Chapa del camion de esta liquidacion, para mostrar en el listado.
      *
-     * @return string
+     * @return string|null
      */
     public function getChapasAttribute()
     {
-        return $this->fletes
-            ->concat($this->descuentos)
-            ->concat($this->gastosAdministrativos)
-            ->concat($this->viaticos)
-            ->concat($this->combustibles)
-            ->map(function ($linea) {
-                return $linea->camion->chapa ?? null;
-            })
-            ->filter()
-            ->unique()
-            ->implode(', ');
+        return $this->camion->chapa ?? null;
     }
 }

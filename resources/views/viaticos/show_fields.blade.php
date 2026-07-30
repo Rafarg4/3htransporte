@@ -37,20 +37,20 @@
 
 <div class="col-sm-6 col-lg-4">
     <div class="viatico-field">
-        <i class="fas fa-hashtag viatico-field-icon"></i>
+        <i class="fas fa-money-check-alt viatico-field-icon"></i>
         <div>
-            <small class="text-muted d-block">Numero Remision</small>
-            <span>{{ $viatico->numero_remision }}</span>
+            <small class="text-muted d-block">Descripcion</small>
+            <span>{{ $viatico->descripcion }}</span>
         </div>
     </div>
 </div>
 
 <div class="col-sm-6 col-lg-4">
     <div class="viatico-field">
-        <i class="fas fa-money-check-alt viatico-field-icon"></i>
+        <i class="fas fa-dollar-sign viatico-field-icon"></i>
         <div>
-            <small class="text-muted d-block">Descripcion</small>
-            <span>{{ $viatico->descripcion }}</span>
+            <small class="text-muted d-block">Monto</small>
+            <span>{{ number_format((float) $viatico->monto, 0, ',', '.') }}</span>
         </div>
     </div>
 </div>

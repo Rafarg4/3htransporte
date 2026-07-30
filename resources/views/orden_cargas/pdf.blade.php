@@ -157,9 +157,22 @@
         <td class="label">Nro Chasis</td>
         <td>{{ $ordenCarga->camion->nro_chasis ?? '-' }}</td>
     </tr>
+</table>
+
+<!-- Datos del propietario -->
+<div class="section-title">Datos del Propietario</div>
+<table class="data-table">
     <tr>
-        <td class="label">Propietario</td>
-        <td>{{ trim(($ordenCarga->camion->propietario->nombre ?? '') . ' ' . ($ordenCarga->camion->propietario->apellido ?? '')) ?: 'Sin asignar' }}</td>
+        <td class="label">Documento</td>
+        <td>{{ $ordenCarga->camion->propietario->documento ?? '-' }}</td>
+    </tr>
+    <tr>
+        <td class="label">Nombre</td>
+        <td>{{ $ordenCarga->camion->propietario->nombre ?? 'Sin asignar' }}</td>
+    </tr>
+    <tr>
+        <td class="label">Apellido</td>
+        <td>{{ $ordenCarga->camion->propietario->apellido ?? '-' }}</td>
     </tr>
 </table>
 

@@ -22,6 +22,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string $importe
  * @property string $litros
  * @property string $realizado_por
+ * @property string $id_liquidacion
+ * @property string $liquidado
  */
 class ValeCombustible extends Model
 {
@@ -47,7 +49,9 @@ class ValeCombustible extends Model
         'producto',
         'importe',
         'litros',
-        'realizado_por'
+        'realizado_por',
+        'id_liquidacion',
+        'liquidado'
     ];
 
     /**
@@ -66,7 +70,9 @@ class ValeCombustible extends Model
         'producto' => 'string',
         'importe' => 'string',
         'litros' => 'string',
-        'realizado_por' => 'string'
+        'realizado_por' => 'string',
+        'id_liquidacion' => 'string',
+        'liquidado' => 'string'
     ];
 
     /**
@@ -81,5 +87,10 @@ class ValeCombustible extends Model
     public function camion()
     {
         return $this->belongsTo(Camion::class, 'id_camion');
+    }
+
+    public function liquidacion()
+    {
+        return $this->belongsTo(Liquidacion::class, 'id_liquidacion');
     }
 }

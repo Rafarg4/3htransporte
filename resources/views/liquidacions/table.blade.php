@@ -2,8 +2,10 @@
     <table class="table" id="table">
         <thead>
         <tr>
-            <th>Cliente</th>
-            <th>Chapas</th>
+            <th>Propietario</th>
+            <th>Camión</th>
+            <th>Chofer</th>
+            <th>Orden de Carga</th>
             <th>Fecha</th>
             <th>Créditos</th>
             <th>Débitos</th>
@@ -16,7 +18,9 @@
         @foreach($liquidacions as $liquidacion)
             <tr>
                 <td>{{ $liquidacion->cliente ? trim($liquidacion->cliente->nombre . ' ' . $liquidacion->cliente->apellido) : '-' }}</td>
-                <td>{{ $liquidacion->chapas ?: '-' }}</td>
+                <td>{{ $liquidacion->camion->chapa ?? '-' }}</td>
+                <td>{{ $liquidacion->chofer ? trim($liquidacion->chofer->nombre . ' ' . $liquidacion->chofer->apellido) : '-' }}</td>
+                <td>{{ $liquidacion->ordenCarga ? 'OC-' . str_pad($liquidacion->ordenCarga->id, 6, '0', STR_PAD_LEFT) : '-' }}</td>
                 <td>{{ $liquidacion->fecha }}</td>
                 <td>{{ number_format($liquidacion->total_creditos, 0, ',', '.') }}</td>
                 <td>{{ number_format($liquidacion->total_debitos, 0, ',', '.') }}</td>

@@ -49,7 +49,8 @@ class ValeCombustibleController extends AppBaseController
         $camions = $this->getCamionesParaSelect();
 
         return view('vale_combustibles.create')
-            ->with('camions', $camions);
+            ->with('camions', $camions)
+            ->with('proximoNumeroVale', $this->getProximoNumeroVale());
     }
 
     /**
@@ -63,6 +64,7 @@ class ValeCombustibleController extends AppBaseController
     {
         $input = $request->all();
         $input['realizado_por'] = auth()->user()->name;
+        $input['numero_vale'] = $this->getProximoNumeroVale();
 
         $valeCombustible = $this->valeCombustibleRepository->create($input);
 
@@ -145,6 +147,17 @@ class ValeCombustibleController extends AppBaseController
         return Camion::orderBy('chapa')->get()->mapWithKeys(function ($camion) {
             return [$camion->id => $camion->chapa];
         })->toArray();
+    }
+
+    /**
+     * Next numero_vale, calculated from the amount of vales already
+     * registered (including soft-deleted vales, so a number is never reused).
+     *
+     * @return int
+     */
+    private function getProximoNumeroVale()
+    {
+        return ValeCombustible::withTrashed()->count() + 1;
     }
 
     /**

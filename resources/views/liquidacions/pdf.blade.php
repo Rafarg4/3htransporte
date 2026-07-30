@@ -125,7 +125,6 @@
         <td class="documento-titulo" style="width: 35%;">
             <h2>Liquidación N° {{ $liquidacion->id }}</h2>
             <div>Fecha: {{ $liquidacion->fecha }}</div>
-            <div>Cliente: {{ $liquidacion->cliente ? trim($liquidacion->cliente->nombre . ' ' . $liquidacion->cliente->apellido) : '-' }}</div>
             <div>Estado: {{ $liquidacion->estado }}</div>
         </td>
     </tr>
@@ -133,11 +132,30 @@
 
 <hr>
 
+<div class="section-title">Datos de la Liquidación</div>
+<table class="data-table">
+    <tr>
+        <td class="label">Propietario</td>
+        <td>{{ $liquidacion->cliente ? trim($liquidacion->cliente->nombre . ' ' . $liquidacion->cliente->apellido) : '-' }}</td>
+    </tr>
+    <tr>
+        <td class="label">Camión</td>
+        <td>{{ $liquidacion->camion->chapa ?? '-' }}</td>
+    </tr>
+    <tr>
+        <td class="label">Chofer</td>
+        <td>{{ $liquidacion->chofer ? trim($liquidacion->chofer->nombre . ' ' . $liquidacion->chofer->apellido) : '-' }}</td>
+    </tr>
+    <tr>
+        <td class="label">Orden de Carga</td>
+        <td>{{ $liquidacion->ordenCarga ? 'OC-' . str_pad($liquidacion->ordenCarga->id, 6, '0', STR_PAD_LEFT) . ' - ' . $liquidacion->ordenCarga->destino : '-' }}</td>
+    </tr>
+</table>
+
 @if($liquidacion->fletes->isNotEmpty())
     <div class="section-title">Flete</div>
     <table class="data-table">
         <tr>
-            <th>Chapa</th>
             <th>Fecha</th>
             <th>Tramo</th>
             <th>Kg Origen</th>
@@ -147,7 +165,6 @@
         </tr>
         @foreach($liquidacion->fletes as $flete)
             <tr>
-                <td>{{ $flete->camion->chapa ?? '-' }}</td>
                 <td>{{ $flete->fecha }}</td>
                 <td>{{ $flete->tramo }}</td>
                 <td class="numero">{{ number_format((float) $flete->kg_origen, 0, ',', '.') }}</td>
@@ -163,14 +180,12 @@
     <div class="section-title">Descuento</div>
     <table class="data-table">
         <tr>
-            <th>Chapa</th>
             <th>Fecha</th>
             <th>Concepto</th>
             <th>Valor</th>
         </tr>
         @foreach($liquidacion->descuentos as $descuento)
             <tr>
-                <td>{{ $descuento->camion->chapa ?? '-' }}</td>
                 <td>{{ $descuento->fecha }}</td>
                 <td>{{ $descuento->concepto }}</td>
                 <td class="numero">{{ number_format((float) $descuento->valor, 0, ',', '.') }}</td>
@@ -183,17 +198,19 @@
     <div class="section-title">Viático</div>
     <table class="data-table">
         <tr>
-            <th>Chapa</th>
+            <th>Numero</th>
             <th>Fecha</th>
+            <th>Chofer</th>
             <th>Descripción</th>
-            <th>Valor</th>
+            <th>Monto</th>
         </tr>
         @foreach($liquidacion->viaticos as $viatico)
             <tr>
-                <td>{{ $viatico->camion->chapa ?? '-' }}</td>
+                <td>{{ $viatico->numero }}</td>
                 <td>{{ $viatico->fecha }}</td>
+                <td>{{ $viatico->chofer ? trim($viatico->chofer->nombre . ' ' . $viatico->chofer->apellido) : '-' }}</td>
                 <td>{{ $viatico->descripcion }}</td>
-                <td class="numero">{{ number_format((float) $viatico->valor, 0, ',', '.') }}</td>
+                <td class="numero">{{ number_format((float) $viatico->monto, 0, ',', '.') }}</td>
             </tr>
         @endforeach
     </table>
@@ -203,21 +220,19 @@
     <div class="section-title">Combustible</div>
     <table class="data-table">
         <tr>
-            <th>Chapa</th>
-            <th>Fecha</th>
+            <th>Vale N°</th>
+            <th>Vigencia</th>
             <th>Estación</th>
             <th>Litros</th>
-            <th>Precio</th>
-            <th>Valor</th>
+            <th>Importe</th>
         </tr>
         @foreach($liquidacion->combustibles as $combustible)
             <tr>
-                <td>{{ $combustible->camion->chapa ?? '-' }}</td>
-                <td>{{ $combustible->fecha }}</td>
+                <td>{{ $combustible->numero_vale }}</td>
+                <td>{{ $combustible->vigencia_desde }}</td>
                 <td>{{ $combustible->nombre_estacion }}</td>
                 <td class="numero">{{ number_format((float) $combustible->litros, 0, ',', '.') }}</td>
-                <td class="numero">{{ number_format((float) $combustible->precio, 0, ',', '.') }}</td>
-                <td class="numero">{{ number_format((float) $combustible->valor, 0, ',', '.') }}</td>
+                <td class="numero">{{ number_format((float) $combustible->importe, 0, ',', '.') }}</td>
             </tr>
         @endforeach
     </table>
@@ -227,14 +242,12 @@
     <div class="section-title">Gastos Administrativos</div>
     <table class="data-table">
         <tr>
-            <th>Chapa</th>
             <th>Fecha</th>
             <th>Concepto</th>
             <th>Valor</th>
         </tr>
         @foreach($liquidacion->gastosAdministrativos as $gasto)
             <tr>
-                <td>{{ $gasto->camion->chapa ?? '-' }}</td>
                 <td>{{ $gasto->fecha }}</td>
                 <td>{{ $gasto->concepto }}</td>
                 <td class="numero">{{ number_format((float) $gasto->valor, 0, ',', '.') }}</td>
