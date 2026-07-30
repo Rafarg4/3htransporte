@@ -74,3 +74,15 @@ Route::get('viaticos/{id}/pdf', [App\Http\Controllers\ViaticoController::class, 
     ->name('viaticos.pdf');
 Route::delete('viaticos/documentos/{documento}', [App\Http\Controllers\ViaticoController::class, 'destroyDocumento'])
     ->name('viaticos.documentos.destroy');
+
+
+Route::get('liquidacions', [App\Http\Controllers\LiquidacionController::class, 'index'])
+    ->name('liquidacions.index');
+Route::get('liquidacions/create', [App\Http\Controllers\LiquidacionController::class, 'create'])
+    ->name('liquidacions.create');
+Route::post('liquidacions', [App\Http\Controllers\LiquidacionController::class, 'store'])
+    ->name('liquidacions.store');
+Route::get('liquidacions/{id}/pdf', [App\Http\Controllers\LiquidacionController::class, 'pdf'])
+    ->name('liquidacions.pdf');
+Route::delete('liquidacions/{id}', [App\Http\Controllers\LiquidacionController::class, 'destroy'])
+    ->name('liquidacions.destroy');

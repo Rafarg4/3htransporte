@@ -69,6 +69,13 @@
     </a>
 </li>
 <li class="nav-item">
+    <a href="{{ route('liquidacions.index') }}"
+       class="nav-link {{ Request::is('liquidacions*') ? 'active' : '' }}">
+        <i class="nav-icon fa fa-file-invoice-dollar"></i>
+        <p>Liquidaciones</p>
+    </a>
+</li>
+<li class="nav-item">
     <a href="{{ route('proveedors.index') }}"
        class="nav-link {{ Request::is('proveedors*') ? 'active' : '' }}">
         <i class="nav-icon fa fa-truck"></i>
@@ -97,8 +104,4 @@
         <i class="nav-icon fas fa-sign-out-alt"></i>
         <p>Salir</p>
     </a>
-
-
-
-
-
+</li>

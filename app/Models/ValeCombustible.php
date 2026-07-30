@@ -30,7 +30,7 @@ class ValeCombustible extends Model
     use HasFactory;
 
     public $table = 'vale_combustibles';
-    
+
 
     protected $dates = ['deleted_at'];
 

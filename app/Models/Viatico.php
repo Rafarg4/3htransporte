@@ -27,7 +27,7 @@ class Viatico extends Model
     use HasFactory;
 
     public $table = 'viaticos';
-    
+
 
     protected $dates = ['deleted_at'];
 
