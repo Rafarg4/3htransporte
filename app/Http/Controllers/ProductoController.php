@@ -55,6 +55,7 @@ class ProductoController extends AppBaseController
     public function store(CreateProductoRequest $request)
     {
         $input = $request->all();
+        $input['estado'] = $input['estado'] ?? 'Activo';
 
         $producto = $this->productoRepository->create($input);
 
@@ -128,6 +129,31 @@ class ProductoController extends AppBaseController
         $producto = $this->productoRepository->update($request->all(), $id);
 
         Flash::success('Producto actualizado correctamente.');
+
+        return redirect(route('productos.index'));
+    }
+
+    /**
+     * Toggle the estado (Activo/Inactivo) of the specified Producto.
+     *
+     * @param int $id
+     *
+     * @return Response
+     */
+    public function cambiarEstado($id)
+    {
+        $producto = $this->productoRepository->find($id);
+
+        if (empty($producto)) {
+            Flash::error('Producto no encontrado');
+
+            return redirect(route('productos.index'));
+        }
+
+        $producto->estado = $producto->estado === 'Activo' ? 'Inactivo' : 'Activo';
+        $producto->save();
+
+        Flash::success('Producto ' . ($producto->estado === 'Activo' ? 'activado' : 'inactivado') . ' correctamente.');
 
         return redirect(route('productos.index'));
     }

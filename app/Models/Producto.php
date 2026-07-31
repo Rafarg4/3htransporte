@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @version July 22, 2026, 11:21 pm UTC
  *
  * @property string $nombre
+ * @property string $estado
  */
 class Producto extends Model
 {
@@ -27,7 +28,8 @@ class Producto extends Model
 
 
     public $fillable = [
-        'nombre'
+        'nombre',
+        'estado'
     ];
 
     /**
@@ -36,7 +38,8 @@ class Producto extends Model
      * @var array
      */
     protected $casts = [
-        'nombre' => 'string'
+        'nombre' => 'string',
+        'estado' => 'string'
     ];
 
     /**

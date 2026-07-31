@@ -70,9 +70,24 @@
             font-size: 9px;
             color: #888;
         }
+        .watermark {
+            position: fixed;
+            top: 45%;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 90px;
+            font-weight: bold;
+            color: rgba(200, 0, 0, 0.25);
+            transform: rotate(-30deg);
+        }
     </style>
 </head>
 <body>
+
+@if(strtolower($valeCombustible->estado) === 'anulado')
+    <div class="watermark">ANULADO</div>
+@endif
 
 <table class="header-table">
     <tr>
@@ -92,6 +107,7 @@
         <td class="documento-titulo" style="width: 35%;">
             <h2>Vale de Combustible N° {{ $valeCombustible->numero_vale }}</h2>
             <div>Vigencia: {{ $valeCombustible->vigencia_desde }} al {{ $valeCombustible->vigencia_hasta }}</div>
+            <div>Estado: {{ $valeCombustible->estado }}</div>
         </td>
     </tr>
 </table>

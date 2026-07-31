@@ -65,6 +65,7 @@ class ValeCombustibleController extends AppBaseController
         $input = $request->all();
         $input['realizado_por'] = auth()->user()->name;
         $input['numero_vale'] = $this->getProximoNumeroVale();
+        $input['estado'] = 'Activo';
 
         $valeCombustible = $this->valeCombustibleRepository->create($input);
 
@@ -186,11 +187,9 @@ class ValeCombustibleController extends AppBaseController
     }
 
     /**
-     * Remove the specified ValeCombustible from storage.
+     * Instead of deleting, mark the specified ValeCombustible as Anulado.
      *
      * @param int $id
-     *
-     * @throws \Exception
      *
      * @return Response
      */
@@ -204,9 +203,10 @@ class ValeCombustibleController extends AppBaseController
             return redirect(route('valeCombustibles.index'));
         }
 
-        $this->valeCombustibleRepository->delete($id);
+        $valeCombustible->estado = 'Anulado';
+        $valeCombustible->save();
 
-        Flash::success('Vale Combustible eliminado correctamente.');
+        Flash::success('Vale Combustible anulado correctamente.');
 
         return redirect(route('valeCombustibles.index'));
     }

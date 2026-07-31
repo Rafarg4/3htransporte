@@ -16,12 +16,6 @@
     {!! Form::text('apellido', null, ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
-<!-- Estado Field -->
-<div class="form-group col-sm-6">
-    {!! Form::label('estado', 'Estado:') !!}
-    {!! Form::select('estado', ['Activo' => 'Activo', 'Inactivo' => 'Inactivo'], null, ['class' => 'form-control', 'placeholder' => 'Seleccione una opcion', 'required' => 'required']) !!}
-</div>
-
 <!-- Documentos Field -->
 <div class="form-group col-sm-12">
     {!! Form::label('documentos', 'Documentaciones:') !!}

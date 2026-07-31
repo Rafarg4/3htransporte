@@ -23,7 +23,11 @@
             <td>{{ number_format((float) $viatico->monto, 0, ',', '.') }}</td>
             <td>{{ $viatico->ordenCarga ? 'OC-' . str_pad($viatico->ordenCarga->id, 6, '0', STR_PAD_LEFT) : '-' }}</td>
             <td>{{ $viatico->cargado_por }}</td>
-            <td>{{ $viatico->estado }}</td>
+            <td>
+                <span class="badge estado-badge estado-badge-{{ strtolower($viatico->estado) === 'activo' ? 'activo' : 'anulado' }}">
+                    {{ $viatico->estado }}
+                </span>
+            </td>
                 <td width="320">
                     {!! Form::open(['route' => ['viaticos.destroy', $viatico->id], 'method' => 'delete']) !!}
                     <div class="action-buttons d-flex justify-content-center">
@@ -57,6 +61,19 @@
         border-radius: .25rem;
         font-size: .75rem;
         white-space: nowrap;
+    }
+    .estado-badge {
+        font-size: .75rem;
+        padding: .35rem .65rem;
+        border-radius: 1rem;
+    }
+    .estado-badge-activo {
+        background: #d4edda;
+        color: #155724;
+    }
+    .estado-badge-anulado {
+        background: #f1f3f5;
+        color: #6c757d;
     }
 </style>
 

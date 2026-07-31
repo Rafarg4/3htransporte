@@ -64,6 +64,32 @@
     <p>{{ $valeCombustible->realizado_por }}</p>
 </div>
 
+<!-- Estado Field -->
+<div class="col-sm-12">
+    {!! Form::label('estado', 'Estado:') !!}
+    <p>
+        <span class="badge estado-badge estado-badge-{{ strtolower($valeCombustible->estado) === 'activo' ? 'activo' : 'anulado' }}">
+            {{ $valeCombustible->estado }}
+        </span>
+    </p>
+</div>
+
+<style>
+    .estado-badge {
+        font-size: .8rem;
+        padding: .4rem .75rem;
+        border-radius: 1rem;
+    }
+    .estado-badge-activo {
+        background: #d4edda;
+        color: #155724;
+    }
+    .estado-badge-anulado {
+        background: #f1f3f5;
+        color: #6c757d;
+    }
+</style>
+
 <!-- Created At Field -->
 <div class="col-sm-12">
     {!! Form::label('created_at', 'Created At:') !!}

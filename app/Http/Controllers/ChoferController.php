@@ -212,6 +212,31 @@ class ChoferController extends AppBaseController
     }
 
     /**
+     * Toggle the estado (Activo/Inactivo) of the specified Chofer.
+     *
+     * @param int $id
+     *
+     * @return Response
+     */
+    public function cambiarEstado($id)
+    {
+        $chofer = $this->choferRepository->find($id);
+
+        if (empty($chofer)) {
+            Flash::error('Chofer no encontrado');
+
+            return redirect(route('chofers.index'));
+        }
+
+        $chofer->estado = $chofer->estado === 'Activo' ? 'Inactivo' : 'Activo';
+        $chofer->save();
+
+        Flash::success('Chofer ' . ($chofer->estado === 'Activo' ? 'activado' : 'inactivado') . ' correctamente.');
+
+        return redirect(route('chofers.index'));
+    }
+
+    /**
      * Remove the specified Chofer from storage.
      *
      * @param int $id

@@ -60,6 +60,7 @@ class CamionController extends AppBaseController
     public function store(CreateCamionRequest $request)
     {
         $input = $request->except('documentos');
+        $input['estado'] = $input['estado'] ?? 'Activo';
 
         $camion = $this->camionRepository->create($input);
 
@@ -228,6 +229,31 @@ class CamionController extends AppBaseController
         Flash::success('Documento eliminado correctamente.');
 
         return redirect()->back();
+    }
+
+    /**
+     * Toggle the estado (Activo/Inactivo) of the specified Camion.
+     *
+     * @param int $id
+     *
+     * @return Response
+     */
+    public function cambiarEstado($id)
+    {
+        $camion = $this->camionRepository->find($id);
+
+        if (empty($camion)) {
+            Flash::error('Camión no encontrado');
+
+            return redirect(route('camions.index'));
+        }
+
+        $camion->estado = $camion->estado === 'Activo' ? 'Inactivo' : 'Activo';
+        $camion->save();
+
+        Flash::success('Camión ' . ($camion->estado === 'Activo' ? 'activado' : 'inactivado') . ' correctamente.');
+
+        return redirect(route('camions.index'));
     }
 
     /**

@@ -67,6 +67,18 @@
 
 <div class="col-sm-4">
     <div class="camion-field">
+        <i class="fas fa-toggle-on camion-field-icon"></i>
+        <div>
+            <small class="text-muted d-block">Estado</small>
+            <span class="badge camion-badge-estado camion-badge-estado-{{ $camion->estado === 'Activo' ? 'activo' : 'inactivo' }}">
+                {{ $camion->estado }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="col-sm-4">
+    <div class="camion-field">
         <i class="fas fa-calendar-plus camion-field-icon"></i>
         <div>
             <small class="text-muted d-block">Creado</small>
@@ -171,6 +183,19 @@
         background: #f1f3f5;
         color: #495057;
         border: 1px solid #dee2e6;
+    }
+    .camion-badge-estado {
+        font-size: .8rem;
+        padding: .4rem .75rem;
+        border-radius: 1rem;
+    }
+    .camion-badge-estado-activo {
+        background: #d4edda;
+        color: #155724;
+    }
+    .camion-badge-estado-inactivo {
+        background: #f8d7da;
+        color: #721c24;
     }
     .camion-section-title {
         text-transform: uppercase;

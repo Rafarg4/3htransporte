@@ -10,6 +10,7 @@
         <th>Codigo</th>
         <th>Direccion</th>
         <th>Detalle</th>
+        <th>Estado</th>
             <th>Acción</th>
         </tr>
         </thead>
@@ -28,7 +29,12 @@
                 <b>Importe:</b> {{ number_format($valeCombustible->importe, 0, ',', '.') }}<br>
                 <b>Litros:</b> {{ $valeCombustible->litros }}
             </td>
-                <td width="190">
+            <td>
+                <span class="badge estado-badge estado-badge-{{ strtolower($valeCombustible->estado) === 'activo' ? 'activo' : 'anulado' }}">
+                    {{ $valeCombustible->estado }}
+                </span>
+            </td>
+                <td width="220">
                     {!! Form::open(['route' => ['valeCombustibles.destroy', $valeCombustible->id], 'method' => 'delete']) !!}
                     <div class="action-buttons d-flex justify-content-center">
                         <a href="{{ route('valeCombustibles.edit', [$valeCombustible->id]) }}" class="btn btn-warning">
@@ -37,11 +43,13 @@
                         <a href="{{ route('valeCombustibles.pdf', [$valeCombustible->id]) }}" class="btn btn-info" target="_blank">
                             <i class="far fa-file-pdf"></i> PDF
                         </a>
-                        {!! Form::button('<i class="far fa-trash-alt"></i> Eliminar', [
-                            'type' => 'submit',
-                            'class' => 'btn btn-danger',
-                            'onclick' => "return confirm('¿Estás seguro de eliminar este vale?')",
-                        ]) !!}
+                        @if(strtolower($valeCombustible->estado) === 'activo')
+                            {!! Form::button('<i class="fas fa-ban"></i> Anular', [
+                                'type' => 'submit',
+                                'class' => 'btn btn-danger',
+                                'onclick' => "return confirm('¿Anular este vale?')",
+                            ]) !!}
+                        @endif
                     </div>
                     {!! Form::close() !!}
                 </td>
@@ -58,6 +66,19 @@
         border-radius: .25rem;
         font-size: .75rem;
         white-space: nowrap;
+    }
+    .estado-badge {
+        font-size: .75rem;
+        padding: .35rem .65rem;
+        border-radius: 1rem;
+    }
+    .estado-badge-activo {
+        background: #d4edda;
+        color: #155724;
+    }
+    .estado-badge-anulado {
+        background: #f1f3f5;
+        color: #6c757d;
     }
 </style>
 

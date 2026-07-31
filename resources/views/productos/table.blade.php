@@ -3,6 +3,7 @@
         <thead>
         <tr>
             <th>Nombre</th>
+            <th>Estado</th>
             <th>Acción</th>
         </tr>
         </thead>
@@ -10,17 +11,30 @@
         @foreach($productos as $producto)
             <tr>
                 <td>{{ $producto->nombre }}</td>
-                <td width="190">
-                    {!! Form::open(['route' => ['productos.destroy', $producto->id], 'method' => 'delete']) !!}
+                <td>
+                    <span class="badge estado-badge estado-badge-{{ $producto->estado === 'Activo' ? 'activo' : 'inactivo' }}">
+                        {{ $producto->estado }}
+                    </span>
+                </td>
+                <td width="220">
+                    {!! Form::open(['route' => ['productos.estado', $producto->id], 'method' => 'patch']) !!}
                     <div class="action-buttons d-flex justify-content-center">
                         <a href="{{ route('productos.edit', [$producto->id]) }}" class="btn btn-warning">
                             <i class="far fa-edit"></i> Editar
                         </a>
-                        {!! Form::button('<i class="far fa-trash-alt"></i> Eliminar', [
-                            'type' => 'submit',
-                            'class' => 'btn btn-danger',
-                            'onclick' => "return confirm('¿Estás seguro de eliminar este producto?')",
-                        ]) !!}
+                        @if($producto->estado === 'Activo')
+                            {!! Form::button('<i class="fas fa-ban"></i> Inactivar', [
+                                'type' => 'submit',
+                                'class' => 'btn btn-danger',
+                                'onclick' => "return confirm('¿Estás seguro de inactivar este producto?')",
+                            ]) !!}
+                        @else
+                            {!! Form::button('<i class="fas fa-check"></i> Activar', [
+                                'type' => 'submit',
+                                'class' => 'btn btn-success',
+                                'onclick' => "return confirm('¿Estás seguro de activar este producto?')",
+                            ]) !!}
+                        @endif
                     </div>
                     {!! Form::close() !!}
                 </td>
@@ -37,6 +51,19 @@
         border-radius: .25rem;
         font-size: .75rem;
         white-space: nowrap;
+    }
+    .estado-badge {
+        font-size: .75rem;
+        padding: .35rem .65rem;
+        border-radius: 1rem;
+    }
+    .estado-badge-activo {
+        background: #d4edda;
+        color: #155724;
+    }
+    .estado-badge-inactivo {
+        background: #f8d7da;
+        color: #721c24;
     }
 </style>
 

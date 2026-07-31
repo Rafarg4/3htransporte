@@ -26,7 +26,7 @@
                 <td>{{ number_format($liquidacion->total_debitos, 0, ',', '.') }}</td>
                 <td>{{ number_format($liquidacion->saldo, 0, ',', '.') }}</td>
                 <td>
-                    <span class="badge {{ strtolower($liquidacion->estado) === 'activo' ? 'badge-success' : 'badge-secondary' }}">
+                    <span class="badge estado-badge estado-badge-{{ strtolower($liquidacion->estado) === 'activo' ? 'activo' : 'anulado' }}">
                         {{ $liquidacion->estado }}
                     </span>
                 </td>
@@ -59,6 +59,19 @@
         border-radius: .25rem;
         font-size: .75rem;
         white-space: nowrap;
+    }
+    .estado-badge {
+        font-size: .75rem;
+        padding: .35rem .65rem;
+        border-radius: 1rem;
+    }
+    .estado-badge-activo {
+        background: #d4edda;
+        color: #155724;
+    }
+    .estado-badge-anulado {
+        background: #f1f3f5;
+        color: #6c757d;
     }
 </style>
 

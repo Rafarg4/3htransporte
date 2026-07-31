@@ -43,14 +43,20 @@ Route::resource('empresas', App\Http\Controllers\EmpresaController::class);
 Route::resource('chofers', App\Http\Controllers\ChoferController::class);
 Route::delete('chofers/documentos/{documento}', [App\Http\Controllers\ChoferController::class, 'destroyDocumento'])
     ->name('chofers.documentos.destroy');
+Route::patch('chofers/{chofer}/estado', [App\Http\Controllers\ChoferController::class, 'cambiarEstado'])
+    ->name('chofers.estado');
 
 
 Route::resource('camions', App\Http\Controllers\CamionController::class);
 Route::delete('camions/documentos/{documento}', [App\Http\Controllers\CamionController::class, 'destroyDocumento'])
     ->name('camions.documentos.destroy');
+Route::patch('camions/{camion}/estado', [App\Http\Controllers\CamionController::class, 'cambiarEstado'])
+    ->name('camions.estado');
 
 
 Route::resource('productos', App\Http\Controllers\ProductoController::class);
+Route::patch('productos/{producto}/estado', [App\Http\Controllers\ProductoController::class, 'cambiarEstado'])
+    ->name('productos.estado');
 
 
 Route::resource('proveedors', App\Http\Controllers\ProveedorController::class);

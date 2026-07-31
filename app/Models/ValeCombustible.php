@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string $realizado_por
  * @property string $id_liquidacion
  * @property string $liquidado
+ * @property string $estado
  */
 class ValeCombustible extends Model
 {
@@ -51,7 +52,8 @@ class ValeCombustible extends Model
         'litros',
         'realizado_por',
         'id_liquidacion',
-        'liquidado'
+        'liquidado',
+        'estado'
     ];
 
     /**
@@ -72,7 +74,8 @@ class ValeCombustible extends Model
         'litros' => 'string',
         'realizado_por' => 'string',
         'id_liquidacion' => 'string',
-        'liquidado' => 'string'
+        'liquidado' => 'string',
+        'estado' => 'string'
     ];
 
     /**
