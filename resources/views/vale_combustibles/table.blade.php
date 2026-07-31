@@ -26,8 +26,9 @@
             <td>{{ $valeCombustible->direccion }}</td>
             <td>
                 <b>Producto:</b> {{ $valeCombustible->producto }}<br>
-                <b>Importe:</b> {{ number_format($valeCombustible->importe, 0, ',', '.') }}<br>
-                <b>Litros:</b> {{ $valeCombustible->litros }}
+                <b>Litros:</b> {{ $valeCombustible->litros }}<br>
+                <b>Precio:</b> {{ number_format((float) $valeCombustible->importe, 0, ',', '.') }}<br>
+                <b>Valor:</b> {{ number_format((float) $valeCombustible->litros * (float) $valeCombustible->importe, 0, ',', '.') }}
             </td>
             <td>
                 <span class="badge estado-badge estado-badge-{{ strtolower($valeCombustible->estado) === 'activo' ? 'activo' : 'anulado' }}">

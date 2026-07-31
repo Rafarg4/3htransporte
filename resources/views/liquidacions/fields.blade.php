@@ -170,7 +170,8 @@
                         <th>Camión</th>
                         <th>Estación</th>
                         <th>Litros</th>
-                        <th class="text-right">Importe</th>
+                        <th class="text-right">Precio</th>
+                        <th class="text-right">Valor</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -181,13 +182,14 @@
                                        class="liquidacion-debito-checkbox"
                                        name="vale_combustible_ids[]"
                                        value="{{ $vale->id }}"
-                                       data-valor="{{ $vale->importe }}">
+                                       data-valor="{{ (float) $vale->litros * (float) $vale->importe }}">
                             </td>
                             <td>{{ $vale->vigencia_desde }}</td>
                             <td>{{ $vale->camion->chapa ?? '-' }}</td>
                             <td>{{ $vale->nombre_estacion }}</td>
                             <td>{{ $vale->litros }} L</td>
                             <td class="text-right">{{ number_format((float) $vale->importe, 0, ',', '.') }}</td>
+                            <td class="text-right">{{ number_format((float) $vale->litros * (float) $vale->importe, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
                 </tbody>

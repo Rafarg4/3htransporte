@@ -58,7 +58,7 @@
 
 <!-- Importe Field -->
 <div class="form-group col-sm-4">
-    {!! Form::label('importe', 'Importe:') !!}
+    {!! Form::label('importe', 'Precio (por litro):') !!}
     {!! Form::text('importe', null, ['class' => 'form-control', 'id' => 'importe', 'required' => 'required']) !!}
 </div>
 

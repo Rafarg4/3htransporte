@@ -46,16 +46,22 @@
     <p>{{ $valeCombustible->producto }}</p>
 </div>
 
-<!-- Importe Field -->
-<div class="col-sm-12">
-    {!! Form::label('importe', 'Importe:') !!}
-    <p>{{ $valeCombustible->importe }}</p>
-</div>
-
 <!-- Litros Field -->
 <div class="col-sm-12">
     {!! Form::label('litros', 'Litros:') !!}
     <p>{{ $valeCombustible->litros }}</p>
+</div>
+
+<!-- Importe Field -->
+<div class="col-sm-12">
+    {!! Form::label('importe', 'Precio (por litro):') !!}
+    <p>{{ number_format((float) $valeCombustible->importe, 0, ',', '.') }}</p>
+</div>
+
+<!-- Valor Field -->
+<div class="col-sm-12">
+    {!! Form::label('valor', 'Valor:') !!}
+    <p>{{ number_format((float) $valeCombustible->litros * (float) $valeCombustible->importe, 0, ',', '.') }}</p>
 </div>
 
 <!-- Realizado Por Field -->

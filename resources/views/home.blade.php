@@ -171,7 +171,7 @@
                             <tr>
                                 <th>N° Vale</th>
                                 <th>Camión</th>
-                                <th>Importe</th>
+                                <th>Valor</th>
                                 <th>Realizado Por</th>
                             </tr>
                         </thead>
@@ -180,7 +180,7 @@
                                 <tr>
                                     <td>{{ $valeCombustible->numero_vale }}</td>
                                     <td>{{ $valeCombustible->camion->chapa ?? '-' }}</td>
-                                    <td>{{ number_format($valeCombustible->importe, 0, ',', '.') }}</td>
+                                    <td>{{ number_format((float) $valeCombustible->litros * (float) $valeCombustible->importe, 0, ',', '.') }}</td>
                                     <td>{{ $valeCombustible->realizado_por }}</td>
                                 </tr>
                             @empty

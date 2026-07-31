@@ -139,12 +139,16 @@
         <td>{{ $valeCombustible->producto }}</td>
     </tr>
     <tr>
-        <td class="label">Importe</td>
-        <td>{{ number_format($valeCombustible->importe, 0, ',', '.') }}</td>
-    </tr>
-    <tr>
         <td class="label">Litros</td>
         <td>{{ $valeCombustible->litros }}</td>
+    </tr>
+    <tr>
+        <td class="label">Precio</td>
+        <td>{{ number_format((float) $valeCombustible->importe, 0, ',', '.') }}</td>
+    </tr>
+    <tr>
+        <td class="label">Valor</td>
+        <td>{{ number_format((float) $valeCombustible->litros * (float) $valeCombustible->importe, 0, ',', '.') }}</td>
     </tr>
 </table>
 

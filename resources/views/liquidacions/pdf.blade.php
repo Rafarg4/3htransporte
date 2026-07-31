@@ -224,7 +224,8 @@
             <th>Vigencia</th>
             <th>Estación</th>
             <th>Litros</th>
-            <th>Importe</th>
+            <th>Precio</th>
+            <th>Valor</th>
         </tr>
         @foreach($liquidacion->combustibles as $combustible)
             <tr>
@@ -233,6 +234,7 @@
                 <td>{{ $combustible->nombre_estacion }}</td>
                 <td class="numero">{{ number_format((float) $combustible->litros, 0, ',', '.') }}</td>
                 <td class="numero">{{ number_format((float) $combustible->importe, 0, ',', '.') }}</td>
+                <td class="numero">{{ number_format((float) $combustible->litros * (float) $combustible->importe, 0, ',', '.') }}</td>
             </tr>
         @endforeach
     </table>

@@ -119,7 +119,7 @@ class Liquidacion extends Model
         });
 
         $combustibles = $this->combustibles->sum(function ($item) {
-            return (float) $item->importe;
+            return (float) $item->litros * (float) $item->importe;
         });
 
         return $descuentos + $gastos + $viaticos + $combustibles;
