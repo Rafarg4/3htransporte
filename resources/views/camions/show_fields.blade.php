@@ -124,6 +124,16 @@
 
 <div class="col-sm-4">
     <div class="camion-field">
+        <i class="fas fa-truck camion-field-icon"></i>
+        <div>
+            <small class="text-muted d-block">Marca de Carreta</small>
+            <span>{{ $camion->carreta_marca ?? '-' }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="col-sm-4">
+    <div class="camion-field">
         <i class="fas fa-id-card camion-field-icon"></i>
         <div>
             <small class="text-muted d-block">Chapa de Carreta</small>

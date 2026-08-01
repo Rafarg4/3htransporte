@@ -96,6 +96,13 @@
         <p>Usuarios</p>
     </a>
 </li>
+<li class="nav-item">
+    <a href="{{ route('parametrizaciones.edit') }}"
+       class="nav-link {{ Request::is('parametrizaciones*') ? 'active' : '' }}">
+        <i class="nav-icon fa fa-sliders-h"></i>
+        <p>Parametrizaciones</p>
+    </a>
+</li>
 {{-- SALIR --}}
 <li class="nav-item">
     <a href="#"

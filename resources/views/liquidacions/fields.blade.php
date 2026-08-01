@@ -1,7 +1,7 @@
 <!-- Propietario Field -->
 <div class="form-group col-sm-3">
     {!! Form::label('id_cliente', 'Propietario:') !!}
-    {!! Form::select('id_cliente', $clientes, null, ['class' => 'form-control', 'id' => 'id_cliente', 'placeholder' => 'Seleccione un propietario', 'required' => 'required']) !!}
+    {!! Form::select('id_cliente', $clientes, old('id_cliente'), ['class' => 'form-control', 'id' => 'id_cliente', 'placeholder' => 'Seleccione un propietario', 'required' => 'required']) !!}
 </div>
 
 <!-- Camion Field -->
@@ -10,7 +10,7 @@
     <select name="id_camion" id="id_camion" class="form-control" required>
         <option value="">Seleccione una chapa</option>
         @foreach($camions as $camion)
-            <option value="{{ $camion->id }}" data-cliente="{{ $camion->id_cliente }}">
+            <option value="{{ $camion->id }}" data-cliente="{{ $camion->id_cliente }}" {{ (string) old('id_camion') === (string) $camion->id ? 'selected' : '' }}>
                 {{ $camion->chapa }}
             </option>
         @endforeach
@@ -20,7 +20,7 @@
 <!-- Chofer Field -->
 <div class="form-group col-sm-3">
     {!! Form::label('id_chofer', 'Chofer:') !!}
-    {!! Form::select('id_chofer', $choferes, null, ['class' => 'form-control', 'id' => 'id_chofer', 'placeholder' => 'Seleccione un chofer', 'required' => 'required']) !!}
+    {!! Form::select('id_chofer', $choferes, old('id_chofer'), ['class' => 'form-control', 'id' => 'id_chofer', 'placeholder' => 'Seleccione un chofer', 'required' => 'required']) !!}
 </div>
 
 <!-- Orden de Carga Field -->
@@ -29,7 +29,7 @@
     <select name="id_orden_carga" id="id_orden_carga" class="form-control">
         <option value="">Seleccione una orden de carga</option>
         @foreach($ordenCargas as $ordenCarga)
-            <option value="{{ $ordenCarga->id }}" data-camion="{{ $ordenCarga->id_camion }}">
+            <option value="{{ $ordenCarga->id }}" data-camion="{{ $ordenCarga->id_camion }}" {{ (string) old('id_orden_carga') === (string) $ordenCarga->id ? 'selected' : '' }}>
                 OC-{{ str_pad($ordenCarga->id, 6, '0', STR_PAD_LEFT) }} - {{ $ordenCarga->destino }}
             </option>
         @endforeach
@@ -39,7 +39,7 @@
 <!-- Fecha Field -->
 <div class="form-group col-sm-3">
     {!! Form::label('fecha', 'Fecha:') !!}
-    {!! Form::date('fecha', now()->format('Y-m-d'), ['class' => 'form-control', 'required' => 'required']) !!}
+    {!! Form::date('fecha', old('fecha', now()->format('Y-m-d')), ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
 <!-- FLETE -->
@@ -50,63 +50,86 @@
     <div class="form-row">
         <div class="form-group col-sm-2">
             <label>Fecha</label>
-            <input type="date" name="flete[fecha]" class="form-control">
+            <input type="date" name="flete[fecha]" class="form-control" value="{{ old('flete.fecha') }}">
         </div>
         <div class="form-group col-sm-3">
             <label>Tramo</label>
-            <input type="text" name="flete[tramo]" class="form-control" placeholder="Origen a destino">
+            <input type="text" name="flete[tramo]" class="form-control" placeholder="Origen a destino" value="{{ old('flete.tramo') }}">
         </div>
         <div class="form-group col-sm-1">
             <label>Kg Origen</label>
-            <input type="number" step="0.01" id="flete-kg-origen" name="flete[kg_origen]" class="form-control">
+            <input type="number" step="0.01" id="flete-kg-origen" name="flete[kg_origen]" class="form-control" value="{{ old('flete.kg_origen') }}">
         </div>
         <div class="form-group col-sm-1">
             <label>Kg Destino</label>
-            <input type="number" step="0.01" id="flete-kg-destino" name="flete[kg_destino]" class="form-control">
+            <input type="number" step="0.01" id="flete-kg-destino" name="flete[kg_destino]" class="form-control" value="{{ old('flete.kg_destino') }}">
         </div>
         <div class="form-group col-sm-1">
             <label>Diferencia</label>
-            <input type="text" id="flete-diferencia" class="form-control" readonly tabindex="-1">
+            <input type="text" id="flete-diferencia" class="form-control" readonly tabindex="-1" value="{{ old('flete.diferencia') }}">
+            <input type="hidden" name="flete[diferencia]" id="flete-diferencia-raw" value="{{ old('flete.diferencia') }}">
         </div>
         <div class="form-group col-sm-2">
             <label>Precio</label>
-            <input type="number" step="0.01" id="flete-precio" name="flete[precio]" class="form-control">
+            <input type="number" step="0.01" id="flete-precio" name="flete[precio]" class="form-control" value="{{ old('flete.precio') }}">
         </div>
         <div class="form-group col-sm-2">
             <label>Valor</label>
-            <input type="number" step="0.01" id="flete-valor" name="flete[valor]" class="form-control liquidacion-credito">
+            <input type="number" step="0.01" id="flete-valor" name="flete[valor]" class="form-control liquidacion-credito" value="{{ old('flete.valor') }}">
+        </div>
+    </div>
+
+    <div class="form-row align-items-end">
+        <div class="col-sm-12">
+            <small class="text-muted d-block mb-1">
+                Recargo por diferencia negativa: Diferencia + (Tolerancia &times; Precio).
+                Tolerancia y Precio se definen en <a href="{{ route('parametrizaciones.edit') }}" target="_blank">Parametrizaciones</a>.
+            </small>
+        </div>
+        <div class="form-group col-sm-2">
+            <label><i class="fas fa-lock fa-xs text-muted"></i> Tolerancia (Kg)</label>
+            <input type="number" step="0.01" id="flete-recargo-tolerancia" name="flete[recargo_tolerancia]" class="form-control bg-light" value="{{ old('flete.recargo_tolerancia', $parametrizacion->recargo_tolerancia) }}" readonly tabindex="-1">
+        </div>
+        <div class="form-group col-sm-2">
+            <label><i class="fas fa-lock fa-xs text-muted"></i> Precio Recargo</label>
+            <input type="number" step="0.01" id="flete-recargo-precio" name="flete[recargo_precio]" class="form-control bg-light" value="{{ old('flete.recargo_precio', $parametrizacion->recargo_precio) }}" readonly tabindex="-1">
+        </div>
+        <div class="form-group col-sm-2">
+            <label>Recargo</label>
+            <input type="text" id="flete-recargo" class="form-control" readonly tabindex="-1" value="{{ old('flete.recargo') }}">
+            <input type="hidden" name="flete[recargo]" id="flete-recargo-raw" class="liquidacion-debito" value="{{ old('flete.recargo') }}">
         </div>
     </div>
 </div>
 
 <!-- DESCUENTO -->
+@php $descuentoTieneDatos = old('descuento.fecha') || old('descuento.concepto') || old('descuento.valor'); @endphp
 <div class="col-sm-12">
     <hr>
     <h5>
         <div class="custom-control custom-checkbox d-inline-block align-middle mr-2">
-            <input type="checkbox" class="custom-control-input" id="descuento-incluir">
+            <input type="checkbox" class="custom-control-input" id="descuento-incluir" {{ $descuentoTieneDatos ? 'checked' : '' }}>
             <label class="custom-control-label" for="descuento-incluir">Incluir descuento</label>
         </div>
     </h5>
 
-    <div class="form-row" id="descuento-campos" style="display:none;">
+    <div class="form-row" id="descuento-campos" style="{{ $descuentoTieneDatos ? '' : 'display:none;' }}">
         <div class="form-group col-sm-4">
             <label>Fecha</label>
-            <input type="date" name="descuento[fecha]" class="form-control" disabled>
+            <input type="date" name="descuento[fecha]" class="form-control" value="{{ old('descuento.fecha') }}" {{ $descuentoTieneDatos ? '' : 'disabled' }}>
         </div>
         <div class="form-group col-sm-4">
             <label>Concepto</label>
-            <select name="descuento[concepto]" class="form-control" disabled>
+            <select name="descuento[concepto]" class="form-control" {{ $descuentoTieneDatos ? '' : 'disabled' }}>
                 <option value="">Seleccione un concepto</option>
-                <option value="Multa">Multa</option>
-                <option value="Anticipo">Anticipo</option>
-                <option value="Faltante de Carga">Faltante de Carga</option>
-                <option value="Otro">Otro</option>
+                @foreach(['Multa', 'Anticipo', 'Faltante de Carga', 'Otro'] as $concepto)
+                    <option value="{{ $concepto }}" {{ old('descuento.concepto') === $concepto ? 'selected' : '' }}>{{ $concepto }}</option>
+                @endforeach
             </select>
         </div>
         <div class="form-group col-sm-4">
             <label>Valor</label>
-            <input type="number" step="0.01" name="descuento[valor]" class="form-control liquidacion-debito" disabled>
+            <input type="number" step="0.01" name="descuento[valor]" class="form-control liquidacion-debito" value="{{ old('descuento.valor') }}" {{ $descuentoTieneDatos ? '' : 'disabled' }}>
         </div>
     </div>
 </div>
@@ -138,7 +161,8 @@
                                        class="liquidacion-debito-checkbox"
                                        name="viatico_ids[]"
                                        value="{{ $viatico->id }}"
-                                       data-valor="{{ $viatico->monto }}">
+                                       data-valor="{{ $viatico->monto }}"
+                                       {{ in_array($viatico->id, old('viatico_ids', [])) ? 'checked' : '' }}>
                             </td>
                             <td>{{ $viatico->fecha }}</td>
                             <td>{{ $viatico->chofer ? trim($viatico->chofer->nombre . ' ' . $viatico->chofer->apellido) : '-' }}</td>
@@ -182,7 +206,8 @@
                                        class="liquidacion-debito-checkbox"
                                        name="vale_combustible_ids[]"
                                        value="{{ $vale->id }}"
-                                       data-valor="{{ (float) $vale->litros * (float) $vale->importe }}">
+                                       data-valor="{{ (float) $vale->litros * (float) $vale->importe }}"
+                                       {{ in_array($vale->id, old('vale_combustible_ids', [])) ? 'checked' : '' }}>
                             </td>
                             <td>{{ $vale->vigencia_desde }}</td>
                             <td>{{ $vale->camion->chapa ?? '-' }}</td>
@@ -207,24 +232,24 @@
     <div class="form-row">
         <div class="form-group col-sm-4">
             <label>Fecha</label>
-            <input type="date" name="gasto_administrativo[fecha]" class="form-control">
+            <input type="date" name="gasto_administrativo[fecha]" class="form-control" value="{{ old('gasto_administrativo.fecha') }}">
         </div>
         <div class="form-group col-sm-4">
             <label>Concepto</label>
             <select name="gasto_administrativo[concepto]" class="form-control">
                 <option value="">Seleccione un concepto</option>
-                <option value="Administración">Administración</option>
-                <option value="Comisión">Comisión</option>
-                <option value="Otro">Otro</option>
+                @foreach(['Administración', 'Comisión', 'Otro'] as $concepto)
+                    <option value="{{ $concepto }}" {{ old('gasto_administrativo.concepto') === $concepto ? 'selected' : '' }}>{{ $concepto }}</option>
+                @endforeach
             </select>
         </div>
         <div class="form-group col-sm-4">
             <label>Valor</label>
             <select name="gasto_administrativo[valor]" class="form-control liquidacion-debito-select">
                 <option value="">Seleccione un monto</option>
-                <option value="25000">25.000</option>
-                <option value="30000">30.000</option>
-                <option value="50000">50.000</option>
+                @foreach([25000, 30000, 50000] as $monto)
+                    <option value="{{ $monto }}" {{ (string) old('gasto_administrativo.valor') === (string) $monto ? 'selected' : '' }}>{{ number_format($monto, 0, ',', '.') }}</option>
+                @endforeach
             </select>
         </div>
     </div>
@@ -322,13 +347,40 @@
         var kgOrigen = document.getElementById('flete-kg-origen');
         var kgDestino = document.getElementById('flete-kg-destino');
         var diferencia = document.getElementById('flete-diferencia');
+        var diferenciaRaw = document.getElementById('flete-diferencia-raw');
         var precio = document.getElementById('flete-precio');
         var valor = document.getElementById('flete-valor');
+        var recargoTolerancia = document.getElementById('flete-recargo-tolerancia');
+        var recargoPrecio = document.getElementById('flete-recargo-precio');
+        var recargo = document.getElementById('flete-recargo');
+        var recargoRaw = document.getElementById('flete-recargo-raw');
+
+        // Recargo = Diferencia + (Tolerancia x Precio), solo cuando la Diferencia es negativa.
+        function actualizarRecargo(valorDiferencia) {
+            var tolerancia = parseFloat(recargoTolerancia.value) || 0;
+            var precioRecargo = parseFloat(recargoPrecio.value) || 0;
+
+            if (valorDiferencia !== null && valorDiferencia < 0) {
+                var valorRecargo = valorDiferencia + (tolerancia * precioRecargo);
+                recargo.value = formatoNumero(valorRecargo);
+                recargoRaw.value = valorRecargo;
+            } else {
+                recargo.value = '';
+                recargoRaw.value = '';
+            }
+
+            recalcularTotales();
+        }
 
         function actualizarDiferencia() {
             var origen = parseFloat(kgOrigen.value) || 0;
             var destino = parseFloat(kgDestino.value) || 0;
-            diferencia.value = (origen && destino) ? formatoNumero(origen - destino) : '';
+            var valorDiferencia = (origen && destino) ? (origen - destino) : null;
+
+            diferencia.value = valorDiferencia !== null ? formatoNumero(valorDiferencia) : '';
+            diferenciaRaw.value = valorDiferencia !== null ? valorDiferencia : '';
+
+            actualizarRecargo(valorDiferencia);
         }
 
         function actualizarValorFlete() {
@@ -347,6 +399,17 @@
         [kgDestino, precio].forEach(function (input) {
             input.addEventListener('input', actualizarValorFlete);
         });
+
+        [recargoTolerancia, recargoPrecio].forEach(function (input) {
+            input.addEventListener('input', function () {
+                var origen = parseFloat(kgOrigen.value) || 0;
+                var destino = parseFloat(kgDestino.value) || 0;
+                actualizarRecargo((origen && destino) ? (origen - destino) : null);
+            });
+        });
+
+        // Recalcular al cargar por si el formulario vuelve con datos restaurados (old()).
+        actualizarDiferencia();
 
         // --- Casillero Incluir descuento ---
         var descuentoCheckbox = document.getElementById('descuento-incluir');
@@ -451,6 +514,14 @@
                 filtrarFilasPorAtributo('viaticos-list', 'viaticos-empty-hint', 'chofer', choferSelect.value);
                 recalcularTotales();
             });
+        }
+
+        // Si el formulario se recarga tras un error de validación, reaplicar los
+        // filtros para que las selecciones restauradas (Propietario/Camión/Chofer)
+        // sigan siendo coherentes entre sí.
+        clienteSelect.dispatchEvent(new Event('change'));
+        if (choferSelect) {
+            choferSelect.dispatchEvent(new Event('change'));
         }
 
         recalcularTotales();

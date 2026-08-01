@@ -12,6 +12,7 @@ use App\Models\LiquidacionDescuento;
 use App\Models\LiquidacionFlete;
 use App\Models\LiquidacionGastoAdministrativo;
 use App\Models\OrdenCarga;
+use App\Models\Parametrizacion;
 use App\Models\ValeCombustible;
 use App\Models\Viatico;
 use App\Repositories\LiquidacionRepository;
@@ -70,7 +71,8 @@ class LiquidacionController extends AppBaseController
             ->with('choferes', $this->getChoferesParaSelect())
             ->with('ordenCargas', OrdenCarga::whereNull('liquidado')->orderByDesc('id')->get())
             ->with('viaticosDisponibles', $this->getViaticosDisponibles())
-            ->with('valeCombustiblesDisponibles', $this->getValeCombustiblesDisponibles());
+            ->with('valeCombustiblesDisponibles', $this->getValeCombustiblesDisponibles())
+            ->with('parametrizacion', Parametrizacion::actual());
     }
 
     /**
@@ -147,7 +149,7 @@ class LiquidacionController extends AppBaseController
 
             $fechaCabecera = $request->input('fecha');
 
-            $this->guardarLinea($liquidacion, LiquidacionFlete::class, $request->input('flete', []), ['fecha', 'tramo', 'kg_origen', 'kg_destino', 'precio', 'valor'], $fechaCabecera);
+            $this->guardarLinea($liquidacion, LiquidacionFlete::class, $request->input('flete', []), ['fecha', 'tramo', 'kg_origen', 'kg_destino', 'diferencia', 'precio', 'valor', 'recargo_tolerancia', 'recargo_precio', 'recargo'], $fechaCabecera);
             $this->guardarLinea($liquidacion, LiquidacionDescuento::class, $request->input('descuento', []), ['fecha', 'concepto', 'valor'], $fechaCabecera);
             $this->guardarLinea($liquidacion, LiquidacionGastoAdministrativo::class, $request->input('gasto_administrativo', []), ['fecha', 'concepto', 'valor'], $fechaCabecera);
 

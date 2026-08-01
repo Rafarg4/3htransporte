@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string $id_chofer
  * @property string $chapa
  * @property string $carreta_chapa
+ * @property string $carreta_marca
  * @property string $id_cliente
  * @property string $estado
  */
@@ -44,6 +45,7 @@ class Camion extends Model
         'id_chofer',
         'chapa',
         'carreta_chapa',
+        'carreta_marca',
         'id_cliente',
         'estado'
     ];
@@ -64,6 +66,7 @@ class Camion extends Model
         'id_chofer' => 'string',
         'chapa' => 'string',
         'carreta_chapa' => 'string',
+        'carreta_marca' => 'string',
         'id_cliente' => 'string',
         'estado' => 'string'
     ];

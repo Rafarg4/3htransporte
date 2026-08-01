@@ -160,8 +160,10 @@
             <th>Tramo</th>
             <th>Kg Origen</th>
             <th>Kg Destino</th>
+            <th>Diferencia</th>
             <th>Precio</th>
             <th>Valor</th>
+            <th>Recargo</th>
         </tr>
         @foreach($liquidacion->fletes as $flete)
             <tr>
@@ -169,8 +171,10 @@
                 <td>{{ $flete->tramo }}</td>
                 <td class="numero">{{ number_format((float) $flete->kg_origen, 0, ',', '.') }}</td>
                 <td class="numero">{{ number_format((float) $flete->kg_destino, 0, ',', '.') }}</td>
+                <td class="numero">{{ $flete->diferencia !== null && $flete->diferencia !== '' ? number_format((float) $flete->diferencia, 0, ',', '.') : '-' }}</td>
                 <td class="numero">{{ number_format((float) $flete->precio, 0, ',', '.') }}</td>
                 <td class="numero">{{ number_format((float) $flete->valor, 0, ',', '.') }}</td>
+                <td class="numero">{{ $flete->recargo !== null && $flete->recargo !== '' ? number_format((float) $flete->recargo, 0, ',', '.') : '-' }}</td>
             </tr>
         @endforeach
     </table>

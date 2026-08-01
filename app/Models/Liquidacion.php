@@ -122,7 +122,11 @@ class Liquidacion extends Model
             return (float) $item->litros * (float) $item->importe;
         });
 
-        return $descuentos + $gastos + $viaticos + $combustibles;
+        $recargos = $this->fletes->sum(function ($item) {
+            return (float) $item->recargo;
+        });
+
+        return $descuentos + $gastos + $viaticos + $combustibles + $recargos;
     }
 
     public function getSaldoAttribute()

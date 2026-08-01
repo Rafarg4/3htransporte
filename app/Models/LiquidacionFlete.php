@@ -15,8 +15,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string $tramo
  * @property string $kg_origen
  * @property string $kg_destino
+ * @property string $diferencia
  * @property string $precio
  * @property string $valor
+ * @property string $recargo_tolerancia
+ * @property string $recargo_precio
+ * @property string $recargo
  */
 class LiquidacionFlete extends Model
 {
@@ -34,8 +38,12 @@ class LiquidacionFlete extends Model
         'tramo',
         'kg_origen',
         'kg_destino',
+        'diferencia',
         'precio',
-        'valor'
+        'valor',
+        'recargo_tolerancia',
+        'recargo_precio',
+        'recargo'
     ];
 
     protected $casts = [
@@ -44,8 +52,12 @@ class LiquidacionFlete extends Model
         'tramo' => 'string',
         'kg_origen' => 'string',
         'kg_destino' => 'string',
+        'diferencia' => 'string',
         'precio' => 'string',
-        'valor' => 'string'
+        'valor' => 'string',
+        'recargo_tolerancia' => 'string',
+        'recargo_precio' => 'string',
+        'recargo' => 'string'
     ];
 
     public static $rules = [

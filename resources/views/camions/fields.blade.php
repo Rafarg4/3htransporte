@@ -58,6 +58,12 @@
     {!! Form::number('ejes', null, ['class' => 'form-control', 'required' => 'required', 'min' => 1, 'max' => 20]) !!}
 </div>
 
+<!-- Carreta Marca Field -->
+<div class="form-group col-sm-4">
+    {!! Form::label('carreta_marca', 'Marca de Carreta:') !!}
+    {!! Form::text('carreta_marca', null, ['class' => 'form-control', 'maxlength' => 100]) !!}
+</div>
+
 <!-- Carreta Chapa Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('carreta_chapa', 'Chapa de Carreta:') !!}

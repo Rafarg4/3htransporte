@@ -13,7 +13,7 @@
 <!-- Id Chofer Field -->
 <div class="form-group col-sm-6">
     {!! Form::label('id_chofer', 'Chofer:') !!}
-    {!! Form::select('id_chofer', $choferes, null, ['class' => 'form-control', 'placeholder' => 'Seleccione un chofer', 'required' => 'required']) !!}
+    {!! Form::select('id_chofer', $choferes, null, ['class' => 'form-control', 'id' => 'id_chofer', 'placeholder' => 'Seleccione un chofer', 'required' => 'required']) !!}
 </div>
 
 <!-- Descripcion Field -->
@@ -31,7 +31,15 @@
 <!-- Id Orden Carga Field -->
 <div class="form-group col-sm-6">
     {!! Form::label('id_orden_carga', 'Orden de Carga:') !!}
-    {!! Form::select('id_orden_carga', $ordenCargas, null, ['class' => 'form-control', 'placeholder' => 'Seleccione una orden de carga', 'required' => 'required']) !!}
+    @php $ordenCargaSeleccionada = old('id_orden_carga', isset($viatico) ? $viatico->id_orden_carga : null); @endphp
+    <select name="id_orden_carga" id="id_orden_carga" class="form-control" required>
+        <option value="">Seleccione una orden de carga</option>
+        @foreach($ordenCargas as $id => $ordenCarga)
+            <option value="{{ $id }}" data-chofer="{{ $ordenCarga['id_chofer'] }}" {{ (string) $ordenCargaSeleccionada === (string) $id ? 'selected' : '' }}>
+                {{ $ordenCarga['texto'] }}
+            </option>
+        @endforeach
+    </select>
 </div>
 
 <!-- Cargado Por Field -->
@@ -288,5 +296,42 @@
                 montoInput.value = montoInput.value.replace(/\D/g, '');
             });
         }
+    })();
+</script>
+
+<script>
+    (function () {
+        var choferSelect = document.getElementById('id_chofer');
+        var ordenCargaSelect = document.getElementById('id_orden_carga');
+
+        if (!choferSelect || !ordenCargaSelect) {
+            return;
+        }
+
+        function filtrarOrdenesPorChofer() {
+            var choferId = choferSelect.value;
+            var opcionSeleccionadaValida = false;
+
+            Array.prototype.forEach.call(ordenCargaSelect.options, function (opcion) {
+                if (!opcion.value) {
+                    return;
+                }
+
+                var mostrar = !choferId || opcion.dataset.chofer === choferId;
+                opcion.hidden = !mostrar;
+                opcion.disabled = !mostrar;
+
+                if (mostrar && opcion.selected) {
+                    opcionSeleccionadaValida = true;
+                }
+            });
+
+            if (!opcionSeleccionadaValida) {
+                ordenCargaSelect.value = '';
+            }
+        }
+
+        choferSelect.addEventListener('change', filtrarOrdenesPorChofer);
+        filtrarOrdenesPorChofer();
     })();
 </script>

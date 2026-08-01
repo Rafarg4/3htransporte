@@ -67,16 +67,20 @@ class ViaticoController extends AppBaseController
     }
 
     /**
-     * Build the list of OrdenCarga options for the select field.
+     * Build the list of OrdenCarga options for the select field, including
+     * the Chofer of each order's Camion so the form can filter by Chofer.
      *
      * @return array
      */
     private function getOrdenCargasParaSelect()
     {
-        return OrdenCarga::orderByDesc('id')->get()->mapWithKeys(function ($ordenCarga) {
+        return OrdenCarga::with('camion')->orderByDesc('id')->get()->mapWithKeys(function ($ordenCarga) {
             $numero = 'OC-' . str_pad($ordenCarga->id, 6, '0', STR_PAD_LEFT);
 
-            return [$ordenCarga->id => $numero . ' - ' . $ordenCarga->destino];
+            return [$ordenCarga->id => [
+                'texto' => $numero . ' - ' . $ordenCarga->destino,
+                'id_chofer' => $ordenCarga->camion->id_chofer ?? '',
+            ]];
         })->toArray();
     }
 
