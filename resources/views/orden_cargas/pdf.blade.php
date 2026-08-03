@@ -174,6 +174,10 @@
         <td class="label">Apellido</td>
         <td>{{ $ordenCarga->camion->propietario->apellido ?? '-' }}</td>
     </tr>
+    <tr>
+        <td class="label">Teléfono</td>
+        <td>{{ $ordenCarga->camion->propietario->telefono ?? '-' }}</td>
+    </tr>
 </table>
 
 <!-- Datos de la carreta -->
