@@ -59,6 +59,28 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="col-sm-6">
+                        <div class="cliente-field">
+                            <i class="fas fa-id-badge cliente-field-icon"></i>
+                            <div>
+                                <small class="text-muted d-block">Es Titular</small>
+                                <span>{{ $cliente->es_titular }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if(strtolower($cliente->es_titular) === 'no')
+                        <div class="col-sm-6">
+                            <div class="cliente-field">
+                                <i class="fas fa-user-shield cliente-field-icon"></i>
+                                <div>
+                                    <small class="text-muted d-block">Nombre del Titular</small>
+                                    <span>{{ $cliente->nombre_titular ?? '-' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                 </div>
 
                 <!-- Registro -->

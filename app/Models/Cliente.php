@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string $documento
  * @property string $direccion
  * @property string $telefono
+ * @property string $es_titular
+ * @property string $nombre_titular
  * @property string $id_document_cliente
  */
 class Cliente extends Model
@@ -38,6 +40,8 @@ class Cliente extends Model
         'documento',
         'direccion',
         'telefono',
+        'es_titular',
+        'nombre_titular',
         'id_document_cliente'
     ];
 
@@ -53,6 +57,8 @@ class Cliente extends Model
         'documento' => 'string',
         'direccion' => 'string',
         'telefono' => 'string',
+        'es_titular' => 'string',
+        'nombre_titular' => 'string',
 
     ];
 

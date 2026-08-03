@@ -57,6 +57,7 @@ class ClienteController extends AppBaseController
     public function store(CreateClienteRequest $request)
     {
         $input = $request->except('documentos');
+        $input['es_titular'] = $input['es_titular'] ?? 'Si';
 
         $cliente = $this->clienteRepository->create($input);
 

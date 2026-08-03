@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @package App\Models
  * @version July 23, 2026, 1:07 am UTC
  *
+ * @property string $numero
  * @property string $id_proveedor
  * @property string $id_producto
  * @property string $origen
@@ -33,6 +34,7 @@ class OrdenCarga extends Model
 
 
     public $fillable = [
+        'numero',
         'id_proveedor',
         'id_producto',
         'origen',
@@ -48,6 +50,7 @@ class OrdenCarga extends Model
      * @var array
      */
     protected $casts = [
+        'numero' => 'string',
         'id_proveedor' => 'string',
         'id_producto' => 'string',
         'origen' => 'string',

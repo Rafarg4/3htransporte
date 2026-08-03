@@ -178,6 +178,16 @@
         <td class="label">Teléfono</td>
         <td>{{ $ordenCarga->camion->propietario->telefono ?? '-' }}</td>
     </tr>
+    @if($ordenCarga->camion->propietario)
+        <tr>
+            <td class="label">Es Titular</td>
+            <td>{{ $ordenCarga->camion->propietario->es_titular }}</td>
+        </tr>
+        <tr>
+            <td class="label">Nombre del Titular</td>
+            <td>{{ $ordenCarga->camion->propietario->nombre_titular ?? '-' }}</td>
+        </tr>
+    @endif
 </table>
 
 <!-- Datos de la carreta -->

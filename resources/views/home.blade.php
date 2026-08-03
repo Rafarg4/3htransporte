@@ -96,7 +96,7 @@
                     <i class="fa fa-building"></i>
                 </div>
                 <div class="stat-content">
-                    <span>Empresas</span>
+                    <span>3H</span>
                 </div>
             </a>
         </div>

@@ -1,3 +1,9 @@
+<!-- Numero Field -->
+<div class="col-sm-12">
+    {!! Form::label('numero', 'Numero:') !!}
+    <p>{{ $ordenCarga->numero }}</p>
+</div>
+
 <!-- Id Proveedor Field -->
 <div class="col-sm-12">
     {!! Form::label('id_proveedor', 'Proveedor:') !!}
@@ -31,8 +37,28 @@
 <!-- Estado Field -->
 <div class="col-sm-12">
     {!! Form::label('estado', 'Estado:') !!}
-    <p>{{ $ordenCarga->estado }}</p>
+    <p>
+        <span class="badge estado-badge estado-badge-{{ strtolower($ordenCarga->estado) === 'activo' ? 'activo' : 'anulado' }}">
+            {{ $ordenCarga->estado }}
+        </span>
+    </p>
 </div>
+
+<style>
+    .estado-badge {
+        font-size: .8rem;
+        padding: .4rem .75rem;
+        border-radius: 1rem;
+    }
+    .estado-badge-activo {
+        background: #d4edda;
+        color: #155724;
+    }
+    .estado-badge-anulado {
+        background: #f1f3f5;
+        color: #6c757d;
+    }
+</style>
 
 <!-- Created At Field -->
 <div class="col-sm-12">

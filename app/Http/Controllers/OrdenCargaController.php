@@ -49,7 +49,19 @@ class OrdenCargaController extends AppBaseController
     public function create()
     {
         return view('orden_cargas.create')
-            ->with($this->getListasParaSelect());
+            ->with($this->getListasParaSelect())
+            ->with('proximoNumero', $this->getProximoNumero());
+    }
+
+    /**
+     * Next numero, calculated from the amount of ordenes de carga already
+     * registered (including soft-deleted ones, so a number is never reused).
+     *
+     * @return int
+     */
+    private function getProximoNumero()
+    {
+        return OrdenCarga::withTrashed()->count() + 1;
     }
 
     /**
@@ -63,6 +75,7 @@ class OrdenCargaController extends AppBaseController
     {
         $input = $request->all();
         $input['estado'] = 'Activo';
+        $input['numero'] = $this->getProximoNumero();
 
         $ordenCarga = $this->ordenCargaRepository->create($input);
 
@@ -102,7 +115,7 @@ class OrdenCargaController extends AppBaseController
     {
         $ordenCarga = OrdenCarga::with(['proveedor', 'producto', 'camion.chofer', 'camion.propietario'])->findOrFail($id);
         $empresa = Empresa::first();
-        $numero = str_pad($ordenCarga->id, 6, '0', STR_PAD_LEFT);
+        $numero = str_pad($ordenCarga->numero, 6, '0', STR_PAD_LEFT);
 
         $pdf = Pdf::loadView('orden_cargas.pdf', [
             'ordenCarga' => $ordenCarga,

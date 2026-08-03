@@ -2,7 +2,8 @@
     <table class="table" id="table">
         <thead>
         <tr>
-            <th>Proveedor</th>
+            <th>Numero</th>
+        <th>Proveedor</th>
         <th>Producto</th>
         <th>Origen</th>
         <th>Destino</th>
@@ -14,12 +15,17 @@
         <tbody>
         @foreach($ordenCargas as $ordenCarga)
             <tr>
-                <td>{{ $ordenCarga->proveedor->nombre ?? '-' }}</td>
+                <td>{{ $ordenCarga->numero }}</td>
+            <td>{{ $ordenCarga->proveedor->nombre ?? '-' }}</td>
             <td>{{ $ordenCarga->producto->nombre ?? '-' }}</td>
             <td>{{ $ordenCarga->origen }}</td>
             <td>{{ $ordenCarga->destino }}</td>
             <td>{{ $ordenCarga->camion->chapa ?? '-' }}</td>
-            <td>{{ $ordenCarga->estado }}</td>
+            <td>
+                <span class="badge estado-badge estado-badge-{{ strtolower($ordenCarga->estado) === 'activo' ? 'activo' : 'anulado' }}">
+                    {{ $ordenCarga->estado }}
+                </span>
+            </td>
                 <td width="240">
                     {!! Form::open(['route' => ['ordenCargas.destroy', $ordenCarga->id], 'method' => 'delete']) !!}
                     <div class="action-buttons d-flex justify-content-center">
@@ -50,6 +56,19 @@
         border-radius: .25rem;
         font-size: .75rem;
         white-space: nowrap;
+    }
+    .estado-badge {
+        font-size: .75rem;
+        padding: .35rem .65rem;
+        border-radius: 1rem;
+    }
+    .estado-badge-activo {
+        background: #d4edda;
+        color: #155724;
+    }
+    .estado-badge-anulado {
+        background: #f1f3f5;
+        color: #6c757d;
     }
 </style>
 

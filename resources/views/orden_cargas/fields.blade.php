@@ -1,3 +1,9 @@
+<!-- Numero Field -->
+<div class="form-group col-sm-6">
+    {!! Form::label('numero', 'Numero:') !!}
+    {!! Form::text('numero', isset($ordenCarga) ? null : $proximoNumero, ['class' => 'form-control', 'readonly' => 'readonly', 'required' => 'required']) !!}
+</div>
+
 <!-- Id Proveedor Field -->
 <div class="form-group col-sm-6">
     {!! Form::label('id_proveedor', 'Proveedor:') !!}
