@@ -33,38 +33,6 @@
     {!! Form::text('telefono', null, ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
-<!-- Es Titular Field -->
-<div class="form-group col-sm-4">
-    {!! Form::label('es_titular', 'Es Titular:') !!}
-    {!! Form::select('es_titular', ['Si' => 'Si', 'No' => 'No'], null, ['class' => 'form-control', 'id' => 'es_titular', 'placeholder' => 'Seleccione una opcion', 'required' => 'required']) !!}
-</div>
-
-<!-- Nombre Titular Field -->
-<div class="form-group col-sm-4" id="nombre-titular-wrapper">
-    {!! Form::label('nombre_titular', 'Nombre del Titular:') !!}
-    {!! Form::text('nombre_titular', null, ['class' => 'form-control', 'id' => 'nombre_titular']) !!}
-</div>
-
-<script>
-    (function () {
-        var esTitular = document.getElementById('es_titular');
-        var wrapper = document.getElementById('nombre-titular-wrapper');
-        var nombreTitular = document.getElementById('nombre_titular');
-
-        function actualizarNombreTitular() {
-            var esNo = esTitular.value === 'No';
-            wrapper.style.display = esNo ? '' : 'none';
-            nombreTitular.required = esNo;
-            if (!esNo) {
-                nombreTitular.value = '';
-            }
-        }
-
-        esTitular.addEventListener('change', actualizarNombreTitular);
-        actualizarNombreTitular();
-    })();
-</script>
-
 <!-- Documentos Field -->
 <div class="form-group col-sm-12">
     {!! Form::label('documentos', 'Documentos:') !!}
