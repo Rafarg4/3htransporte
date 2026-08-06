@@ -57,7 +57,7 @@
 <li class="nav-item">
     <a href="{{ route('valeCombustibles.index') }}"
        class="nav-link {{ Request::is('valeCombustibles*') ? 'active' : '' }}">
-        <i class="fa fa-gas-pump"></i>
+        <i class="nav-icon fa fa-gas-pump"></i>
         <p>Vales de Combustible</p>
     </a>
 </li>
@@ -81,6 +81,31 @@
         <i class="nav-icon fa fa-truck"></i>
         <p>Proveedores</p>
     </a>
+</li>
+<li class="nav-item {{ Request::is('reportes*') ? 'menu-open' : '' }}">
+    <a href="#" class="nav-link {{ Request::is('reportes*') ? 'active' : '' }}">
+        <i class="nav-icon fa fa-bars" aria-hidden="true"></i>
+        <p>
+            Reportes
+            <i class="right fas fa-angle-left"></i>
+        </p>
+    </a>
+    <ul class="nav nav-treeview">
+        <li class="nav-item">
+            <a href="{{ route('reportes.create') }}"
+               class="nav-link {{ Request::is('reportes/create') ? 'active' : '' }}">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Cargar</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('reportes.generar') }}"
+               class="nav-link {{ Request::is('reportes/generar*') ? 'active' : '' }}">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Generar</p>
+            </a>
+        </li>
+    </ul>
 </li>
 <li class="nav-item">
     <a href="{{ route('empresas.index') }}"
@@ -112,3 +137,5 @@
         <p>Salir</p>
     </a>
 </li>
+
+

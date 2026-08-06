@@ -146,10 +146,6 @@
         <td class="label">Precio</td>
         <td>{{ number_format((float) $valeCombustible->importe, 0, ',', '.') }}</td>
     </tr>
-    <tr>
-        <td class="label">Valor</td>
-        <td>{{ number_format((float) $valeCombustible->litros * (float) $valeCombustible->importe, 0, ',', '.') }}</td>
-    </tr>
 </table>
 
 <!-- Datos del camion -->

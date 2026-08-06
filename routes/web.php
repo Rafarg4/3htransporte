@@ -100,3 +100,12 @@ Route::middleware('auth')->group(function () {
     Route::put('parametrizaciones', [App\Http\Controllers\ParametrizacionController::class, 'update'])
         ->name('parametrizaciones.update');
 });
+
+
+Route::get('reportes/generar', [App\Http\Controllers\ReporteController::class, 'generar'])
+    ->name('reportes.generar');
+Route::get('reportes/generar/pdf', [App\Http\Controllers\ReporteController::class, 'generarPdf'])
+    ->name('reportes.generar.pdf');
+Route::get('reportes/generar/excel', [App\Http\Controllers\ReporteController::class, 'generarExcel'])
+    ->name('reportes.generar.excel');
+Route::resource('reportes', App\Http\Controllers\ReporteController::class);
