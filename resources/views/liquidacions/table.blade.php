@@ -11,6 +11,7 @@
             <th>Débitos</th>
             <th>Saldo</th>
             <th>Estado</th>
+            <th>Facturado</th>
             <th>Acción</th>
         </tr>
         </thead>
@@ -30,11 +31,25 @@
                         {{ $liquidacion->estado }}
                     </span>
                 </td>
-                <td width="200">
+                <td>
+                    <span class="badge estado-badge {{ $liquidacion->facturado === 'Si' ? 'estado-badge-activo' : 'estado-badge-anulado' }}">
+                        {{ $liquidacion->facturado === 'Si' ? 'Sí' : 'No' }}
+                    </span>
+                </td>
+                <td width="260">
                     <div class="action-buttons d-flex justify-content-center">
                         <a href="{{ route('liquidacions.pdf', $liquidacion->id) }}" class="btn btn-danger" target="_blank">
                             <i class="far fa-file-pdf"></i> PDF
                         </a>
+                        @if($liquidacion->facturado !== 'Si')
+                            {!! Form::open(['route' => ['liquidacions.facturado', $liquidacion->id], 'method' => 'post']) !!}
+                            {!! Form::button('<i class="fas fa-file-invoice-dollar"></i> Marcar Facturado', [
+                                'type' => 'submit',
+                                'class' => 'btn btn-warning',
+                                'onclick' => "return confirm('¿Confirmar marcar esta liquidación como facturada?')",
+                            ]) !!}
+                            {!! Form::close() !!}
+                        @endif
                         @if(strtolower($liquidacion->estado) === 'activo')
                             {!! Form::open(['route' => ['liquidacions.destroy', $liquidacion->id], 'method' => 'delete']) !!}
                             {!! Form::button('<i class="fas fa-ban"></i> Anular', [

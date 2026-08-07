@@ -6,15 +6,18 @@
 
 <!-- Camion Field -->
 <div class="form-group col-sm-3">
-    <label for="id_camion">Camión:</label>
-    <select name="id_camion" id="id_camion" class="form-control" required>
-        <option value="">Seleccione una chapa</option>
+    <label for="camiones-select">Camión: <small class="text-muted font-weight-normal">(podés elegir varias)</small></label>
+    <select name="camion_ids[]" id="camiones-select" class="form-control" multiple="multiple" style="width:100%;">
+        @php
+            $camionesTildados = array_map('strval', old('camion_ids', old('id_camion') ? [old('id_camion')] : []));
+        @endphp
         @foreach($camions as $camion)
-            <option value="{{ $camion->id }}" data-cliente="{{ $camion->id_cliente }}" {{ (string) old('id_camion') === (string) $camion->id ? 'selected' : '' }}>
+            <option value="{{ $camion->id }}" data-cliente="{{ $camion->id_cliente }}" {{ in_array((string) $camion->id, $camionesTildados) ? 'selected' : '' }}>
                 {{ $camion->chapa }}
             </option>
         @endforeach
     </select>
+    {!! Form::hidden('id_camion', old('id_camion'), ['id' => 'id_camion']) !!}
 </div>
 
 <!-- Chofer Field -->
@@ -82,22 +85,17 @@
     <div class="form-row align-items-end">
         <div class="col-sm-12">
             <small class="text-muted d-block mb-1">
-                Recargo por diferencia negativa: Diferencia + (Tolerancia &times; Precio).
-                Tolerancia y Precio se definen en <a href="{{ route('parametrizaciones.edit') }}" target="_blank">Parametrizaciones</a>.
+                Diferencia negativa: se completa solo un Descuento por "Faltante de Carga" con Diferencia + (Tolerancia &times; Precio).
+                Los valores se cargan por defecto desde <a href="{{ route('parametrizaciones.edit') }}" target="_blank">Parametrizaciones</a>, pero pueden ajustarse para esta liquidación.
             </small>
         </div>
         <div class="form-group col-sm-2">
-            <label><i class="fas fa-lock fa-xs text-muted"></i> Tolerancia (Kg)</label>
-            <input type="number" step="0.01" id="flete-recargo-tolerancia" name="flete[recargo_tolerancia]" class="form-control bg-light" value="{{ old('flete.recargo_tolerancia', $parametrizacion->recargo_tolerancia) }}" readonly tabindex="-1">
+            <label>Tolerancia (Kg)</label>
+            <input type="number" step="0.01" id="flete-recargo-tolerancia" name="flete[recargo_tolerancia]" class="form-control" value="{{ old('flete.recargo_tolerancia', $parametrizacion->recargo_tolerancia) }}">
         </div>
         <div class="form-group col-sm-2">
-            <label><i class="fas fa-lock fa-xs text-muted"></i> Precio Recargo</label>
-            <input type="number" step="0.01" id="flete-recargo-precio" name="flete[recargo_precio]" class="form-control bg-light" value="{{ old('flete.recargo_precio', $parametrizacion->recargo_precio) }}" readonly tabindex="-1">
-        </div>
-        <div class="form-group col-sm-2">
-            <label>Recargo</label>
-            <input type="text" id="flete-recargo" class="form-control" readonly tabindex="-1" value="{{ old('flete.recargo') }}">
-            <input type="hidden" name="flete[recargo]" id="flete-recargo-raw" class="liquidacion-debito" value="{{ old('flete.recargo') }}">
+            <label>Precio Recargo</label>
+            <input type="number" step="0.01" id="flete-recargo-precio" name="flete[recargo_precio]" class="form-control" value="{{ old('flete.recargo_precio', $parametrizacion->recargo_precio) }}">
         </div>
     </div>
 </div>
@@ -274,6 +272,28 @@
     </div>
 </div>
 
+<!-- Facturado: se define recien al confirmar el modal de Guardar -->
+{!! Form::hidden('facturado', old('facturado'), ['id' => 'facturado-input']) !!}
+<div class="modal fade" id="facturado-modal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">¿Esta liquidación ya está facturada?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cancelar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Indicá si esta liquidación ya fue facturada antes de guardarla.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="facturado-modal-no">No</button>
+                <button type="button" class="btn btn-primary" id="facturado-modal-si">Sí</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
     .liquidacion-select-table {
         max-height: 260px;
@@ -299,8 +319,40 @@
     .liquidacion-select-row.is-selected {
         background-color: #eaf3ff;
     }
+
+    /* Camion (select2): tildar chapas con color primario, bien visible */
+    #camiones-select + .select2-container .select2-selection--multiple {
+        min-height: calc(1.5em + .6rem + 2px);
+        border: 1px solid #ced4da;
+    }
+    #camiones-select + .select2-container .select2-selection__choice {
+        background-color: #007bff;
+        border: 1px solid #007bff;
+        color: #fff;
+        border-radius: .25rem;
+        padding: 1px 8px;
+    }
+    #camiones-select + .select2-container .select2-selection__choice__remove {
+        color: #fff;
+        margin-right: 6px;
+        font-weight: bold;
+    }
+    #camiones-select + .select2-container .select2-selection__choice__remove:hover {
+        color: #f8d7da;
+    }
+    #camiones-select + .select2-container.select2-container--focus .select2-selection--multiple {
+        border-color: #80bdff;
+    }
+    /* Resultado ya tildado: no debe listarse de nuevo en el desplegable */
+    .select2-results__option[aria-selected="true"] {
+        display: none;
+    }
 </style>
 
+{{-- jQuery/Select2 solo estan disponibles despues de @yield('content'), asi que este
+     script se registra via @push('third_party_scripts') para ejecutarse recien al final
+     del body, cuando esas librerias ya cargaron (mismo patron que liquidacions/table.blade.php). --}}
+@push('third_party_scripts')
 <script>
     (function () {
         function formatoNumero(valor) {
@@ -352,30 +404,66 @@
         var valor = document.getElementById('flete-valor');
         var recargoTolerancia = document.getElementById('flete-recargo-tolerancia');
         var recargoPrecio = document.getElementById('flete-recargo-precio');
-        var recargo = document.getElementById('flete-recargo');
-        var recargoRaw = document.getElementById('flete-recargo-raw');
+        var fleteFecha = document.querySelector('input[name="flete[fecha]"]');
+        var fechaCabecera = document.querySelector('input[name="fecha"]');
+
+        // Cuando hay recargo, el Descuento se completa solo como "Faltante de Carga"
+        // con el mismo valor del recargo (el recargo en si es solo informativo), y con
+        // la Fecha del Flete (o la de la cabecera si el Flete no tiene fecha cargada).
+        function sincronizarDescuentoPorRecargo(valorRecargo) {
+            var descuentoIncluir = document.getElementById('descuento-incluir');
+            var descuentoCampos = document.getElementById('descuento-campos');
+            var descuentoFecha = descuentoCampos.querySelector('input[name="descuento[fecha]"]');
+            var descuentoConcepto = descuentoCampos.querySelector('select[name="descuento[concepto]"]');
+            var descuentoValor = descuentoCampos.querySelector('input[name="descuento[valor]"]');
+            var autoGestionado = descuentoIncluir.dataset.autoFaltante === '1';
+
+            if (valorRecargo !== null) {
+                var esVacioOAuto = autoGestionado || (!descuentoIncluir.checked && !descuentoConcepto.value && !descuentoValor.value);
+                if (!esVacioOAuto) {
+                    // El usuario ya cargo un descuento propio (Multa, Anticipo, etc.), no lo pisamos.
+                    return;
+                }
+
+                descuentoIncluir.checked = true;
+                descuentoIncluir.dataset.autoFaltante = '1';
+                descuentoCampos.style.display = '';
+                descuentoCampos.querySelectorAll('input, select').forEach(function (field) {
+                    field.disabled = false;
+                });
+                descuentoFecha.value = (fleteFecha && fleteFecha.value) ? fleteFecha.value : (fechaCabecera ? fechaCabecera.value : '');
+                descuentoConcepto.value = 'Faltante de Carga';
+                descuentoValor.value = valorRecargo;
+            } else if (autoGestionado) {
+                descuentoIncluir.checked = false;
+                descuentoIncluir.dataset.autoFaltante = '';
+                descuentoCampos.style.display = 'none';
+                descuentoCampos.querySelectorAll('input, select').forEach(function (field) {
+                    field.disabled = true;
+                    field.value = '';
+                });
+            }
+        }
 
         // Recargo = Diferencia + (Tolerancia x Precio), solo cuando la Diferencia es negativa.
+        // No tiene campo propio en pantalla: se vuelca directo al Descuento "Faltante de Carga".
         function actualizarRecargo(valorDiferencia) {
             var tolerancia = parseFloat(recargoTolerancia.value) || 0;
             var precioRecargo = parseFloat(recargoPrecio.value) || 0;
+            var valorRecargo = null;
 
             if (valorDiferencia !== null && valorDiferencia < 0) {
-                var valorRecargo = valorDiferencia + (tolerancia * precioRecargo);
-                recargo.value = formatoNumero(valorRecargo);
-                recargoRaw.value = valorRecargo;
-            } else {
-                recargo.value = '';
-                recargoRaw.value = '';
+                valorRecargo = valorDiferencia + (tolerancia * precioRecargo);
             }
 
+            sincronizarDescuentoPorRecargo(valorRecargo);
             recalcularTotales();
         }
 
         function actualizarDiferencia() {
             var origen = parseFloat(kgOrigen.value) || 0;
             var destino = parseFloat(kgDestino.value) || 0;
-            var valorDiferencia = (origen && destino) ? (origen - destino) : null;
+            var valorDiferencia = (origen && destino) ? (destino - origen) : null;
 
             diferencia.value = valorDiferencia !== null ? formatoNumero(valorDiferencia) : '';
             diferenciaRaw.value = valorDiferencia !== null ? valorDiferencia : '';
@@ -404,7 +492,7 @@
             input.addEventListener('input', function () {
                 var origen = parseFloat(kgOrigen.value) || 0;
                 var destino = parseFloat(kgDestino.value) || 0;
-                actualizarRecargo((origen && destino) ? (origen - destino) : null);
+                actualizarRecargo((origen && destino) ? (destino - origen) : null);
             });
         });
 
@@ -477,6 +565,35 @@
             }
         }
 
+        // Igual que filtrarFilasPorAtributo, pero acepta varios valores validos a la vez
+        // (usado por Vale de Combustible, que debe mostrar filas de cualquiera de las chapas tildadas).
+        function filtrarFilasPorAtributoMultiple(listaId, hintId, atributo, valoresFiltro) {
+            var lista = document.getElementById(listaId);
+            if (!lista) {
+                return;
+            }
+
+            var visibles = 0;
+
+            lista.querySelectorAll('.liquidacion-select-row').forEach(function (fila) {
+                var mostrar = valoresFiltro.length === 0 || valoresFiltro.indexOf(fila.dataset[atributo]) !== -1;
+                fila.style.display = mostrar ? '' : 'none';
+
+                if (mostrar) {
+                    visibles++;
+                } else {
+                    var input = fila.querySelector('input[type="checkbox"]');
+                    input.checked = false;
+                    fila.classList.remove('is-selected');
+                }
+            });
+
+            var hint = document.getElementById(hintId);
+            if (hint) {
+                hint.classList.toggle('d-none', valoresFiltro.length === 0 || visibles > 0);
+            }
+        }
+
         // --- Tildar/destildar una fila de Viatico/Combustible haciendo click en cualquier parte ---
         document.querySelectorAll('.liquidacion-select-row').forEach(function (fila) {
             var checkbox = fila.querySelector('input[type="checkbox"]');
@@ -494,19 +611,93 @@
         });
 
         var clienteSelect = document.getElementById('id_cliente');
-        var camionSelect = document.getElementById('id_camion');
+        var idCamionHidden = document.getElementById('id_camion');
         var choferSelect = document.getElementById('id_chofer');
         var ordenCargaSelect = document.getElementById('id_orden_carga');
 
-        clienteSelect.addEventListener('change', function () {
-            filtrarSelect(camionSelect, 'cliente', clienteSelect.value);
-            camionSelect.dispatchEvent(new Event('change'));
+        // --- Camion: select2 multiple ---
+        var $camionSelect = $('#camiones-select');
+        var camionesOriginales = $camionSelect.find('option').map(function () {
+            return { value: this.value, text: this.text, cliente: this.dataset.cliente };
+        }).get();
+
+        $camionSelect.select2({
+            width: '100%',
+            placeholder: 'Seleccione una o varias chapas',
+            allowClear: true
         });
 
-        camionSelect.addEventListener('change', function () {
-            filtrarSelect(ordenCargaSelect, 'camion', camionSelect.value);
-            filtrarFilasPorAtributo('vales-list', 'vales-empty-hint', 'camion', camionSelect.value);
+        // La primera chapa tildada (en orden de la lista) queda como "chapa principal":
+        // es la que se guarda en la Liquidacion y filtra la Orden de Carga. Las demas
+        // chapas tildadas solo amplian que Vales de Combustible se muestran/pueden tildar.
+        function obtenerCamionesSeleccionados() {
+            return $camionSelect.val() || [];
+        }
+
+        function actualizarCamionPrincipalYFiltros() {
+            var seleccionados = obtenerCamionesSeleccionados();
+
+            idCamionHidden.value = seleccionados[0] || '';
+
+            filtrarSelect(ordenCargaSelect, 'camion', idCamionHidden.value);
+            filtrarFilasPorAtributoMultiple('vales-list', 'vales-empty-hint', 'camion', seleccionados);
             recalcularTotales();
+        }
+
+        // Reconstruye las opciones del select2 con solo las chapas del propietario elegido,
+        // preservando las que ya estaban tildadas y siguen siendo validas.
+        function filtrarCamionesPorCliente(valorFiltro) {
+            var seleccionActual = obtenerCamionesSeleccionados();
+
+            $camionSelect.empty();
+            camionesOriginales.forEach(function (camion) {
+                if (valorFiltro && camion.cliente !== valorFiltro) {
+                    return;
+                }
+                var opcion = new Option(camion.text, camion.value, false, seleccionActual.indexOf(camion.value) !== -1);
+                $camionSelect.append(opcion);
+            });
+
+            $camionSelect.trigger('change');
+        }
+
+        clienteSelect.addEventListener('change', function () {
+            filtrarCamionesPorCliente(clienteSelect.value);
+        });
+
+        $camionSelect.on('change', actualizarCamionPrincipalYFiltros);
+
+        var liquidacionForm = idCamionHidden.closest('form');
+        var facturadoInput = document.getElementById('facturado-input');
+        var $facturadoModal = $('#facturado-modal');
+
+        if (liquidacionForm) {
+            liquidacionForm.addEventListener('submit', function (event) {
+                if (!idCamionHidden.value) {
+                    event.preventDefault();
+                    alert('Seleccioná al menos una chapa (Camión).');
+                    return;
+                }
+
+                // Antes de guardar, preguntamos si ya esta facturada; recien al elegir
+                // Si/No se completa el campo oculto y se reenvia el formulario.
+                if (!facturadoInput.value) {
+                    event.preventDefault();
+                    $facturadoModal.modal('show');
+                }
+            });
+        }
+
+        document.getElementById('facturado-modal-si').addEventListener('click', function () {
+            facturadoInput.value = 'Si';
+            $facturadoModal.modal('hide');
+            liquidacionForm.submit();
+        });
+
+        document.getElementById('facturado-modal-no').addEventListener('click', function () {
+            facturadoInput.value = 'No';
+            $facturadoModal.modal('hide');
+            liquidacionForm.submit();
         });
 
         if (choferSelect) {
@@ -527,3 +718,4 @@
         recalcularTotales();
     })();
 </script>
+@endpush

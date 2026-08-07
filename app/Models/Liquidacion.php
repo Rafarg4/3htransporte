@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string $id_orden_carga
  * @property string $fecha
  * @property string $estado
+ * @property string $facturado
  */
 class Liquidacion extends Model
 {
@@ -33,7 +34,8 @@ class Liquidacion extends Model
         'id_chofer',
         'id_orden_carga',
         'fecha',
-        'estado'
+        'estado',
+        'facturado'
     ];
 
     protected $casts = [
@@ -42,7 +44,8 @@ class Liquidacion extends Model
         'id_chofer' => 'string',
         'id_orden_carga' => 'string',
         'fecha' => 'string',
-        'estado' => 'string'
+        'estado' => 'string',
+        'facturado' => 'string'
     ];
 
     public static $rules = [
@@ -122,11 +125,7 @@ class Liquidacion extends Model
             return (float) $item->litros * (float) $item->importe;
         });
 
-        $recargos = $this->fletes->sum(function ($item) {
-            return (float) $item->recargo;
-        });
-
-        return $descuentos + $gastos + $viaticos + $combustibles + $recargos;
+        return $descuentos + $gastos + $viaticos + $combustibles;
     }
 
     public function getSaldoAttribute()

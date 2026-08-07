@@ -29,6 +29,7 @@ class CreateLiquidacionRequest extends FormRequest
             'id_camion' => 'exists:camions,id',
             'id_chofer' => 'exists:chofers,id',
             'id_orden_carga' => 'nullable|exists:orden_cargas,id',
+            'facturado' => 'required|in:Si,No',
 
             // Flete: si se completa cualquier campo de la fila, Tramo y Valor pasan a ser obligatorios
             // (evita que guardarLinea() intente insertar la fila con "valor" vacío).
@@ -41,7 +42,6 @@ class CreateLiquidacionRequest extends FormRequest
             'flete.valor' => 'required_with:flete.fecha,flete.tramo,flete.kg_origen,flete.kg_destino,flete.precio|nullable|numeric',
             'flete.recargo_tolerancia' => 'nullable|numeric',
             'flete.recargo_precio' => 'nullable|numeric',
-            'flete.recargo' => 'nullable|numeric',
 
             // Descuento: si se completa cualquier campo, Concepto y Valor pasan a ser obligatorios.
             'descuento.fecha' => 'nullable|date',
@@ -72,12 +72,12 @@ class CreateLiquidacionRequest extends FormRequest
             'id_camion' => 'camión',
             'id_chofer' => 'chofer',
             'id_orden_carga' => 'orden de carga',
+            'facturado' => 'facturado',
             'flete.tramo' => 'tramo del flete',
             'flete.valor' => 'valor del flete',
             'flete.diferencia' => 'diferencia del flete',
             'flete.recargo_tolerancia' => 'tolerancia del recargo',
             'flete.recargo_precio' => 'precio del recargo',
-            'flete.recargo' => 'recargo del flete',
             'descuento.concepto' => 'concepto del descuento',
             'descuento.valor' => 'valor del descuento',
             'gasto_administrativo.concepto' => 'concepto del gasto administrativo',

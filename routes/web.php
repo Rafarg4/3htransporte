@@ -93,6 +93,8 @@ Route::middleware('auth')->group(function () {
         ->name('liquidacions.pdf');
     Route::delete('liquidacions/{id}', [App\Http\Controllers\LiquidacionController::class, 'destroy'])
         ->name('liquidacions.destroy');
+    Route::post('liquidacions/{id}/facturado', [App\Http\Controllers\LiquidacionController::class, 'toggleFacturado'])
+        ->name('liquidacions.facturado');
 
 
     Route::get('parametrizaciones', [App\Http\Controllers\ParametrizacionController::class, 'edit'])

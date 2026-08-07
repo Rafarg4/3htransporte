@@ -145,11 +145,12 @@ class LiquidacionController extends AppBaseController
                 'id_orden_carga' => $request->input('id_orden_carga'),
                 'fecha' => $request->input('fecha'),
                 'estado' => 'Activo',
+                'facturado' => $request->input('facturado', 'No'),
             ]);
 
             $fechaCabecera = $request->input('fecha');
 
-            $this->guardarLinea($liquidacion, LiquidacionFlete::class, $request->input('flete', []), ['fecha', 'tramo', 'kg_origen', 'kg_destino', 'diferencia', 'precio', 'valor', 'recargo_tolerancia', 'recargo_precio', 'recargo'], $fechaCabecera);
+            $this->guardarLinea($liquidacion, LiquidacionFlete::class, $request->input('flete', []), ['fecha', 'tramo', 'kg_origen', 'kg_destino', 'diferencia', 'precio', 'valor', 'recargo_tolerancia', 'recargo_precio'], $fechaCabecera);
             $this->guardarLinea($liquidacion, LiquidacionDescuento::class, $request->input('descuento', []), ['fecha', 'concepto', 'valor'], $fechaCabecera);
             $this->guardarLinea($liquidacion, LiquidacionGastoAdministrativo::class, $request->input('gasto_administrativo', []), ['fecha', 'concepto', 'valor'], $fechaCabecera);
 
@@ -272,6 +273,32 @@ class LiquidacionController extends AppBaseController
         });
 
         Flash::success('Liquidación anulada correctamente.');
+
+        return redirect(route('liquidacions.index'));
+    }
+
+    /**
+     * Mark the specified Liquidacion as Facturado. One-way: once marked, the
+     * UI no longer offers a way to undo it from here.
+     *
+     * @param int $id
+     *
+     * @return Response
+     */
+    public function toggleFacturado($id)
+    {
+        $liquidacion = $this->liquidacionRepository->find($id);
+
+        if (empty($liquidacion)) {
+            Flash::error('Liquidación no encontrada');
+
+            return redirect(route('liquidacions.index'));
+        }
+
+        $liquidacion->facturado = 'Si';
+        $liquidacion->save();
+
+        Flash::success('Liquidación marcada como facturada.');
 
         return redirect(route('liquidacions.index'));
     }
