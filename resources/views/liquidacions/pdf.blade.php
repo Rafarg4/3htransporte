@@ -156,6 +156,8 @@
     <div class="section-title">Flete</div>
     <table class="data-table">
         <tr>
+            <th>Camión</th>
+            <th>Orden de Carga</th>
             <th>Fecha</th>
             <th>Tramo</th>
             <th>Kg Origen</th>
@@ -166,6 +168,8 @@
         </tr>
         @foreach($liquidacion->fletes as $flete)
             <tr>
+                <td>{{ $flete->camion->chapa ?? '-' }}</td>
+                <td>{{ $flete->ordenCarga ? 'OC-' . str_pad($flete->ordenCarga->id, 6, '0', STR_PAD_LEFT) : '-' }}</td>
                 <td>{{ $flete->fecha }}</td>
                 <td>{{ $flete->tramo }}</td>
                 <td class="numero">{{ number_format((float) $flete->kg_origen, 0, ',', '.') }}</td>
@@ -182,12 +186,14 @@
     <div class="section-title">Descuento</div>
     <table class="data-table">
         <tr>
+            <th>Camión</th>
             <th>Fecha</th>
             <th>Concepto</th>
             <th>Valor</th>
         </tr>
         @foreach($liquidacion->descuentos as $descuento)
             <tr>
+                <td>{{ $descuento->camion->chapa ?? '-' }}</td>
                 <td>{{ $descuento->fecha }}</td>
                 <td>{{ $descuento->concepto }}</td>
                 <td class="numero">{{ number_format((float) $descuento->valor, 0, ',', '.') }}</td>

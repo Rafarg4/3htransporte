@@ -28,22 +28,32 @@ class CreateLiquidacionRequest extends FormRequest
             'id_cliente' => 'exists:clientes,id',
             'id_camion' => 'exists:camions,id',
             'id_chofer' => 'exists:chofers,id',
-            'id_orden_carga' => 'nullable|exists:orden_cargas,id',
             'facturado' => 'required|in:Si,No',
 
-            // Flete: si se completa cualquier campo de la fila, Tramo y Valor pasan a ser obligatorios
-            // (evita que guardarLinea() intente insertar la fila con "valor" vacío).
-            'flete.fecha' => 'nullable|date',
-            'flete.tramo' => 'required_with:flete.fecha,flete.kg_origen,flete.kg_destino,flete.precio,flete.valor',
-            'flete.kg_origen' => 'nullable|numeric',
-            'flete.kg_destino' => 'nullable|numeric',
-            'flete.diferencia' => 'nullable|numeric',
-            'flete.precio' => 'nullable|numeric',
-            'flete.valor' => 'required_with:flete.fecha,flete.tramo,flete.kg_origen,flete.kg_destino,flete.precio|nullable|numeric',
-            'flete.recargo_tolerancia' => 'nullable|numeric',
-            'flete.recargo_precio' => 'nullable|numeric',
+            'camion_ids' => 'required|array|min:1',
+            'camion_ids.*' => 'exists:camions,id',
 
-            // Descuento: si se completa cualquier campo, Concepto y Valor pasan a ser obligatorios.
+            // Flete: uno por camion tildado (flete[<id_camion>][...]). Si se completa cualquier
+            // campo de un bloque, Tramo y Valor pasan a ser obligatorios PARA ESE MISMO bloque
+            // (Laravel resuelve las referencias flete.*.x contra el mismo indice, no cruzado).
+            'flete.*.fecha' => 'nullable|date',
+            'flete.*.tramo' => 'required_with:flete.*.fecha,flete.*.kg_origen,flete.*.kg_destino,flete.*.precio,flete.*.valor',
+            'flete.*.kg_origen' => 'nullable|numeric',
+            'flete.*.kg_destino' => 'nullable|numeric',
+            'flete.*.diferencia' => 'nullable|numeric',
+            'flete.*.precio' => 'nullable|numeric',
+            'flete.*.valor' => 'required_with:flete.*.fecha,flete.*.tramo,flete.*.kg_origen,flete.*.kg_destino,flete.*.precio|nullable|numeric',
+            'flete.*.recargo_tolerancia' => 'nullable|numeric',
+            'flete.*.recargo_precio' => 'nullable|numeric',
+
+            // Orden de Carga: una por camion tildado (opcional).
+            'orden_carga.*' => 'nullable|exists:orden_cargas,id',
+
+            // Descuento "Faltante de Carga" automatico por camion (concepto se fuerza en el servidor).
+            'descuento_auto.*.fecha' => 'nullable|date',
+            'descuento_auto.*.valor' => 'nullable|numeric',
+
+            // Descuento manual: si se completa cualquier campo, Concepto y Valor pasan a ser obligatorios.
             'descuento.fecha' => 'nullable|date',
             'descuento.concepto' => 'required_with:descuento.fecha,descuento.valor',
             'descuento.valor' => 'required_with:descuento.fecha,descuento.concepto|nullable|numeric',
@@ -61,6 +71,33 @@ class CreateLiquidacionRequest extends FormRequest
     }
 
     /**
+     * Extra validation that plain rules() can't express: the flete/orden_carga/descuento_auto
+     * arrays are keyed by id_camion, and none of those columns have a real DB foreign key
+     * (they're all `text`), so this is the only barrier against a tampered/stale camion id
+     * that was never actually ticked in camion_ids.
+     *
+     * @param \Illuminate\Validation\Validator $validator
+     *
+     * @return void
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $camionIds = array_map('strval', (array) $this->input('camion_ids', []));
+
+            foreach (['flete', 'orden_carga', 'descuento_auto'] as $campo) {
+                $claves = array_map('strval', array_keys((array) $this->input($campo, [])));
+
+                foreach ($claves as $clave) {
+                    if (!in_array($clave, $camionIds, true)) {
+                        $validator->errors()->add($campo, 'Hay datos de ' . $campo . ' para una chapa que no fue seleccionada.');
+                    }
+                }
+            }
+        });
+    }
+
+    /**
      * Friendlier field names for the validation messages.
      *
      * @return array
@@ -71,13 +108,13 @@ class CreateLiquidacionRequest extends FormRequest
             'id_cliente' => 'propietario',
             'id_camion' => 'camión',
             'id_chofer' => 'chofer',
-            'id_orden_carga' => 'orden de carga',
+            'camion_ids' => 'camión',
             'facturado' => 'facturado',
-            'flete.tramo' => 'tramo del flete',
-            'flete.valor' => 'valor del flete',
-            'flete.diferencia' => 'diferencia del flete',
-            'flete.recargo_tolerancia' => 'tolerancia del recargo',
-            'flete.recargo_precio' => 'precio del recargo',
+            'flete.*.tramo' => 'tramo del flete',
+            'flete.*.valor' => 'valor del flete',
+            'flete.*.diferencia' => 'diferencia del flete',
+            'flete.*.recargo_tolerancia' => 'tolerancia del recargo',
+            'flete.*.recargo_precio' => 'precio del recargo',
             'descuento.concepto' => 'concepto del descuento',
             'descuento.valor' => 'valor del descuento',
             'gasto_administrativo.concepto' => 'concepto del gasto administrativo',

@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @package App\Models
  *
  * @property string $id_liquidacion
+ * @property string $id_camion
+ * @property string $id_orden_carga
  * @property string $fecha
  * @property string $tramo
  * @property string $kg_origen
@@ -34,6 +36,8 @@ class LiquidacionFlete extends Model
 
     public $fillable = [
         'id_liquidacion',
+        'id_camion',
+        'id_orden_carga',
         'fecha',
         'tramo',
         'kg_origen',
@@ -48,6 +52,8 @@ class LiquidacionFlete extends Model
 
     protected $casts = [
         'id_liquidacion' => 'string',
+        'id_camion' => 'string',
+        'id_orden_carga' => 'string',
         'fecha' => 'string',
         'tramo' => 'string',
         'kg_origen' => 'string',
@@ -69,5 +75,15 @@ class LiquidacionFlete extends Model
     public function liquidacion()
     {
         return $this->belongsTo(Liquidacion::class, 'id_liquidacion');
+    }
+
+    public function camion()
+    {
+        return $this->belongsTo(Camion::class, 'id_camion');
+    }
+
+    public function ordenCarga()
+    {
+        return $this->belongsTo(OrdenCarga::class, 'id_orden_carga');
     }
 }

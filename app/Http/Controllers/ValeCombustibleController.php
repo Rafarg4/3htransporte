@@ -6,6 +6,7 @@ use App\Http\Requests\CreateValeCombustibleRequest;
 use App\Http\Requests\UpdateValeCombustibleRequest;
 use App\Models\Camion;
 use App\Models\Empresa;
+use App\Models\Estacion;
 use App\Models\ValeCombustible;
 use App\Repositories\ValeCombustibleRepository;
 use App\Http\Controllers\AppBaseController;
@@ -50,6 +51,7 @@ class ValeCombustibleController extends AppBaseController
 
         return view('vale_combustibles.create')
             ->with('camions', $camions)
+            ->with('estaciones', $this->getEstacionesParaSelect())
             ->with('proximoNumeroVale', $this->getProximoNumeroVale());
     }
 
@@ -135,7 +137,18 @@ class ValeCombustibleController extends AppBaseController
 
         return view('vale_combustibles.edit')
             ->with('valeCombustible', $valeCombustible)
-            ->with('camions', $camions);
+            ->with('camions', $camions)
+            ->with('estaciones', $this->getEstacionesParaSelect());
+    }
+
+    /**
+     * Build the list of Estacion (Nombre Estacion) options for the select field.
+     *
+     * @return array
+     */
+    private function getEstacionesParaSelect()
+    {
+        return Estacion::orderBy('nombre')->pluck('nombre', 'nombre')->toArray();
     }
 
     /**

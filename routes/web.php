@@ -72,6 +72,10 @@ Route::middleware('auth')->group(function () {
     Route::get('valeCombustibles/{id}/pdf', [App\Http\Controllers\ValeCombustibleController::class, 'pdf'])
         ->name('valeCombustibles.pdf');
 
+    // Sin pantalla propia: se cargan solo desde el "+" del campo Nombre Estacion en Vale Combustible.
+    Route::post('estaciones', [App\Http\Controllers\EstacionController::class, 'store'])
+        ->name('estaciones.store');
+
 
     Route::resource('users', App\Http\Controllers\UserController::class);
 

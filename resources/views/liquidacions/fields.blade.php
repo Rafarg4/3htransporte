@@ -26,79 +26,98 @@
     {!! Form::select('id_chofer', $choferes, old('id_chofer'), ['class' => 'form-control', 'id' => 'id_chofer', 'placeholder' => 'Seleccione un chofer', 'required' => 'required']) !!}
 </div>
 
-<!-- Orden de Carga Field -->
-<div class="form-group col-sm-3">
-    <label for="id_orden_carga">Orden de Carga:</label>
-    <select name="id_orden_carga" id="id_orden_carga" class="form-control">
-        <option value="">Seleccione una orden de carga</option>
-        @foreach($ordenCargas as $ordenCarga)
-            <option value="{{ $ordenCarga->id }}" data-camion="{{ $ordenCarga->id_camion }}" {{ (string) old('id_orden_carga') === (string) $ordenCarga->id ? 'selected' : '' }}>
-                OC-{{ str_pad($ordenCarga->id, 6, '0', STR_PAD_LEFT) }} - {{ $ordenCarga->destino }}
-            </option>
-        @endforeach
-    </select>
-</div>
-
 <!-- Fecha Field -->
 <div class="form-group col-sm-3">
     {!! Form::label('fecha', 'Fecha:') !!}
     {!! Form::date('fecha', old('fecha', now()->format('Y-m-d')), ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
-<!-- FLETE -->
+@php
+    $ordenCargasData = $ordenCargas->map(function ($ordenCarga) {
+        return [
+            'id' => (string) $ordenCarga->id,
+            'camion' => (string) $ordenCarga->id_camion,
+            'texto' => 'OC-' . str_pad($ordenCarga->id, 6, '0', STR_PAD_LEFT) . ' - ' . $ordenCarga->destino,
+        ];
+    })->values();
+@endphp
+<div id="liquidacion-form-data"
+     data-ordenes-carga="{{ $ordenCargasData->toJson() }}"
+     data-old-flete="{{ collect(old('flete', []))->toJson() }}"
+     data-old-orden-carga="{{ collect(old('orden_carga', []))->toJson() }}"
+     style="display:none;"></div>
+
+<!-- FLETE (uno por cada chapa tildada en Camión) -->
 <div class="col-sm-12">
     <hr>
-    <h5>Flete</h5>
+    <h5>Flete <small class="text-muted font-weight-normal">(un bloque por cada chapa tildada)</small></h5>
+    <small class="text-muted d-block mb-2">
+        Diferencia negativa: se genera solo un Descuento por "Faltante de Carga" para esa chapa, con Diferencia + (Tolerancia &times; Precio).
+        Tolerancia y Precio Recargo se cargan por defecto desde <a href="{{ route('parametrizaciones.edit') }}" target="_blank">Parametrizaciones</a>, pero pueden ajustarse por chapa.
+    </small>
 
-    <div class="form-row">
-        <div class="form-group col-sm-2">
-            <label>Fecha</label>
-            <input type="date" name="flete[fecha]" class="form-control" value="{{ old('flete.fecha') }}">
-        </div>
-        <div class="form-group col-sm-3">
-            <label>Tramo</label>
-            <input type="text" name="flete[tramo]" class="form-control" placeholder="Origen a destino" value="{{ old('flete.tramo') }}">
-        </div>
-        <div class="form-group col-sm-1">
-            <label>Kg Origen</label>
-            <input type="number" step="0.01" id="flete-kg-origen" name="flete[kg_origen]" class="form-control" value="{{ old('flete.kg_origen') }}">
-        </div>
-        <div class="form-group col-sm-1">
-            <label>Kg Destino</label>
-            <input type="number" step="0.01" id="flete-kg-destino" name="flete[kg_destino]" class="form-control" value="{{ old('flete.kg_destino') }}">
-        </div>
-        <div class="form-group col-sm-1">
-            <label>Diferencia</label>
-            <input type="text" id="flete-diferencia" class="form-control" readonly tabindex="-1" value="{{ old('flete.diferencia') }}">
-            <input type="hidden" name="flete[diferencia]" id="flete-diferencia-raw" value="{{ old('flete.diferencia') }}">
-        </div>
-        <div class="form-group col-sm-2">
-            <label>Precio</label>
-            <input type="number" step="0.01" id="flete-precio" name="flete[precio]" class="form-control" value="{{ old('flete.precio') }}">
-        </div>
-        <div class="form-group col-sm-2">
-            <label>Valor</label>
-            <input type="number" step="0.01" id="flete-valor" name="flete[valor]" class="form-control liquidacion-credito" value="{{ old('flete.valor') }}">
-        </div>
-    </div>
-
-    <div class="form-row align-items-end">
-        <div class="col-sm-12">
-            <small class="text-muted d-block mb-1">
-                Diferencia negativa: se completa solo un Descuento por "Faltante de Carga" con Diferencia + (Tolerancia &times; Precio).
-                Los valores se cargan por defecto desde <a href="{{ route('parametrizaciones.edit') }}" target="_blank">Parametrizaciones</a>, pero pueden ajustarse para esta liquidación.
-            </small>
-        </div>
-        <div class="form-group col-sm-2">
-            <label>Tolerancia (Kg)</label>
-            <input type="number" step="0.01" id="flete-recargo-tolerancia" name="flete[recargo_tolerancia]" class="form-control" value="{{ old('flete.recargo_tolerancia', $parametrizacion->recargo_tolerancia) }}">
-        </div>
-        <div class="form-group col-sm-2">
-            <label>Precio Recargo</label>
-            <input type="number" step="0.01" id="flete-recargo-precio" name="flete[recargo_precio]" class="form-control" value="{{ old('flete.recargo_precio', $parametrizacion->recargo_precio) }}">
-        </div>
-    </div>
+    <p class="text-muted mb-0" id="flete-blocks-empty-hint">Tildá una o varias chapas en "Camión" para cargar su Flete.</p>
+    <div id="flete-blocks"></div>
 </div>
+
+<template id="flete-block-template">
+    <div class="flete-bloque border rounded p-2 mb-3" data-flete-bloque>
+        <h6 class="mb-2">Flete <span class="text-primary" data-role="chapa-heading"></span></h6>
+        <div class="form-row">
+            <div class="form-group col-sm-2">
+                <label>Fecha</label>
+                <input type="date" class="form-control" data-role="fecha" name="flete[__CAMION_ID__][fecha]">
+            </div>
+            <div class="form-group col-sm-3">
+                <label>Orden de Carga</label>
+                <select class="form-control" data-role="orden-carga" name="orden_carga[__CAMION_ID__]">
+                    <option value="">Seleccione una orden de carga</option>
+                </select>
+            </div>
+            <div class="form-group col-sm-3">
+                <label>Tramo</label>
+                <input type="text" class="form-control" data-role="tramo" name="flete[__CAMION_ID__][tramo]" placeholder="Origen a destino">
+            </div>
+            <div class="form-group col-sm-1">
+                <label>Kg Origen</label>
+                <input type="number" step="0.01" class="form-control" data-role="kg-origen" name="flete[__CAMION_ID__][kg_origen]">
+            </div>
+            <div class="form-group col-sm-1">
+                <label>Kg Destino</label>
+                <input type="number" step="0.01" class="form-control" data-role="kg-destino" name="flete[__CAMION_ID__][kg_destino]">
+            </div>
+            <div class="form-group col-sm-2">
+                <label>Diferencia</label>
+                <input type="text" class="form-control" data-role="diferencia" readonly tabindex="-1">
+                <input type="hidden" data-role="diferencia-raw" name="flete[__CAMION_ID__][diferencia]">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-sm-2">
+                <label>Precio</label>
+                <input type="number" step="0.01" class="form-control" data-role="precio" name="flete[__CAMION_ID__][precio]">
+            </div>
+            <div class="form-group col-sm-2">
+                <label>Valor</label>
+                <input type="number" step="0.01" class="form-control liquidacion-credito" data-role="valor" name="flete[__CAMION_ID__][valor]">
+            </div>
+            <div class="form-group col-sm-2">
+                <label>Tolerancia (Kg)</label>
+                <input type="number" step="0.01" class="form-control" data-role="recargo-tolerancia" name="flete[__CAMION_ID__][recargo_tolerancia]" value="{{ $parametrizacion->recargo_tolerancia }}">
+            </div>
+            <div class="form-group col-sm-2">
+                <label>Precio Recargo</label>
+                <input type="number" step="0.01" class="form-control" data-role="recargo-precio" name="flete[__CAMION_ID__][recargo_precio]" value="{{ $parametrizacion->recargo_precio }}">
+            </div>
+            <div class="form-group col-sm-4">
+                <label>Recargo (Faltante de Carga) <i class="fas fa-lock fa-xs text-muted" title="Se calcula automaticamente"></i></label>
+                <input type="text" class="form-control bg-light" data-role="recargo-preview" readonly tabindex="-1" placeholder="Sin recargo">
+                <input type="hidden" data-role="descuento-fecha" name="descuento_auto[__CAMION_ID__][fecha]">
+                <input type="hidden" data-role="descuento-valor" name="descuento_auto[__CAMION_ID__][valor]">
+            </div>
+        </div>
+    </div>
+</template>
 
 <!-- DESCUENTO -->
 @php $descuentoTieneDatos = old('descuento.fecha') || old('descuento.concepto') || old('descuento.valor'); @endphp
@@ -396,108 +415,174 @@
         });
 
         // --- Calculo asistido de Flete ---
-        var kgOrigen = document.getElementById('flete-kg-origen');
-        var kgDestino = document.getElementById('flete-kg-destino');
-        var diferencia = document.getElementById('flete-diferencia');
-        var diferenciaRaw = document.getElementById('flete-diferencia-raw');
-        var precio = document.getElementById('flete-precio');
-        var valor = document.getElementById('flete-valor');
-        var recargoTolerancia = document.getElementById('flete-recargo-tolerancia');
-        var recargoPrecio = document.getElementById('flete-recargo-precio');
-        var fleteFecha = document.querySelector('input[name="flete[fecha]"]');
         var fechaCabecera = document.querySelector('input[name="fecha"]');
+        var fleteBlocksContainer = document.getElementById('flete-blocks');
+        var fleteBlockTemplate = document.getElementById('flete-block-template');
+        var fleteBlocksEmptyHint = document.getElementById('flete-blocks-empty-hint');
 
-        // Cuando hay recargo, el Descuento se completa solo como "Faltante de Carga"
-        // con el mismo valor del recargo (el recargo en si es solo informativo), y con
-        // la Fecha del Flete (o la de la cabecera si el Flete no tiene fecha cargada).
-        function sincronizarDescuentoPorRecargo(valorRecargo) {
-            var descuentoIncluir = document.getElementById('descuento-incluir');
-            var descuentoCampos = document.getElementById('descuento-campos');
-            var descuentoFecha = descuentoCampos.querySelector('input[name="descuento[fecha]"]');
-            var descuentoConcepto = descuentoCampos.querySelector('select[name="descuento[concepto]"]');
-            var descuentoValor = descuentoCampos.querySelector('input[name="descuento[valor]"]');
-            var autoGestionado = descuentoIncluir.dataset.autoFaltante === '1';
+        var formData = document.getElementById('liquidacion-form-data').dataset;
+        var ordenCargasOriginales = JSON.parse(formData.ordenesCarga || '[]');
+        var oldFleteData = JSON.parse(formData.oldFlete || '{}');
+        var oldOrdenCargaData = JSON.parse(formData.oldOrdenCarga || '{}');
 
-            if (valorRecargo !== null) {
-                var esVacioOAuto = autoGestionado || (!descuentoIncluir.checked && !descuentoConcepto.value && !descuentoValor.value);
-                if (!esVacioOAuto) {
-                    // El usuario ya cargo un descuento propio (Multa, Anticipo, etc.), no lo pisamos.
-                    return;
+        function actualizarHintBloquesFlete() {
+            if (fleteBlocksEmptyHint) {
+                fleteBlocksEmptyHint.classList.toggle('d-none', fleteBlocksContainer.children.length > 0);
+            }
+        }
+
+        // Diferencia = KgDestino - KgOrigen; Recargo = Diferencia + (Tolerancia x Precio),
+        // solo cuando la Diferencia es negativa. El recargo no tiene campo propio "guardable":
+        // se vuelca directo a los hidden descuento_auto[<camion>][fecha|valor] de este bloque,
+        // que el backend guarda como su propia linea de Descuento "Faltante de Carga".
+        function inicializarCalculoBloque(bloque) {
+            var kgOrigen = bloque.querySelector('[data-role="kg-origen"]');
+            var kgDestino = bloque.querySelector('[data-role="kg-destino"]');
+            var diferencia = bloque.querySelector('[data-role="diferencia"]');
+            var diferenciaRaw = bloque.querySelector('[data-role="diferencia-raw"]');
+            var precio = bloque.querySelector('[data-role="precio"]');
+            var valor = bloque.querySelector('[data-role="valor"]');
+            var recargoTolerancia = bloque.querySelector('[data-role="recargo-tolerancia"]');
+            var recargoPrecio = bloque.querySelector('[data-role="recargo-precio"]');
+            var recargoPreview = bloque.querySelector('[data-role="recargo-preview"]');
+            var descuentoFecha = bloque.querySelector('[data-role="descuento-fecha"]');
+            var descuentoValor = bloque.querySelector('[data-role="descuento-valor"]');
+            var bloqueFecha = bloque.querySelector('[data-role="fecha"]');
+
+            function actualizarRecargo(valorDiferencia) {
+                var tolerancia = parseFloat(recargoTolerancia.value) || 0;
+                var precioRecargo = parseFloat(recargoPrecio.value) || 0;
+                var valorRecargo = (valorDiferencia !== null && valorDiferencia < 0)
+                    ? (valorDiferencia + (tolerancia * precioRecargo))
+                    : null;
+
+                if (valorRecargo !== null) {
+                    recargoPreview.value = formatoNumero(valorRecargo);
+                    descuentoValor.value = valorRecargo;
+                    descuentoFecha.value = bloqueFecha.value || (fechaCabecera ? fechaCabecera.value : '');
+                } else {
+                    recargoPreview.value = '';
+                    descuentoValor.value = '';
+                    descuentoFecha.value = '';
                 }
 
-                descuentoIncluir.checked = true;
-                descuentoIncluir.dataset.autoFaltante = '1';
-                descuentoCampos.style.display = '';
-                descuentoCampos.querySelectorAll('input, select').forEach(function (field) {
-                    field.disabled = false;
-                });
-                descuentoFecha.value = (fleteFecha && fleteFecha.value) ? fleteFecha.value : (fechaCabecera ? fechaCabecera.value : '');
-                descuentoConcepto.value = 'Faltante de Carga';
-                descuentoValor.value = valorRecargo;
-            } else if (autoGestionado) {
-                descuentoIncluir.checked = false;
-                descuentoIncluir.dataset.autoFaltante = '';
-                descuentoCampos.style.display = 'none';
-                descuentoCampos.querySelectorAll('input, select').forEach(function (field) {
-                    field.disabled = true;
-                    field.value = '';
-                });
-            }
-        }
-
-        // Recargo = Diferencia + (Tolerancia x Precio), solo cuando la Diferencia es negativa.
-        // No tiene campo propio en pantalla: se vuelca directo al Descuento "Faltante de Carga".
-        function actualizarRecargo(valorDiferencia) {
-            var tolerancia = parseFloat(recargoTolerancia.value) || 0;
-            var precioRecargo = parseFloat(recargoPrecio.value) || 0;
-            var valorRecargo = null;
-
-            if (valorDiferencia !== null && valorDiferencia < 0) {
-                valorRecargo = valorDiferencia + (tolerancia * precioRecargo);
-            }
-
-            sincronizarDescuentoPorRecargo(valorRecargo);
-            recalcularTotales();
-        }
-
-        function actualizarDiferencia() {
-            var origen = parseFloat(kgOrigen.value) || 0;
-            var destino = parseFloat(kgDestino.value) || 0;
-            var valorDiferencia = (origen && destino) ? (destino - origen) : null;
-
-            diferencia.value = valorDiferencia !== null ? formatoNumero(valorDiferencia) : '';
-            diferenciaRaw.value = valorDiferencia !== null ? valorDiferencia : '';
-
-            actualizarRecargo(valorDiferencia);
-        }
-
-        function actualizarValorFlete() {
-            var destino = parseFloat(kgDestino.value) || 0;
-            var precioValor = parseFloat(precio.value) || 0;
-            if (destino && precioValor) {
-                valor.value = Math.round(destino * precioValor);
                 recalcularTotales();
             }
-        }
 
-        [kgOrigen, kgDestino].forEach(function (input) {
-            input.addEventListener('input', actualizarDiferencia);
-        });
-
-        [kgDestino, precio].forEach(function (input) {
-            input.addEventListener('input', actualizarValorFlete);
-        });
-
-        [recargoTolerancia, recargoPrecio].forEach(function (input) {
-            input.addEventListener('input', function () {
+            function actualizarDiferencia() {
                 var origen = parseFloat(kgOrigen.value) || 0;
                 var destino = parseFloat(kgDestino.value) || 0;
-                actualizarRecargo((origen && destino) ? (destino - origen) : null);
-            });
-        });
+                var valorDiferencia = (origen && destino) ? (destino - origen) : null;
 
-        // Recalcular al cargar por si el formulario vuelve con datos restaurados (old()).
-        actualizarDiferencia();
+                diferencia.value = valorDiferencia !== null ? formatoNumero(valorDiferencia) : '';
+                diferenciaRaw.value = valorDiferencia !== null ? valorDiferencia : '';
+
+                actualizarRecargo(valorDiferencia);
+            }
+
+            function actualizarValorFlete() {
+                var destino = parseFloat(kgDestino.value) || 0;
+                var precioValor = parseFloat(precio.value) || 0;
+                if (destino && precioValor) {
+                    valor.value = Math.round(destino * precioValor);
+                    recalcularTotales();
+                }
+            }
+
+            [kgOrigen, kgDestino].forEach(function (input) {
+                input.addEventListener('input', actualizarDiferencia);
+            });
+
+            [kgDestino, precio].forEach(function (input) {
+                input.addEventListener('input', actualizarValorFlete);
+            });
+
+            [recargoTolerancia, recargoPrecio].forEach(function (input) {
+                input.addEventListener('input', function () {
+                    var origen = parseFloat(kgOrigen.value) || 0;
+                    var destino = parseFloat(kgDestino.value) || 0;
+                    actualizarRecargo((origen && destino) ? (destino - origen) : null);
+                });
+            });
+
+            actualizarDiferencia();
+        }
+
+        function bloqueTieneDatos(bloque) {
+            var roles = ['fecha', 'tramo', 'kg-origen', 'kg-destino', 'precio', 'valor'];
+            return roles.some(function (rol) {
+                var el = bloque.querySelector('[data-role="' + rol + '"]');
+                return el && el.value;
+            }) || bloque.querySelector('[data-role="orden-carga"]').value;
+        }
+
+        function crearBloqueFlete(camionId, chapaTexto) {
+            var fragmento = fleteBlockTemplate.content.cloneNode(true);
+            var bloque = fragmento.querySelector('[data-flete-bloque]');
+            bloque.dataset.camionId = camionId;
+
+            bloque.querySelectorAll('[name]').forEach(function (el) {
+                el.name = el.name.replace(/__CAMION_ID__/g, camionId);
+            });
+
+            bloque.querySelector('[data-role="chapa-heading"]').textContent = chapaTexto ? '— ' + chapaTexto : '';
+
+            var ordenCargaSelect = bloque.querySelector('[data-role="orden-carga"]');
+            ordenCargasOriginales.forEach(function (oc) {
+                if (oc.camion === camionId) {
+                    ordenCargaSelect.appendChild(new Option(oc.texto, oc.id));
+                }
+            });
+
+            var datosViejos = oldFleteData[camionId];
+            if (datosViejos) {
+                ['fecha', 'tramo', 'kg_origen', 'kg_destino', 'precio', 'recargo_tolerancia', 'recargo_precio'].forEach(function (campo) {
+                    var rol = campo.replace(/_/g, '-');
+                    var el = bloque.querySelector('[data-role="' + rol + '"]');
+                    if (el && datosViejos[campo]) {
+                        el.value = datosViejos[campo];
+                    }
+                });
+            }
+            if (oldOrdenCargaData[camionId]) {
+                ordenCargaSelect.value = oldOrdenCargaData[camionId];
+            }
+
+            fleteBlocksContainer.appendChild(bloque);
+            inicializarCalculoBloque(bloque);
+            actualizarHintBloquesFlete();
+        }
+
+        function eliminarBloqueFlete(camionId) {
+            var bloque = fleteBlocksContainer.querySelector('[data-camion-id="' + camionId + '"]');
+            if (bloque) {
+                bloque.remove();
+            }
+            actualizarHintBloquesFlete();
+        }
+
+        // Agrega un bloque de Flete por cada chapa recien tildada y quita el de las destildadas,
+        // sin tocar los bloques de chapas que siguen tildadas (no se pierden datos ya cargados).
+        function sincronizarBloquesFlete() {
+            var seleccionados = obtenerCamionesSeleccionados();
+            var renderizados = Array.prototype.map.call(
+                fleteBlocksContainer.querySelectorAll('[data-flete-bloque]'),
+                function (b) { return b.dataset.camionId; }
+            );
+
+            renderizados
+                .filter(function (id) { return seleccionados.indexOf(id) === -1; })
+                .forEach(eliminarBloqueFlete);
+
+            seleccionados
+                .filter(function (id) { return renderizados.indexOf(id) === -1; })
+                .forEach(function (id) {
+                    var camion = camionesOriginales.find(function (c) { return c.value === id; });
+                    crearBloqueFlete(id, camion ? camion.text : '');
+                });
+
+            recalcularTotales();
+        }
 
         // --- Casillero Incluir descuento ---
         var descuentoCheckbox = document.getElementById('descuento-incluir');
@@ -515,29 +600,7 @@
             recalcularTotales();
         });
 
-        // --- Filtros: Propietario -> Camion -> Orden de Carga; Propietario -> Viatico / Combustible (checkboxes) ---
-        function filtrarSelect(select, atributo, valorFiltro) {
-            var opcionSeleccionadaValida = false;
-
-            Array.prototype.forEach.call(select.options, function (opcion) {
-                if (!opcion.value) {
-                    return;
-                }
-
-                var mostrar = !valorFiltro || opcion.dataset[atributo] === valorFiltro;
-                opcion.hidden = !mostrar;
-                opcion.disabled = !mostrar;
-
-                if (mostrar && opcion.selected) {
-                    opcionSeleccionadaValida = true;
-                }
-            });
-
-            if (!opcionSeleccionadaValida) {
-                select.value = '';
-            }
-        }
-
+        // --- Filtros: Propietario -> Camion; Propietario -> Viatico / Combustible (checkboxes) ---
         function filtrarFilasPorAtributo(listaId, hintId, atributo, valorFiltro) {
             var lista = document.getElementById(listaId);
             if (!lista) {
@@ -613,7 +676,6 @@
         var clienteSelect = document.getElementById('id_cliente');
         var idCamionHidden = document.getElementById('id_camion');
         var choferSelect = document.getElementById('id_chofer');
-        var ordenCargaSelect = document.getElementById('id_orden_carga');
 
         // --- Camion: select2 multiple ---
         var $camionSelect = $('#camiones-select');
@@ -628,8 +690,10 @@
         });
 
         // La primera chapa tildada (en orden de la lista) queda como "chapa principal":
-        // es la que se guarda en la Liquidacion y filtra la Orden de Carga. Las demas
-        // chapas tildadas solo amplian que Vales de Combustible se muestran/pueden tildar.
+        // es la que se guarda en la Liquidacion (y, si su bloque de Flete no tiene Orden de
+        // Carga, se usa la primera que si tenga, ver store()). Las demas chapas tildadas
+        // amplian que Vales de Combustible se muestran/pueden tildar, y cada una tiene su
+        // propio bloque de Flete (ver sincronizarBloquesFlete).
         function obtenerCamionesSeleccionados() {
             return $camionSelect.val() || [];
         }
@@ -639,15 +703,35 @@
 
             idCamionHidden.value = seleccionados[0] || '';
 
-            filtrarSelect(ordenCargaSelect, 'camion', idCamionHidden.value);
             filtrarFilasPorAtributoMultiple('vales-list', 'vales-empty-hint', 'camion', seleccionados);
             recalcularTotales();
         }
 
         // Reconstruye las opciones del select2 con solo las chapas del propietario elegido,
-        // preservando las que ya estaban tildadas y siguen siendo validas.
+        // preservando las que ya estaban tildadas y siguen siendo validas. Si el cambio de
+        // Propietario va a destildar (y por lo tanto borrar el bloque de Flete de) alguna
+        // chapa que ya tiene datos cargados, pide confirmacion antes de aplicar el filtro.
+        var clienteAnterior = clienteSelect.value;
+
         function filtrarCamionesPorCliente(valorFiltro) {
             var seleccionActual = obtenerCamionesSeleccionados();
+
+            var idsAEliminar = camionesOriginales
+                .filter(function (camion) { return valorFiltro && camion.cliente !== valorFiltro; })
+                .map(function (camion) { return camion.value; })
+                .filter(function (id) { return seleccionActual.indexOf(id) !== -1; });
+
+            var hayDatosEnRiesgo = idsAEliminar.some(function (id) {
+                var bloque = fleteBlocksContainer.querySelector('[data-camion-id="' + id + '"]');
+                return bloque && bloqueTieneDatos(bloque);
+            });
+
+            if (hayDatosEnRiesgo && !confirm('Cambiar el Propietario va a quitar del formulario el Flete ya cargado para alguna de las chapas tildadas. ¿Querés continuar?')) {
+                clienteSelect.value = clienteAnterior;
+                return;
+            }
+
+            clienteAnterior = valorFiltro;
 
             $camionSelect.empty();
             camionesOriginales.forEach(function (camion) {
@@ -665,7 +749,10 @@
             filtrarCamionesPorCliente(clienteSelect.value);
         });
 
-        $camionSelect.on('change', actualizarCamionPrincipalYFiltros);
+        $camionSelect.on('change', function () {
+            actualizarCamionPrincipalYFiltros();
+            sincronizarBloquesFlete();
+        });
 
         var liquidacionForm = idCamionHidden.closest('form');
         var facturadoInput = document.getElementById('facturado-input');

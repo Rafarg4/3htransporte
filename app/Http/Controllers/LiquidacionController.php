@@ -138,11 +138,22 @@ class LiquidacionController extends AppBaseController
     public function store(CreateLiquidacionRequest $request)
     {
         DB::transaction(function () use ($request) {
+            $fletesPorCamion = $request->input('flete', []);
+            $ordenCargaPorCamion = $request->input('orden_carga', []);
+            $idCamionPrincipal = $request->input('id_camion');
+
+            $idOrdenCargaCabecera = $ordenCargaPorCamion[$idCamionPrincipal] ?? null;
+            if (empty($idOrdenCargaCabecera)) {
+                $idOrdenCargaCabecera = collect($ordenCargaPorCamion)->first(function ($valor) {
+                    return !empty($valor);
+                });
+            }
+
             $liquidacion = Liquidacion::create([
                 'id_cliente' => $request->input('id_cliente'),
-                'id_camion' => $request->input('id_camion'),
+                'id_camion' => $idCamionPrincipal,
                 'id_chofer' => $request->input('id_chofer'),
-                'id_orden_carga' => $request->input('id_orden_carga'),
+                'id_orden_carga' => $idOrdenCargaCabecera,
                 'fecha' => $request->input('fecha'),
                 'estado' => 'Activo',
                 'facturado' => $request->input('facturado', 'No'),
@@ -150,7 +161,36 @@ class LiquidacionController extends AppBaseController
 
             $fechaCabecera = $request->input('fecha');
 
-            $this->guardarLinea($liquidacion, LiquidacionFlete::class, $request->input('flete', []), ['fecha', 'tramo', 'kg_origen', 'kg_destino', 'diferencia', 'precio', 'valor', 'recargo_tolerancia', 'recargo_precio'], $fechaCabecera);
+            foreach ($fletesPorCamion as $idCamion => $filaFlete) {
+                $idOrdenCarga = $ordenCargaPorCamion[$idCamion] ?? null;
+
+                $this->guardarLinea(
+                    $liquidacion,
+                    LiquidacionFlete::class,
+                    $filaFlete,
+                    ['fecha', 'tramo', 'kg_origen', 'kg_destino', 'diferencia', 'precio', 'valor', 'recargo_tolerancia', 'recargo_precio'],
+                    $fechaCabecera,
+                    ['id_camion' => $idCamion, 'id_orden_carga' => $idOrdenCarga]
+                );
+
+                if (!empty($idOrdenCarga)) {
+                    OrdenCarga::where('id', $idOrdenCarga)
+                        ->whereNull('liquidado')
+                        ->update(['liquidado' => 'S']);
+                }
+            }
+
+            foreach ($request->input('descuento_auto', []) as $idCamion => $filaDescuentoAuto) {
+                $this->guardarLinea(
+                    $liquidacion,
+                    LiquidacionDescuento::class,
+                    $filaDescuentoAuto,
+                    ['fecha', 'valor'],
+                    $fechaCabecera,
+                    ['id_camion' => $idCamion, 'concepto' => 'Faltante de Carga']
+                );
+            }
+
             $this->guardarLinea($liquidacion, LiquidacionDescuento::class, $request->input('descuento', []), ['fecha', 'concepto', 'valor'], $fechaCabecera);
             $this->guardarLinea($liquidacion, LiquidacionGastoAdministrativo::class, $request->input('gasto_administrativo', []), ['fecha', 'concepto', 'valor'], $fechaCabecera);
 
@@ -161,12 +201,6 @@ class LiquidacionController extends AppBaseController
             ValeCombustible::whereIn('id', $request->input('vale_combustible_ids', []))
                 ->whereNull('liquidado')
                 ->update(['id_liquidacion' => $liquidacion->id, 'liquidado' => 'S']);
-
-            if ($request->filled('id_orden_carga')) {
-                OrdenCarga::where('id', $request->input('id_orden_carga'))
-                    ->whereNull('liquidado')
-                    ->update(['liquidado' => 'S']);
-            }
         });
 
         Flash::success('Liquidación guardada correctamente.');
@@ -176,19 +210,23 @@ class LiquidacionController extends AppBaseController
 
     /**
      * Create the single child row for a section of the Liquidacion form,
-     * skipping it entirely if the user left it empty (or unchecked, since
-     * disabled inputs are not submitted). If the row itself has no Fecha,
-     * falls back to the Liquidacion's own Fecha so it never gets saved null.
+     * skipping it entirely if the business fields in $campos were left empty
+     * (or unchecked, since disabled inputs are not submitted). If the row
+     * itself has no Fecha, falls back to the Liquidacion's own Fecha so it
+     * never gets saved null. $extra carries fields that are always attached
+     * to the row (id_camion, forced concepto, etc.) without counting toward
+     * the "is this row empty" check or needing to be listed in $campos.
      *
      * @param Liquidacion $liquidacion
      * @param string $modelClass
      * @param array $fila
      * @param array $campos
      * @param string|null $fechaCabecera
+     * @param array $extra
      *
      * @return void
      */
-    private function guardarLinea(Liquidacion $liquidacion, string $modelClass, array $fila, array $campos, $fechaCabecera = null)
+    private function guardarLinea(Liquidacion $liquidacion, string $modelClass, array $fila, array $campos, $fechaCabecera = null, array $extra = [])
     {
         $vacia = collect($campos)->every(function ($campo) use ($fila) {
             return empty($fila[$campo] ?? null);
@@ -204,6 +242,7 @@ class LiquidacionController extends AppBaseController
             $datos['fecha'] = $fechaCabecera;
         }
 
+        $datos = array_merge($datos, $extra);
         $datos['id_liquidacion'] = $liquidacion->id;
 
         $modelClass::create($datos);
@@ -223,8 +262,9 @@ class LiquidacionController extends AppBaseController
             'camion',
             'chofer',
             'ordenCarga',
-            'fletes',
-            'descuentos',
+            'fletes.camion',
+            'fletes.ordenCarga',
+            'descuentos.camion',
             'viaticos.chofer',
             'combustibles.camion',
             'gastosAdministrativos',
@@ -267,8 +307,13 @@ class LiquidacionController extends AppBaseController
             Viatico::where('id_liquidacion', $liquidacion->id)->update(['id_liquidacion' => null, 'liquidado' => null]);
             ValeCombustible::where('id_liquidacion', $liquidacion->id)->update(['id_liquidacion' => null, 'liquidado' => null]);
 
+            $idsOrdenCarga = $liquidacion->fletes->pluck('id_orden_carga')->filter()->values();
             if ($liquidacion->id_orden_carga) {
-                OrdenCarga::where('id', $liquidacion->id_orden_carga)->update(['liquidado' => null]);
+                $idsOrdenCarga->push($liquidacion->id_orden_carga);
+            }
+
+            if ($idsOrdenCarga->isNotEmpty()) {
+                OrdenCarga::whereIn('id', $idsOrdenCarga->unique())->update(['liquidado' => null]);
             }
         });
 

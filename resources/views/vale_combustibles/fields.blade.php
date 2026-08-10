@@ -25,7 +25,38 @@
 <!-- Nombre Estacion Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('nombre_estacion', 'Nombre Estacion:') !!}
-    {!! Form::select('nombre_estacion', ['Ecop' => 'Ecop', 'Petrobras' => 'Petrobras'], null, ['class' => 'form-control', 'placeholder' => 'Seleccione una opción', 'required' => 'required']) !!}
+    <div class="input-group">
+        {!! Form::select('nombre_estacion', $estaciones, null, ['class' => 'form-control', 'id' => 'nombre_estacion', 'placeholder' => 'Seleccione una opción', 'required' => 'required']) !!}
+        <div class="input-group-append">
+            <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#estacion-modal" title="Agregar nueva estación">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="estacion-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nueva Estación</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group mb-0">
+                    <label for="estacion-nombre-nueva">Nombre</label>
+                    <input type="text" class="form-control" id="estacion-nombre-nueva" placeholder="Ej: Ecop">
+                    <small class="text-danger d-none" id="estacion-nombre-error"></small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="estacion-guardar-btn">Guardar</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Codigo Field -->
@@ -100,5 +131,76 @@
                 importeInput.value = importeInput.value.replace(/\D/g, '');
             });
         }
+    })();
+
+    // --- Alta rapida de Estacion desde el modal, sin salir de este formulario ---
+    (function () {
+        var guardarBtn = document.getElementById('estacion-guardar-btn');
+        var nombreInput = document.getElementById('estacion-nombre-nueva');
+        var errorEl = document.getElementById('estacion-nombre-error');
+        var estacionSelect = document.getElementById('nombre_estacion');
+
+        if (!guardarBtn) {
+            return;
+        }
+
+        function mostrarError(mensaje) {
+            errorEl.textContent = mensaje;
+            errorEl.classList.remove('d-none');
+        }
+
+        function limpiarError() {
+            errorEl.textContent = '';
+            errorEl.classList.add('d-none');
+        }
+
+        guardarBtn.addEventListener('click', function () {
+            var nombre = nombreInput.value.trim();
+            limpiarError();
+
+            if (!nombre) {
+                mostrarError('Ingresá un nombre.');
+                return;
+            }
+
+            guardarBtn.disabled = true;
+
+            fetch("{{ route('estaciones.store') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({ nombre: nombre })
+            })
+                .then(function (response) {
+                    return response.json().then(function (datos) {
+                        return { ok: response.ok, datos: datos };
+                    });
+                })
+                .then(function (resultado) {
+                    guardarBtn.disabled = false;
+
+                    if (!resultado.ok) {
+                        var mensaje = (resultado.datos.errors && resultado.datos.errors.nombre)
+                            ? resultado.datos.errors.nombre[0]
+                            : 'No se pudo guardar la estación.';
+                        mostrarError(mensaje);
+                        return;
+                    }
+
+                    var opcion = new Option(resultado.datos.nombre, resultado.datos.nombre, true, true);
+                    estacionSelect.appendChild(opcion);
+                    estacionSelect.value = resultado.datos.nombre;
+
+                    nombreInput.value = '';
+                    document.querySelector('#estacion-modal [data-dismiss="modal"]').click();
+                })
+                .catch(function () {
+                    guardarBtn.disabled = false;
+                    mostrarError('Error de conexión. Intentá de nuevo.');
+                });
+        });
     })();
 </script>
