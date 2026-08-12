@@ -123,7 +123,7 @@
                 <label>Recargo (Faltante de Carga) <i class="fas fa-lock fa-xs text-muted" title="Se calcula automaticamente"></i></label>
                 <input type="text" class="form-control bg-light" data-role="recargo-preview" readonly tabindex="-1" placeholder="Sin recargo">
                 <input type="hidden" data-role="descuento-fecha" name="descuento_auto[__CAMION_ID__][fecha]">
-                <input type="hidden" data-role="descuento-valor" name="descuento_auto[__CAMION_ID__][valor]">
+                <input type="hidden" class="liquidacion-debito" data-role="descuento-valor" name="descuento_auto[__CAMION_ID__][valor]">
             </div>
         </div>
     </div>

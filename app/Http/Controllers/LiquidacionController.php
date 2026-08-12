@@ -103,7 +103,7 @@ class LiquidacionController extends AppBaseController
     }
 
     /**
-     * Vales de combustible que todavia no fueron usados en ninguna liquidacion,
+     * Vales de combustible activos que todavia no fueron usados en ninguna liquidacion,
      * disponibles para tildar (filtrados por el Camion de la cabecera en JS).
      *
      * @return \Illuminate\Support\Collection
@@ -112,6 +112,7 @@ class LiquidacionController extends AppBaseController
     {
         return ValeCombustible::with('camion')
             ->whereNull('liquidado')
+            ->where('estado', 'Activo')
             ->orderByDesc('id')
             ->get();
     }
