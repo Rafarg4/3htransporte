@@ -114,18 +114,63 @@ class CreateLiquidacionRequest extends FormRequest
             'id_cliente' => 'propietario',
             'id_camion' => 'camión',
             'id_chofer' => 'chofer',
-            'camion_ids' => 'camión',
-            'chofer_ids' => 'chofer',
+            'fecha' => 'fecha',
             'facturado' => 'facturado',
+
+            'camion_ids' => 'camión',
+            'camion_ids.*' => 'camión',
+            'chofer_ids' => 'chofer',
+            'chofer_ids.*' => 'chofer',
+
+            'flete.*.fecha' => 'fecha del flete',
             'flete.*.tramo' => 'tramo del flete',
-            'flete.*.valor' => 'valor del flete',
+            'flete.*.kg_origen' => 'kg origen del flete',
+            'flete.*.kg_destino' => 'kg destino del flete',
             'flete.*.diferencia' => 'diferencia del flete',
+            'flete.*.precio' => 'precio del flete',
+            'flete.*.valor' => 'valor del flete',
             'flete.*.recargo_tolerancia' => 'tolerancia del recargo',
             'flete.*.recargo_precio' => 'precio del recargo',
+
+            'orden_carga.*' => 'orden de carga',
+
+            'descuento_auto.*.fecha' => 'fecha del descuento automático',
+            'descuento_auto.*.valor' => 'valor del descuento automático',
+
+            'descuento.fecha' => 'fecha del descuento',
             'descuento.concepto' => 'concepto del descuento',
             'descuento.valor' => 'valor del descuento',
+
+            'gasto_administrativo.fecha' => 'fecha del gasto administrativo',
             'gasto_administrativo.concepto' => 'concepto del gasto administrativo',
+            'gasto_administrativo.monto_unitario' => 'monto del gasto administrativo',
             'gasto_administrativo.valor' => 'valor del gasto administrativo',
+
+            'viatico_ids' => 'viático',
+            'viatico_ids.*' => 'viático',
+            'vale_combustible_ids' => 'vale de combustible',
+            'vale_combustible_ids.*' => 'vale de combustible',
+        ];
+    }
+
+    /**
+     * Spanish messages for every validation rule used in rules(), ya que el idioma por
+     * defecto de la aplicacion (config/app.php locale=en) no tiene traduccion instalada.
+     *
+     * @return array
+     */
+    public function messages()
+    {
+        return [
+            'required' => 'El campo :attribute es obligatorio.',
+            'required_with' => 'El campo :attribute es obligatorio.',
+            'exists' => 'El :attribute seleccionado no es válido.',
+            'array' => 'El campo :attribute debe ser una lista.',
+            'min.array' => 'Tildá al menos un :attribute.',
+            'date' => 'El campo :attribute debe ser una fecha válida.',
+            'numeric' => 'El campo :attribute debe ser un número.',
+            'integer' => 'El campo :attribute debe ser un número entero.',
+            'facturado.in' => 'Indicá si la liquidación está facturada (Si o No).',
         ];
     }
 }

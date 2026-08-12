@@ -149,7 +149,20 @@
     </tr>
     <tr>
         <td class="label">Chofer</td>
-        <td>{{ $liquidacion->chofer ? trim($liquidacion->chofer->nombre . ' ' . $liquidacion->chofer->apellido) : '-' }}</td>
+        <td>
+            @php
+                // Solo cubre choferes con algun Viatico tildado en esta liquidacion: es el unico
+                // lugar donde queda registrado que estuvieron; un chofer tildado sin Viatico no
+                // deja rastro en ninguna tabla, asi que no se puede listar.
+                $nombresChoferes = $liquidacion->viaticos
+                    ->pluck('chofer')
+                    ->filter()
+                    ->unique('id')
+                    ->map(fn ($chofer) => trim($chofer->nombre . ' ' . $chofer->apellido))
+                    ->values();
+            @endphp
+            {{ $nombresChoferes->isNotEmpty() ? $nombresChoferes->implode(', ') : ($liquidacion->chofer ? trim($liquidacion->chofer->nombre . ' ' . $liquidacion->chofer->apellido) : '-') }}
+        </td>
     </tr>
     <tr>
         <td class="label">Orden de Carga</td>

@@ -60,7 +60,7 @@
 <!-- FLETE (uno por cada chapa tildada en Camión) -->
 <div class="col-sm-12">
     <hr>
-    <h5>Flete <small class="text-muted font-weight-normal">(un bloque por cada chapa tildada)</small></h5>
+    <h5>Flete <small class="text-muted font-weight-normal">(un bloque por cada chapa tildada, Tramo y Valor obligatorios)</small></h5>
     <small class="text-muted d-block mb-2">
         Diferencia negativa: se genera solo un Descuento por "Faltante de Carga" para esa chapa, con Diferencia + (Tolerancia &times; Precio).
         Tolerancia y Precio Recargo se cargan por defecto desde <a href="{{ route('parametrizaciones.edit') }}" target="_blank">Parametrizaciones</a>, pero pueden ajustarse por chapa.
@@ -798,6 +798,66 @@
             actualizarChoferPrincipalYFiltros();
         });
 
+        // --- Validaciones que reflejan en el navegador las reglas de CreateLiquidacionRequest
+        // (Flete/Descuento/Gasto Administrativo), para que el usuario nunca llegue a ver un
+        // error del backend en el uso normal del formulario. El backend se deja como respaldo
+        // ante datos manipulados o JS deshabilitado.
+        //
+        // Flete es obligatorio SIEMPRE (Tramo y Valor) para cada chapa tildada en Camión, sin
+        // excepcion: no existe la posibilidad de tildar una chapa y dejar su bloque vacio.
+        function validarBloquesFlete() {
+            var bloques = fleteBlocksContainer.querySelectorAll('[data-flete-bloque]');
+
+            for (var i = 0; i < bloques.length; i++) {
+                var bloque = bloques[i];
+                var tramo = bloque.querySelector('[data-role="tramo"]');
+                var valor = bloque.querySelector('[data-role="valor"]');
+
+                if (!tramo.value || !valor.value) {
+                    var chapaHeading = bloque.querySelector('[data-role="chapa-heading"]');
+                    var chapa = chapaHeading ? chapaHeading.textContent.replace(/^—\s*/, '') : '';
+                    return 'Flete' + (chapa ? ' (' + chapa + ')' : '') + ': completá Tramo y Valor.';
+                }
+            }
+
+            return null;
+        }
+
+        function validarDescuentoManual() {
+            if (!descuentoCheckbox.checked) {
+                return null;
+            }
+
+            var fecha = descuentoCampos.querySelector('input[name="descuento[fecha]"]');
+            var concepto = descuentoCampos.querySelector('select[name="descuento[concepto]"]');
+            var valor = descuentoCampos.querySelector('input[name="descuento[valor]"]');
+
+            if (!fecha.value && !concepto.value && !valor.value) {
+                return null;
+            }
+
+            if (!concepto.value || !valor.value) {
+                return 'Descuento: completá Concepto y Valor (o destildá "Incluir descuento").';
+            }
+
+            return null;
+        }
+
+        function validarGastoAdministrativo() {
+            var fecha = document.querySelector('input[name="gasto_administrativo[fecha]"]');
+            var concepto = document.querySelector('select[name="gasto_administrativo[concepto]"]');
+
+            if (!fecha.value && !concepto.value && !gastoAdminMontoSelect.value) {
+                return null;
+            }
+
+            if (!concepto.value || !gastoAdminMontoSelect.value) {
+                return 'Gastos Administrativos: completá Concepto y Monto.';
+            }
+
+            return null;
+        }
+
         var liquidacionForm = idCamionHidden.closest('form');
         var facturadoInput = document.getElementById('facturado-input');
         var $facturadoModal = $('#facturado-modal');
@@ -813,6 +873,27 @@
                 if (!idChoferHidden.value) {
                     event.preventDefault();
                     alert('Seleccioná al menos un chofer.');
+                    return;
+                }
+
+                var errorFlete = validarBloquesFlete();
+                if (errorFlete) {
+                    event.preventDefault();
+                    alert(errorFlete);
+                    return;
+                }
+
+                var errorDescuento = validarDescuentoManual();
+                if (errorDescuento) {
+                    event.preventDefault();
+                    alert(errorDescuento);
+                    return;
+                }
+
+                var errorGasto = validarGastoAdministrativo();
+                if (errorGasto) {
+                    event.preventDefault();
+                    alert(errorGasto);
                     return;
                 }
 
