@@ -149,7 +149,10 @@
             <label>Concepto</label>
             <select name="descuento[concepto]" class="form-control" {{ $descuentoTieneDatos ? '' : 'disabled' }}>
                 <option value="">Seleccione un concepto</option>
-                @foreach(['Multa', 'Anticipo', 'Faltante de Carga', 'Otro'] as $concepto)
+                {{-- "Faltante de Carga" no esta en esta lista a proposito: se calcula solo, por
+                     chapa, desde el Recargo de cada bloque de Flete (ver actualizarRecargo() mas
+                     abajo). Ofrecerlo tambien aca duplicaba el descuento si se cargaba a mano. --}}
+                @foreach(['Multa', 'Anticipo', 'Otro'] as $concepto)
                     <option value="{{ $concepto }}" {{ old('descuento.concepto') === $concepto ? 'selected' : '' }}>{{ $concepto }}</option>
                 @endforeach
             </select>
