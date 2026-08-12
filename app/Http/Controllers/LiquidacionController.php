@@ -68,7 +68,7 @@ class LiquidacionController extends AppBaseController
         return view('liquidacions.create')
             ->with('clientes', $this->getClientesParaSelect())
             ->with('camions', Camion::orderBy('chapa')->get())
-            ->with('choferes', $this->getChoferesParaSelect())
+            ->with('choferes', Chofer::orderBy('nombre')->get())
             ->with('ordenCargas', OrdenCarga::whereNull('liquidado')->orderByDesc('id')->get())
             ->with('viaticosDisponibles', $this->getViaticosDisponibles())
             ->with('valeCombustiblesDisponibles', $this->getValeCombustiblesDisponibles())
@@ -84,18 +84,6 @@ class LiquidacionController extends AppBaseController
     {
         return Cliente::orderBy('nombre')->get()->mapWithKeys(function ($cliente) {
             return [$cliente->id => trim($cliente->nombre . ' ' . $cliente->apellido)];
-        })->toArray();
-    }
-
-    /**
-     * Build the list of Chofer options for the select field.
-     *
-     * @return array
-     */
-    private function getChoferesParaSelect()
-    {
-        return Chofer::orderBy('nombre')->get()->mapWithKeys(function ($chofer) {
-            return [$chofer->id => trim($chofer->nombre . ' ' . $chofer->apellido) . ' - ' . $chofer->documento];
         })->toArray();
     }
 

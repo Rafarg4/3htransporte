@@ -22,8 +22,18 @@
 
 <!-- Chofer Field -->
 <div class="form-group col-sm-3">
-    {!! Form::label('id_chofer', 'Chofer:') !!}
-    {!! Form::select('id_chofer', $choferes, old('id_chofer'), ['class' => 'form-control', 'id' => 'id_chofer', 'placeholder' => 'Seleccione un chofer', 'required' => 'required']) !!}
+    <label for="choferes-select">Chofer: <small class="text-muted font-weight-normal">(podés elegir varios)</small></label>
+    <select name="chofer_ids[]" id="choferes-select" class="form-control" multiple="multiple" style="width:100%;">
+        @php
+            $choferesTildados = array_map('strval', old('chofer_ids', old('id_chofer') ? [old('id_chofer')] : []));
+        @endphp
+        @foreach($choferes as $chofer)
+            <option value="{{ $chofer->id }}" {{ in_array((string) $chofer->id, $choferesTildados) ? 'selected' : '' }}>
+                {{ trim($chofer->nombre . ' ' . $chofer->apellido) }} - {{ $chofer->documento }}
+            </option>
+        @endforeach
+    </select>
+    {!! Form::hidden('id_chofer', old('id_chofer'), ['id' => 'id_chofer']) !!}
 </div>
 
 <!-- Fecha Field -->
@@ -190,7 +200,7 @@
                 </tbody>
             </table>
         </div>
-        <p class="text-muted mb-0 mt-2 d-none" id="viaticos-empty-hint">Este chofer no tiene viáticos disponibles.</p>
+        <p class="text-muted mb-0 mt-2 d-none" id="viaticos-empty-hint">Los choferes tildados no tienen viáticos disponibles.</p>
     @endif
 </div>
 
@@ -245,13 +255,14 @@
 <div class="col-sm-12">
     <hr>
     <h5>Gastos Administrativos</h5>
+    <small class="text-muted d-block mb-2">El monto se multiplica por la cantidad de fletes tildados (una chapa tildada en Camión = un flete).</small>
 
     <div class="form-row">
-        <div class="form-group col-sm-4">
+        <div class="form-group col-sm-3">
             <label>Fecha</label>
             <input type="date" name="gasto_administrativo[fecha]" class="form-control" value="{{ old('gasto_administrativo.fecha') }}">
         </div>
-        <div class="form-group col-sm-4">
+        <div class="form-group col-sm-3">
             <label>Concepto</label>
             <select name="gasto_administrativo[concepto]" class="form-control">
                 <option value="">Seleccione un concepto</option>
@@ -260,14 +271,19 @@
                 @endforeach
             </select>
         </div>
-        <div class="form-group col-sm-4">
-            <label>Valor</label>
-            <select name="gasto_administrativo[valor]" class="form-control liquidacion-debito-select">
+        <div class="form-group col-sm-3">
+            <label>Monto (por flete)</label>
+            <select name="gasto_administrativo[monto_unitario]" id="gasto-administrativo-monto-unitario" class="form-control">
                 <option value="">Seleccione un monto</option>
                 @foreach([25000, 30000, 50000] as $monto)
-                    <option value="{{ $monto }}" {{ (string) old('gasto_administrativo.valor') === (string) $monto ? 'selected' : '' }}>{{ number_format($monto, 0, ',', '.') }}</option>
+                    <option value="{{ $monto }}" {{ (string) old('gasto_administrativo.monto_unitario') === (string) $monto ? 'selected' : '' }}>{{ number_format($monto, 0, ',', '.') }}</option>
                 @endforeach
             </select>
+        </div>
+        <div class="form-group col-sm-3">
+            <label>Valor total <i class="fas fa-lock fa-xs text-muted" title="Se calcula automaticamente: monto x cantidad de fletes"></i></label>
+            <input type="text" class="form-control bg-light" id="gasto-administrativo-valor-preview" readonly tabindex="-1" placeholder="Sin fletes">
+            <input type="hidden" name="gasto_administrativo[valor]" id="gasto-administrativo-valor" class="liquidacion-debito">
         </div>
     </div>
 </div>
@@ -339,27 +355,32 @@
         background-color: #eaf3ff;
     }
 
-    /* Camion (select2): tildar chapas con color primario, bien visible */
-    #camiones-select + .select2-container .select2-selection--multiple {
+    /* Camion/Chofer (select2): tildar opciones con color primario, bien visible */
+    #camiones-select + .select2-container .select2-selection--multiple,
+    #choferes-select + .select2-container .select2-selection--multiple {
         min-height: calc(1.5em + .6rem + 2px);
         border: 1px solid #ced4da;
     }
-    #camiones-select + .select2-container .select2-selection__choice {
+    #camiones-select + .select2-container .select2-selection__choice,
+    #choferes-select + .select2-container .select2-selection__choice {
         background-color: #007bff;
         border: 1px solid #007bff;
         color: #fff;
         border-radius: .25rem;
         padding: 1px 8px;
     }
-    #camiones-select + .select2-container .select2-selection__choice__remove {
+    #camiones-select + .select2-container .select2-selection__choice__remove,
+    #choferes-select + .select2-container .select2-selection__choice__remove {
         color: #fff;
         margin-right: 6px;
         font-weight: bold;
     }
-    #camiones-select + .select2-container .select2-selection__choice__remove:hover {
+    #camiones-select + .select2-container .select2-selection__choice__remove:hover,
+    #choferes-select + .select2-container .select2-selection__choice__remove:hover {
         color: #f8d7da;
     }
-    #camiones-select + .select2-container.select2-container--focus .select2-selection--multiple {
+    #camiones-select + .select2-container.select2-container--focus .select2-selection--multiple,
+    #choferes-select + .select2-container.select2-container--focus .select2-selection--multiple {
         border-color: #80bdff;
     }
     /* Resultado ya tildado: no debe listarse de nuevo en el desplegable */
@@ -389,10 +410,6 @@
                 debitos += parseFloat(input.value) || 0;
             });
 
-            document.querySelectorAll('.liquidacion-debito-select').forEach(function (select) {
-                debitos += parseFloat(select.value) || 0;
-            });
-
             document.querySelectorAll('.liquidacion-debito-checkbox:checked').forEach(function (checkbox) {
                 debitos += parseFloat(checkbox.dataset.valor) || 0;
             });
@@ -409,7 +426,7 @@
         });
 
         document.addEventListener('change', function (event) {
-            if (event.target.classList.contains('liquidacion-debito-select') || event.target.classList.contains('liquidacion-debito-checkbox')) {
+            if (event.target.classList.contains('liquidacion-debito-checkbox')) {
                 recalcularTotales();
             }
         });
@@ -431,10 +448,11 @@
             }
         }
 
-        // Diferencia = KgDestino - KgOrigen; Recargo = Diferencia + (Tolerancia x Precio),
-        // solo cuando la Diferencia es negativa. El recargo no tiene campo propio "guardable":
-        // se vuelca directo a los hidden descuento_auto[<camion>][fecha|valor] de este bloque,
-        // que el backend guarda como su propia linea de Descuento "Faltante de Carga".
+        // Diferencia = KgDestino - KgOrigen. Cuando la Diferencia es negativa (faltante de carga),
+        // Perdida = -Diferencia; si Perdida supera la Tolerancia, Recargo = (Perdida - Tolerancia) x Precio.
+        // Si la Perdida no supera la Tolerancia, no hay recargo. El recargo no tiene campo propio
+        // "guardable": se vuelca directo a los hidden descuento_auto[<camion>][fecha|valor] de este
+        // bloque, que el backend guarda como su propia linea de Descuento "Faltante de Carga".
         function inicializarCalculoBloque(bloque) {
             var kgOrigen = bloque.querySelector('[data-role="kg-origen"]');
             var kgDestino = bloque.querySelector('[data-role="kg-destino"]');
@@ -452,8 +470,9 @@
             function actualizarRecargo(valorDiferencia) {
                 var tolerancia = parseFloat(recargoTolerancia.value) || 0;
                 var precioRecargo = parseFloat(recargoPrecio.value) || 0;
-                var valorRecargo = (valorDiferencia !== null && valorDiferencia < 0)
-                    ? (valorDiferencia + (tolerancia * precioRecargo))
+                var perdida = (valorDiferencia !== null && valorDiferencia < 0) ? -valorDiferencia : 0;
+                var valorRecargo = (perdida > tolerancia)
+                    ? ((perdida - tolerancia) * precioRecargo)
                     : null;
 
                 if (valorRecargo !== null) {
@@ -581,8 +600,31 @@
                     crearBloqueFlete(id, camion ? camion.text : '');
                 });
 
+            actualizarGastoAdministrativo();
+        }
+
+        // --- Gastos Administrativos: Valor total = Monto (por flete) x cantidad de fletes tildados ---
+        var gastoAdminMontoSelect = document.getElementById('gasto-administrativo-monto-unitario');
+        var gastoAdminValorHidden = document.getElementById('gasto-administrativo-valor');
+        var gastoAdminValorPreview = document.getElementById('gasto-administrativo-valor-preview');
+
+        function actualizarGastoAdministrativo() {
+            var montoUnitario = parseFloat(gastoAdminMontoSelect.value) || 0;
+            var cantidadFletes = fleteBlocksContainer.querySelectorAll('[data-flete-bloque]').length;
+
+            if (montoUnitario && cantidadFletes) {
+                var total = montoUnitario * cantidadFletes;
+                gastoAdminValorHidden.value = total;
+                gastoAdminValorPreview.value = formatoNumero(total) + ' (' + formatoNumero(montoUnitario) + ' x ' + cantidadFletes + ' flete' + (cantidadFletes === 1 ? '' : 's') + ')';
+            } else {
+                gastoAdminValorHidden.value = '';
+                gastoAdminValorPreview.value = '';
+            }
+
             recalcularTotales();
         }
+
+        gastoAdminMontoSelect.addEventListener('change', actualizarGastoAdministrativo);
 
         // --- Casillero Incluir descuento ---
         var descuentoCheckbox = document.getElementById('descuento-incluir');
@@ -600,36 +642,9 @@
             recalcularTotales();
         });
 
-        // --- Filtros: Propietario -> Camion; Propietario -> Viatico / Combustible (checkboxes) ---
-        function filtrarFilasPorAtributo(listaId, hintId, atributo, valorFiltro) {
-            var lista = document.getElementById(listaId);
-            if (!lista) {
-                return;
-            }
-
-            var visibles = 0;
-
-            lista.querySelectorAll('.liquidacion-select-row').forEach(function (fila) {
-                var mostrar = !valorFiltro || fila.dataset[atributo] === valorFiltro;
-                fila.style.display = mostrar ? '' : 'none';
-
-                if (mostrar) {
-                    visibles++;
-                } else {
-                    var input = fila.querySelector('input[type="checkbox"]');
-                    input.checked = false;
-                    fila.classList.remove('is-selected');
-                }
-            });
-
-            var hint = document.getElementById(hintId);
-            if (hint) {
-                hint.classList.toggle('d-none', !valorFiltro || visibles > 0);
-            }
-        }
-
-        // Igual que filtrarFilasPorAtributo, pero acepta varios valores validos a la vez
-        // (usado por Vale de Combustible, que debe mostrar filas de cualquiera de las chapas tildadas).
+        // --- Filtros: Propietario -> Camion; Camion/Chofer -> Combustible/Viatico (checkboxes) ---
+        // Acepta varios valores validos a la vez (Camion y Chofer tildan varias chapas/choferes,
+        // y deben mostrar filas de cualquiera de los tildados).
         function filtrarFilasPorAtributoMultiple(listaId, hintId, atributo, valoresFiltro) {
             var lista = document.getElementById(listaId);
             if (!lista) {
@@ -675,7 +690,7 @@
 
         var clienteSelect = document.getElementById('id_cliente');
         var idCamionHidden = document.getElementById('id_camion');
-        var choferSelect = document.getElementById('id_chofer');
+        var idChoferHidden = document.getElementById('id_chofer');
 
         // --- Camion: select2 multiple ---
         var $camionSelect = $('#camiones-select');
@@ -754,6 +769,35 @@
             sincronizarBloquesFlete();
         });
 
+        // --- Chofer: select2 multiple ---
+        var $choferSelect = $('#choferes-select');
+
+        $choferSelect.select2({
+            width: '100%',
+            placeholder: 'Seleccione uno o varios choferes',
+            allowClear: true
+        });
+
+        // El primer chofer tildado (en orden de la lista) queda como "chofer principal":
+        // es el que se guarda en la Liquidacion (id_chofer). Los demas choferes tildados
+        // amplian que Viaticos se muestran/pueden tildar (cualquiera de los tildados).
+        function obtenerChoferesSeleccionados() {
+            return $choferSelect.val() || [];
+        }
+
+        function actualizarChoferPrincipalYFiltros() {
+            var seleccionados = obtenerChoferesSeleccionados();
+
+            idChoferHidden.value = seleccionados[0] || '';
+
+            filtrarFilasPorAtributoMultiple('viaticos-list', 'viaticos-empty-hint', 'chofer', seleccionados);
+            recalcularTotales();
+        }
+
+        $choferSelect.on('change', function () {
+            actualizarChoferPrincipalYFiltros();
+        });
+
         var liquidacionForm = idCamionHidden.closest('form');
         var facturadoInput = document.getElementById('facturado-input');
         var $facturadoModal = $('#facturado-modal');
@@ -763,6 +807,12 @@
                 if (!idCamionHidden.value) {
                     event.preventDefault();
                     alert('Seleccioná al menos una chapa (Camión).');
+                    return;
+                }
+
+                if (!idChoferHidden.value) {
+                    event.preventDefault();
+                    alert('Seleccioná al menos un chofer.');
                     return;
                 }
 
@@ -787,20 +837,11 @@
             liquidacionForm.submit();
         });
 
-        if (choferSelect) {
-            choferSelect.addEventListener('change', function () {
-                filtrarFilasPorAtributo('viaticos-list', 'viaticos-empty-hint', 'chofer', choferSelect.value);
-                recalcularTotales();
-            });
-        }
-
         // Si el formulario se recarga tras un error de validación, reaplicar los
         // filtros para que las selecciones restauradas (Propietario/Camión/Chofer)
         // sigan siendo coherentes entre sí.
         clienteSelect.dispatchEvent(new Event('change'));
-        if (choferSelect) {
-            choferSelect.dispatchEvent(new Event('change'));
-        }
+        actualizarChoferPrincipalYFiltros();
 
         recalcularTotales();
     })();

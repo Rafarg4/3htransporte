@@ -76,6 +76,14 @@ Route::middleware('auth')->group(function () {
     Route::post('estaciones', [App\Http\Controllers\EstacionController::class, 'store'])
         ->name('estaciones.store');
 
+    // Sin pantalla propia: se cargan solo desde el "+" del campo Direccion en Vale Combustible.
+    Route::post('direcciones', [App\Http\Controllers\DireccionController::class, 'store'])
+        ->name('direcciones.store');
+
+    // Sin pantalla propia: se cargan solo desde el "+" del campo Producto en Vale Combustible.
+    Route::post('productoVales', [App\Http\Controllers\ProductoValeController::class, 'store'])
+        ->name('productoVales.store');
+
 
     Route::resource('users', App\Http\Controllers\UserController::class);
 

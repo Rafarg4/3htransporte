@@ -140,7 +140,12 @@
     </tr>
     <tr>
         <td class="label">Camión</td>
-        <td>{{ $liquidacion->camion->chapa ?? '-' }}</td>
+        <td>
+            @php
+                $chapas = $liquidacion->fletes->pluck('camion.chapa')->filter()->unique()->values();
+            @endphp
+            {{ $chapas->isNotEmpty() ? $chapas->implode(', ') : ($liquidacion->camion->chapa ?? '-') }}
+        </td>
     </tr>
     <tr>
         <td class="label">Chofer</td>

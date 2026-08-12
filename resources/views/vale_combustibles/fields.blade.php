@@ -68,23 +68,75 @@
 <!-- Direccion Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('direccion', 'Direccion:') !!}
-    {!! Form::select('direccion', [
-        'Vacay' => 'Vacay',
-        'María Auxiliadora' => 'María Auxiliadora',
-        'Yatytay' => 'Yatytay',
-        'Edelira 60' => 'Edelira 60',
-        'Obligado' => 'Obligado',
-        'Santa Rita' => 'Santa Rita',
-        'Santa Inés' => 'Santa Inés',
-        'Capitán Meza' => 'Capitán Meza',
-        'Capitán Miranda' => 'Capitán Miranda',
-    ], null, ['class' => 'form-control', 'placeholder' => 'Seleccione una opción', 'required' => 'required']) !!}
+    <div class="input-group">
+        {!! Form::select('direccion', $direcciones, null, ['class' => 'form-control', 'id' => 'direccion', 'placeholder' => 'Seleccione una opción', 'required' => 'required']) !!}
+        <div class="input-group-append">
+            <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#direccion-modal" title="Agregar nueva dirección">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="direccion-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nueva Dirección</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group mb-0">
+                    <label for="direccion-nombre-nueva">Nombre</label>
+                    <input type="text" class="form-control" id="direccion-nombre-nueva" placeholder="Ej: Vacay">
+                    <small class="text-danger d-none" id="direccion-nombre-error"></small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="direccion-guardar-btn">Guardar</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Producto Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('producto', 'Producto:') !!}
-    {!! Form::select('producto', ['Diesel S50' => 'Diesel S50', 'Nafta' => 'Nafta'], null, ['class' => 'form-control', 'placeholder' => 'Seleccione una opción', 'required' => 'required']) !!}
+    <div class="input-group">
+        {!! Form::select('producto', $productoVales, null, ['class' => 'form-control', 'id' => 'producto', 'placeholder' => 'Seleccione una opción', 'required' => 'required']) !!}
+        <div class="input-group-append">
+            <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#producto-modal" title="Agregar nuevo producto">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="producto-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nuevo Producto</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group mb-0">
+                    <label for="producto-nombre-nueva">Nombre</label>
+                    <input type="text" class="form-control" id="producto-nombre-nueva" placeholder="Ej: Nafta">
+                    <small class="text-danger d-none" id="producto-nombre-error"></small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="producto-guardar-btn">Guardar</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Importe Field -->
@@ -133,74 +185,106 @@
         }
     })();
 
-    // --- Alta rapida de Estacion desde el modal, sin salir de este formulario ---
+    // --- Alta rapida de Estacion/Direccion/Producto desde el modal, sin salir de este formulario ---
     (function () {
-        var guardarBtn = document.getElementById('estacion-guardar-btn');
-        var nombreInput = document.getElementById('estacion-nombre-nueva');
-        var errorEl = document.getElementById('estacion-nombre-error');
-        var estacionSelect = document.getElementById('nombre_estacion');
+        function configurarAltaRapida(opciones) {
+            var guardarBtn = document.getElementById(opciones.guardarBtnId);
+            var nombreInput = document.getElementById(opciones.nombreInputId);
+            var errorEl = document.getElementById(opciones.errorElId);
+            var select = document.getElementById(opciones.selectId);
 
-        if (!guardarBtn) {
-            return;
-        }
-
-        function mostrarError(mensaje) {
-            errorEl.textContent = mensaje;
-            errorEl.classList.remove('d-none');
-        }
-
-        function limpiarError() {
-            errorEl.textContent = '';
-            errorEl.classList.add('d-none');
-        }
-
-        guardarBtn.addEventListener('click', function () {
-            var nombre = nombreInput.value.trim();
-            limpiarError();
-
-            if (!nombre) {
-                mostrarError('Ingresá un nombre.');
+            if (!guardarBtn) {
                 return;
             }
 
-            guardarBtn.disabled = true;
+            function mostrarError(mensaje) {
+                errorEl.textContent = mensaje;
+                errorEl.classList.remove('d-none');
+            }
 
-            fetch("{{ route('estaciones.store') }}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify({ nombre: nombre })
-            })
-                .then(function (response) {
-                    return response.json().then(function (datos) {
-                        return { ok: response.ok, datos: datos };
+            function limpiarError() {
+                errorEl.textContent = '';
+                errorEl.classList.add('d-none');
+            }
+
+            guardarBtn.addEventListener('click', function () {
+                var nombre = nombreInput.value.trim();
+                limpiarError();
+
+                if (!nombre) {
+                    mostrarError('Ingresá un nombre.');
+                    return;
+                }
+
+                guardarBtn.disabled = true;
+
+                fetch(opciones.url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({ nombre: nombre })
+                })
+                    .then(function (response) {
+                        return response.json().then(function (datos) {
+                            return { ok: response.ok, datos: datos };
+                        });
+                    })
+                    .then(function (resultado) {
+                        guardarBtn.disabled = false;
+
+                        if (!resultado.ok) {
+                            var mensaje = (resultado.datos.errors && resultado.datos.errors.nombre)
+                                ? resultado.datos.errors.nombre[0]
+                                : opciones.errorGenerico;
+                            mostrarError(mensaje);
+                            return;
+                        }
+
+                        var opcion = new Option(resultado.datos.nombre, resultado.datos.nombre, true, true);
+                        select.appendChild(opcion);
+                        select.value = resultado.datos.nombre;
+
+                        nombreInput.value = '';
+                        document.querySelector('#' + opciones.modalId + ' [data-dismiss="modal"]').click();
+                    })
+                    .catch(function () {
+                        guardarBtn.disabled = false;
+                        mostrarError('Error de conexión. Intentá de nuevo.');
                     });
-                })
-                .then(function (resultado) {
-                    guardarBtn.disabled = false;
+            });
+        }
 
-                    if (!resultado.ok) {
-                        var mensaje = (resultado.datos.errors && resultado.datos.errors.nombre)
-                            ? resultado.datos.errors.nombre[0]
-                            : 'No se pudo guardar la estación.';
-                        mostrarError(mensaje);
-                        return;
-                    }
+        configurarAltaRapida({
+            guardarBtnId: 'estacion-guardar-btn',
+            nombreInputId: 'estacion-nombre-nueva',
+            errorElId: 'estacion-nombre-error',
+            selectId: 'nombre_estacion',
+            modalId: 'estacion-modal',
+            url: "{{ route('estaciones.store') }}",
+            errorGenerico: 'No se pudo guardar la estación.'
+        });
 
-                    var opcion = new Option(resultado.datos.nombre, resultado.datos.nombre, true, true);
-                    estacionSelect.appendChild(opcion);
-                    estacionSelect.value = resultado.datos.nombre;
+        configurarAltaRapida({
+            guardarBtnId: 'direccion-guardar-btn',
+            nombreInputId: 'direccion-nombre-nueva',
+            errorElId: 'direccion-nombre-error',
+            selectId: 'direccion',
+            modalId: 'direccion-modal',
+            url: "{{ route('direcciones.store') }}",
+            errorGenerico: 'No se pudo guardar la dirección.'
+        });
 
-                    nombreInput.value = '';
-                    document.querySelector('#estacion-modal [data-dismiss="modal"]').click();
-                })
-                .catch(function () {
-                    guardarBtn.disabled = false;
-                    mostrarError('Error de conexión. Intentá de nuevo.');
-                });
+        configurarAltaRapida({
+            guardarBtnId: 'producto-guardar-btn',
+            nombreInputId: 'producto-nombre-nueva',
+            errorElId: 'producto-nombre-error',
+            selectId: 'producto',
+            modalId: 'producto-modal',
+            url: "{{ route('productoVales.store') }}",
+            errorGenerico: 'No se pudo guardar el producto.'
         });
     })();
 </script>

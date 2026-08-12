@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateValeCombustibleRequest;
 use App\Http\Requests\UpdateValeCombustibleRequest;
 use App\Models\Camion;
+use App\Models\Direccion;
 use App\Models\Empresa;
 use App\Models\Estacion;
+use App\Models\ProductoVale;
 use App\Models\ValeCombustible;
 use App\Repositories\ValeCombustibleRepository;
 use App\Http\Controllers\AppBaseController;
@@ -52,6 +54,8 @@ class ValeCombustibleController extends AppBaseController
         return view('vale_combustibles.create')
             ->with('camions', $camions)
             ->with('estaciones', $this->getEstacionesParaSelect())
+            ->with('direcciones', $this->getDireccionesParaSelect())
+            ->with('productoVales', $this->getProductoValesParaSelect())
             ->with('proximoNumeroVale', $this->getProximoNumeroVale());
     }
 
@@ -138,7 +142,9 @@ class ValeCombustibleController extends AppBaseController
         return view('vale_combustibles.edit')
             ->with('valeCombustible', $valeCombustible)
             ->with('camions', $camions)
-            ->with('estaciones', $this->getEstacionesParaSelect());
+            ->with('estaciones', $this->getEstacionesParaSelect())
+            ->with('direcciones', $this->getDireccionesParaSelect())
+            ->with('productoVales', $this->getProductoValesParaSelect());
     }
 
     /**
@@ -149,6 +155,26 @@ class ValeCombustibleController extends AppBaseController
     private function getEstacionesParaSelect()
     {
         return Estacion::orderBy('nombre')->pluck('nombre', 'nombre')->toArray();
+    }
+
+    /**
+     * Build the list of Direccion options for the select field.
+     *
+     * @return array
+     */
+    private function getDireccionesParaSelect()
+    {
+        return Direccion::orderBy('nombre')->pluck('nombre', 'nombre')->toArray();
+    }
+
+    /**
+     * Build the list of ProductoVale (Producto) options for the select field.
+     *
+     * @return array
+     */
+    private function getProductoValesParaSelect()
+    {
+        return ProductoVale::orderBy('nombre')->pluck('nombre', 'nombre')->toArray();
     }
 
     /**
