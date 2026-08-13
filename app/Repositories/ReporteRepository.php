@@ -17,10 +17,12 @@ class ReporteRepository extends BaseRepository
      * @var array
      */
     protected $fieldSearchable = [
+        'nro_remision',
+        'tramo',
         'kg_origen',
         'kg_llegada',
-        'precio_real_flete',
-        'precio_fletero'
+        'precio',
+        'monto'
     ];
 
     /**

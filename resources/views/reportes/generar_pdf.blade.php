@@ -92,25 +92,37 @@
 <table class="data-table">
     <thead>
     <tr>
+        <th>Nro. Remisión</th>
         <th>Fecha</th>
+        <th>Propietario</th>
+        <th>Chapa</th>
+        <th>Chofer</th>
+        <th>Producto</th>
+        <th>Tramo</th>
         <th>Kg Origen</th>
         <th>Kg Llegada</th>
-        <th>Precio Real Flete</th>
-        <th>Precio Fletero</th>
+        <th>Precio</th>
+        <th>Monto</th>
     </tr>
     </thead>
     <tbody>
     @forelse($reportes as $reporte)
         <tr>
-            <td>{{ $reporte->created_at ? $reporte->created_at->format('d/m/Y') : '-' }}</td>
+            <td>{{ $reporte->nro_remision }}</td>
+            <td>{{ $reporte->fecha }}</td>
+            <td>{{ $reporte->cliente ? trim($reporte->cliente->nombre . ' ' . $reporte->cliente->apellido) : '-' }}</td>
+            <td>{{ $reporte->camion->chapa ?? '-' }}</td>
+            <td>{{ $reporte->chofer ? trim($reporte->chofer->nombre . ' ' . $reporte->chofer->apellido) : '-' }}</td>
+            <td>{{ $reporte->producto->nombre ?? '-' }}</td>
+            <td>{{ $reporte->tramo }}</td>
             <td>{{ $reporte->kg_origen }}</td>
             <td>{{ $reporte->kg_llegada }}</td>
-            <td>{{ $reporte->precio_real_flete }}</td>
-            <td>{{ $reporte->precio_fletero }}</td>
+            <td>{{ $reporte->precio }}</td>
+            <td>{{ $reporte->monto }}</td>
         </tr>
     @empty
         <tr>
-            <td colspan="5" style="text-align:center;">No hay reportes para los filtros seleccionados.</td>
+            <td colspan="11" style="text-align:center;">No hay reportes para los filtros seleccionados.</td>
         </tr>
     @endforelse
     </tbody>

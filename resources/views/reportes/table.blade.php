@@ -2,20 +2,34 @@
     <table class="table" id="table">
         <thead>
         <tr>
+            <th>Nro. Remisión</th>
+            <th>Fecha</th>
+            <th>Propietario</th>
+            <th>Chapa</th>
+            <th>Chofer</th>
+            <th>Producto</th>
+            <th>Tramo</th>
             <th>Kg Origen</th>
-        <th>Kg Llegada</th>
-        <th>Precio Real Flete</th>
-        <th>Precio Fletero</th>
+            <th>Kg Llegada</th>
+            <th>Precio</th>
+            <th>Monto</th>
             <th>Acción</th>
         </tr>
         </thead>
         <tbody>
         @foreach($reportes as $reporte)
             <tr>
+                <td>{{ $reporte->nro_remision }}</td>
+                <td>{{ $reporte->fecha }}</td>
+                <td>{{ $reporte->cliente ? trim($reporte->cliente->nombre . ' ' . $reporte->cliente->apellido) : '-' }}</td>
+                <td>{{ $reporte->camion->chapa ?? '-' }}</td>
+                <td>{{ $reporte->chofer ? trim($reporte->chofer->nombre . ' ' . $reporte->chofer->apellido) : '-' }}</td>
+                <td>{{ $reporte->producto->nombre ?? '-' }}</td>
+                <td>{{ $reporte->tramo }}</td>
                 <td>{{ $reporte->kg_origen }}</td>
-            <td>{{ $reporte->kg_llegada }}</td>
-            <td>{{ $reporte->precio_real_flete }}</td>
-            <td>{{ $reporte->precio_fletero }}</td>
+                <td>{{ $reporte->kg_llegada }}</td>
+                <td>{{ $reporte->precio }}</td>
+                <td>{{ $reporte->monto }}</td>
                 <td width="220">
                     {!! Form::open(['route' => ['reportes.destroy', $reporte->id], 'method' => 'delete']) !!}
                     <div class="action-buttons d-flex justify-content-center">

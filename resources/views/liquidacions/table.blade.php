@@ -3,15 +3,13 @@
         <thead>
         <tr>
             <th>Propietario</th>
-            <th>Camión</th>
-            <th>Chofer</th>
-            <th>Orden de Carga</th>
             <th>Fecha</th>
             <th>Créditos</th>
             <th>Débitos</th>
             <th>Saldo</th>
             <th>Estado</th>
             <th>Facturado</th>
+            <th>Pagado</th>
             <th>Acción</th>
         </tr>
         </thead>
@@ -19,9 +17,6 @@
         @foreach($liquidacions as $liquidacion)
             <tr>
                 <td>{{ $liquidacion->cliente ? trim($liquidacion->cliente->nombre . ' ' . $liquidacion->cliente->apellido) : '-' }}</td>
-                <td>{{ $liquidacion->camion->chapa ?? '-' }}</td>
-                <td>{{ $liquidacion->chofer ? trim($liquidacion->chofer->nombre . ' ' . $liquidacion->chofer->apellido) : '-' }}</td>
-                <td>{{ $liquidacion->ordenCarga ? 'OC-' . str_pad($liquidacion->ordenCarga->id, 6, '0', STR_PAD_LEFT) : '-' }}</td>
                 <td>{{ $liquidacion->fecha }}</td>
                 <td>{{ number_format($liquidacion->total_creditos, 0, ',', '.') }}</td>
                 <td>{{ number_format($liquidacion->total_debitos, 0, ',', '.') }}</td>
@@ -36,29 +31,44 @@
                         {{ $liquidacion->facturado === 'Si' ? 'Sí' : 'No' }}
                     </span>
                 </td>
-                <td width="260">
-                    <div class="action-buttons d-flex justify-content-center">
-                        <a href="{{ route('liquidacions.pdf', $liquidacion->id) }}" class="btn btn-danger" target="_blank">
-                            <i class="far fa-file-pdf"></i> PDF
-                        </a>
-                        @if($liquidacion->facturado !== 'Si')
-                            {!! Form::open(['route' => ['liquidacions.facturado', $liquidacion->id], 'method' => 'post']) !!}
-                            {!! Form::button('<i class="fas fa-file-invoice-dollar"></i> Marcar Facturado', [
-                                'type' => 'submit',
-                                'class' => 'btn btn-warning',
-                                'onclick' => "return confirm('¿Confirmar marcar esta liquidación como facturada?')",
-                            ]) !!}
-                            {!! Form::close() !!}
-                        @endif
-                        @if(strtolower($liquidacion->estado) === 'activo')
-                            {!! Form::open(['route' => ['liquidacions.destroy', $liquidacion->id], 'method' => 'delete']) !!}
-                            {!! Form::button('<i class="fas fa-ban"></i> Anular', [
-                                'type' => 'submit',
-                                'class' => 'btn btn-info',
-                                'onclick' => "return confirm('¿Anular esta liquidación?')",
-                            ]) !!}
-                            {!! Form::close() !!}
-                        @endif
+                <td>
+                    <span class="badge estado-badge {{ $liquidacion->pagado === 'Si' ? 'estado-badge-activo' : 'estado-badge-anulado' }}">
+                        {{ $liquidacion->pagado === 'Si' ? 'Sí' : 'No' }}
+                    </span>
+                </td>
+                <td width="60" class="text-center">
+                    <div class="dropdown">
+                        <button class="btn btn-secondary btn-sm" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Acciones">
+                            <i class="fas fa-ellipsis-v"></i> Opcion
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a class="dropdown-item" href="{{ route('liquidacions.pdf', $liquidacion->id) }}" target="_blank">
+                                <i class="far fa-file-pdf"></i> PDF
+                            </a>
+                            {{-- Anulada: solo PDF. El resto de acciones no tiene sentido sobre una liquidacion sin vigencia. --}}
+                            @if(strtolower($liquidacion->estado) === 'activo')
+                                @if($liquidacion->facturado !== 'Si')
+                                    {!! Form::open(['route' => ['liquidacions.facturado', $liquidacion->id], 'method' => 'post']) !!}
+                                    <button type="submit" class="dropdown-item" onclick="return confirm('¿Confirmar marcar esta liquidación como facturada?')">
+                                        <i class="fas fa-file-invoice-dollar"></i> Marcar Facturado
+                                    </button>
+                                    {!! Form::close() !!}
+                                @endif
+                                @if($liquidacion->pagado !== 'Si')
+                                    {!! Form::open(['route' => ['liquidacions.pagado', $liquidacion->id], 'method' => 'post']) !!}
+                                    <button type="submit" class="dropdown-item" onclick="return confirm('¿Confirmar marcar esta liquidación como pagada?')">
+                                        <i class="fas fa-money-check-alt"></i> Marcar Pagado
+                                    </button>
+                                    {!! Form::close() !!}
+                                @endif
+                                <div class="dropdown-divider"></div>
+                                {!! Form::open(['route' => ['liquidacions.destroy', $liquidacion->id], 'method' => 'delete']) !!}
+                                <button type="submit" class="dropdown-item text-danger" onclick="return confirm('¿Anular esta liquidación?')">
+                                    <i class="fas fa-ban"></i> Anular
+                                </button>
+                                {!! Form::close() !!}
+                            @endif
+                        </div>
                     </div>
                 </td>
             </tr>
@@ -68,12 +78,8 @@
 </div>
 
 <style>
-    .action-buttons .btn {
-        margin: 0 3px;
-        padding: .25rem .6rem;
-        border-radius: .25rem;
-        font-size: .75rem;
-        white-space: nowrap;
+    .dropdown-menu form {
+        margin: 0;
     }
     .estado-badge {
         font-size: .75rem;

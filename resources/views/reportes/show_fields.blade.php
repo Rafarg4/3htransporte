@@ -1,3 +1,45 @@
+<!-- Nro Remision Field -->
+<div class="col-sm-12">
+    {!! Form::label('nro_remision', 'Nro. Remisión:') !!}
+    <p>{{ $reporte->nro_remision }}</p>
+</div>
+
+<!-- Fecha Field -->
+<div class="col-sm-12">
+    {!! Form::label('fecha', 'Fecha:') !!}
+    <p>{{ $reporte->fecha }}</p>
+</div>
+
+<!-- Propietario Field -->
+<div class="col-sm-12">
+    {!! Form::label('id_cliente', 'Propietario:') !!}
+    <p>{{ $reporte->cliente ? trim($reporte->cliente->nombre . ' ' . $reporte->cliente->apellido) : '-' }}</p>
+</div>
+
+<!-- Chapa Field -->
+<div class="col-sm-12">
+    {!! Form::label('id_camion', 'Chapa:') !!}
+    <p>{{ $reporte->camion->chapa ?? '-' }}</p>
+</div>
+
+<!-- Chofer Field -->
+<div class="col-sm-12">
+    {!! Form::label('id_chofer', 'Chofer:') !!}
+    <p>{{ $reporte->chofer ? trim($reporte->chofer->nombre . ' ' . $reporte->chofer->apellido) : '-' }}</p>
+</div>
+
+<!-- Producto Field -->
+<div class="col-sm-12">
+    {!! Form::label('id_producto', 'Producto:') !!}
+    <p>{{ $reporte->producto->nombre ?? '-' }}</p>
+</div>
+
+<!-- Tramo Field -->
+<div class="col-sm-12">
+    {!! Form::label('tramo', 'Tramo:') !!}
+    <p>{{ $reporte->tramo }}</p>
+</div>
+
 <!-- Kg Origen Field -->
 <div class="col-sm-12">
     {!! Form::label('kg_origen', 'Kg Origen:') !!}
@@ -10,16 +52,16 @@
     <p>{{ $reporte->kg_llegada }}</p>
 </div>
 
-<!-- Precio Real Flete Field -->
+<!-- Precio Field -->
 <div class="col-sm-12">
-    {!! Form::label('precio_real_flete', 'Precio Real Flete:') !!}
-    <p>{{ $reporte->precio_real_flete }}</p>
+    {!! Form::label('precio', 'Precio:') !!}
+    <p>{{ $reporte->precio }}</p>
 </div>
 
-<!-- Precio Fletero Field -->
+<!-- Monto Field -->
 <div class="col-sm-12">
-    {!! Form::label('precio_fletero', 'Precio Fletero:') !!}
-    <p>{{ $reporte->precio_fletero }}</p>
+    {!! Form::label('monto', 'Monto:') !!}
+    <p>{{ $reporte->monto }}</p>
 </div>
 
 <!-- Created At Field -->
@@ -33,4 +75,3 @@
     {!! Form::label('updated_at', 'Updated At:') !!}
     <p>{{ $reporte->updated_at }}</p>
 </div>
-

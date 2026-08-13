@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string $fecha
  * @property string $estado
  * @property string $facturado
+ * @property string $pagado
  */
 class Liquidacion extends Model
 {
@@ -35,7 +36,8 @@ class Liquidacion extends Model
         'id_orden_carga',
         'fecha',
         'estado',
-        'facturado'
+        'facturado',
+        'pagado'
     ];
 
     protected $casts = [
@@ -45,7 +47,8 @@ class Liquidacion extends Model
         'id_orden_carga' => 'string',
         'fecha' => 'string',
         'estado' => 'string',
-        'facturado' => 'string'
+        'facturado' => 'string',
+        'pagado' => 'string'
     ];
 
     public static $rules = [

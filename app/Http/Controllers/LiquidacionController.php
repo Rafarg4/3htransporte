@@ -42,11 +42,10 @@ class LiquidacionController extends AppBaseController
      */
     public function index(Request $request)
     {
+        // camion/chofer/ordenCarga no se cargan aca: la tabla del listado (table.blade.php) ya
+        // no muestra esas columnas (el detalle completo esta en el PDF de cada liquidacion).
         $liquidacions = Liquidacion::with([
             'cliente',
-            'camion',
-            'chofer',
-            'ordenCarga',
             'fletes',
             'descuentos',
             'gastosAdministrativos',
@@ -146,6 +145,7 @@ class LiquidacionController extends AppBaseController
                 'fecha' => $request->input('fecha'),
                 'estado' => 'Activo',
                 'facturado' => $request->input('facturado', 'No'),
+                'pagado' => 'No',
             ]);
 
             $fechaCabecera = $request->input('fecha');
@@ -333,6 +333,32 @@ class LiquidacionController extends AppBaseController
         $liquidacion->save();
 
         Flash::success('Liquidación marcada como facturada.');
+
+        return redirect(route('liquidacions.index'));
+    }
+
+    /**
+     * Mark the specified Liquidacion as Pagado. One-way: once marcada, la UI
+     * no ofrece forma de deshacerlo desde aca (mismo criterio que Facturado).
+     *
+     * @param int $id
+     *
+     * @return Response
+     */
+    public function togglePagado($id)
+    {
+        $liquidacion = $this->liquidacionRepository->find($id);
+
+        if (empty($liquidacion)) {
+            Flash::error('Liquidación no encontrada');
+
+            return redirect(route('liquidacions.index'));
+        }
+
+        $liquidacion->pagado = 'Si';
+        $liquidacion->save();
+
+        Flash::success('Liquidación marcada como pagada.');
 
         return redirect(route('liquidacions.index'));
     }

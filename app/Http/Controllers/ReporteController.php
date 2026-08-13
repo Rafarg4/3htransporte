@@ -4,7 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateReporteRequest;
 use App\Http\Requests\UpdateReporteRequest;
+use App\Models\Camion;
+use App\Models\Chofer;
+use App\Models\Cliente;
 use App\Models\Empresa;
+use App\Models\Producto;
 use App\Models\Reporte;
 use App\Repositories\ReporteRepository;
 use App\Http\Controllers\AppBaseController;
@@ -32,7 +36,9 @@ class ReporteController extends AppBaseController
      */
     public function index(Request $request)
     {
-        $reportes = $this->reporteRepository->all();
+        $reportes = Reporte::with(['cliente', 'camion', 'chofer', 'producto'])
+            ->orderByDesc('id')
+            ->get();
 
         return view('reportes.index')
             ->with('reportes', $reportes);
@@ -45,7 +51,8 @@ class ReporteController extends AppBaseController
      */
     public function create()
     {
-        return view('reportes.create');
+        return view('reportes.create')
+            ->with($this->getListasParaSelect());
     }
 
     /**
@@ -61,7 +68,7 @@ class ReporteController extends AppBaseController
 
         $reporte = $this->reporteRepository->create($input);
 
-        Flash::success('Reporte saved successfully.');
+        Flash::success('Reporte guardado correctamente.');
 
         return redirect(route('reportes.index'));
     }
@@ -75,10 +82,10 @@ class ReporteController extends AppBaseController
      */
     public function show($id)
     {
-        $reporte = $this->reporteRepository->find($id);
+        $reporte = Reporte::with(['cliente', 'camion', 'chofer', 'producto'])->find($id);
 
         if (empty($reporte)) {
-            Flash::error('Reporte not found');
+            Flash::error('Reporte no encontrado');
 
             return redirect(route('reportes.index'));
         }
@@ -98,12 +105,42 @@ class ReporteController extends AppBaseController
         $reporte = $this->reporteRepository->find($id);
 
         if (empty($reporte)) {
-            Flash::error('Reporte not found');
+            Flash::error('Reporte no encontrado');
 
             return redirect(route('reportes.index'));
         }
 
-        return view('reportes.edit')->with('reporte', $reporte);
+        return view('reportes.edit')
+            ->with('reporte', $reporte)
+            ->with($this->getListasParaSelect());
+    }
+
+    /**
+     * Build the option lists used by the Propietario, Chapa, Chofer and
+     * Producto selects (todas select2, buscables).
+     *
+     * @return array
+     */
+    private function getListasParaSelect()
+    {
+        $clientes = Cliente::orderBy('nombre')->get()->mapWithKeys(function ($cliente) {
+            return [$cliente->id => trim($cliente->nombre . ' ' . $cliente->apellido)];
+        });
+
+        $camiones = Camion::orderBy('chapa')->pluck('chapa', 'id');
+
+        $choferes = Chofer::orderBy('nombre')->get()->mapWithKeys(function ($chofer) {
+            return [$chofer->id => trim($chofer->nombre . ' ' . $chofer->apellido)];
+        });
+
+        $productos = Producto::orderBy('nombre')->pluck('nombre', 'id');
+
+        return [
+            'clientes' => $clientes,
+            'camiones' => $camiones,
+            'choferes' => $choferes,
+            'productos' => $productos,
+        ];
     }
 
     /**
@@ -119,14 +156,14 @@ class ReporteController extends AppBaseController
         $reporte = $this->reporteRepository->find($id);
 
         if (empty($reporte)) {
-            Flash::error('Reporte not found');
+            Flash::error('Reporte no encontrado');
 
             return redirect(route('reportes.index'));
         }
 
         $reporte = $this->reporteRepository->update($request->all(), $id);
 
-        Flash::success('Reporte updated successfully.');
+        Flash::success('Reporte actualizado correctamente.');
 
         return redirect(route('reportes.index'));
     }
@@ -145,14 +182,14 @@ class ReporteController extends AppBaseController
         $reporte = $this->reporteRepository->find($id);
 
         if (empty($reporte)) {
-            Flash::error('Reporte not found');
+            Flash::error('Reporte no encontrado');
 
             return redirect(route('reportes.index'));
         }
 
         $this->reporteRepository->delete($id);
 
-        Flash::success('Reporte deleted successfully.');
+        Flash::success('Reporte eliminado correctamente.');
 
         return redirect(route('reportes.index'));
     }
@@ -224,15 +261,24 @@ class ReporteController extends AppBaseController
                 fputcsv($handle, [], ';');
             }
 
-            fputcsv($handle, ['Fecha', 'Kg Origen', 'Kg Llegada', 'Precio Real Flete', 'Precio Fletero'], ';');
+            fputcsv($handle, [
+                'Nro. Remisión', 'Fecha', 'Propietario', 'Chapa', 'Chofer', 'Producto',
+                'Tramo', 'Kg Origen', 'Kg Llegada', 'Precio', 'Monto',
+            ], ';');
 
             foreach ($reportes as $reporte) {
                 fputcsv($handle, [
-                    $reporte->created_at ? $reporte->created_at->format('d/m/Y') : '-',
+                    $reporte->nro_remision,
+                    $reporte->fecha,
+                    $reporte->cliente ? trim($reporte->cliente->nombre . ' ' . $reporte->cliente->apellido) : '-',
+                    $reporte->camion->chapa ?? '-',
+                    $reporte->chofer ? trim($reporte->chofer->nombre . ' ' . $reporte->chofer->apellido) : '-',
+                    $reporte->producto->nombre ?? '-',
+                    $reporte->tramo,
                     $reporte->kg_origen,
                     $reporte->kg_llegada,
-                    $reporte->precio_real_flete,
-                    $reporte->precio_fletero,
+                    $reporte->precio,
+                    $reporte->monto,
                 ], ';');
             }
 
@@ -244,7 +290,8 @@ class ReporteController extends AppBaseController
 
     /**
      * Build the Reporte query, applying the fecha_desde/fecha_hasta filters
-     * if present in the request.
+     * if present in the request. Compara directo contra la columna de texto
+     * `fecha` (formato Y-m-d), que ordena igual que una fecha real.
      *
      * @param Request $request
      *
@@ -252,14 +299,14 @@ class ReporteController extends AppBaseController
      */
     private function filtrarReportes(Request $request)
     {
-        $query = Reporte::orderByDesc('id');
+        $query = Reporte::with(['cliente', 'camion', 'chofer', 'producto'])->orderByDesc('id');
 
         if ($request->filled('fecha_desde')) {
-            $query->whereDate('created_at', '>=', $request->input('fecha_desde'));
+            $query->where('fecha', '>=', $request->input('fecha_desde'));
         }
 
         if ($request->filled('fecha_hasta')) {
-            $query->whereDate('created_at', '<=', $request->input('fecha_hasta'));
+            $query->where('fecha', '<=', $request->input('fecha_hasta'));
         }
 
         return $query;

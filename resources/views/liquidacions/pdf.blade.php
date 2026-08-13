@@ -68,6 +68,15 @@
         table.data-table td.numero {
             text-align: right;
         }
+        table.data-table tr.subtotal-row td {
+            font-weight: bold;
+            border-top: 1px solid #999;
+            border-bottom: none;
+        }
+        table.data-table tr.subtotal-row td.label-total {
+            text-align: right;
+            color: #333;
+        }
         .totales {
             width: 100%;
             margin-top: 20px;
@@ -127,6 +136,7 @@
             <div>Fecha: {{ $liquidacion->fecha }}</div>
             <div>Estado: {{ $liquidacion->estado }}</div>
             <div>Facturado: {{ $liquidacion->facturado }}</div>
+            <div>Pagado: {{ $liquidacion->pagado }}</div>
         </td>
     </tr>
 </table>
@@ -198,6 +208,10 @@
                 <td class="numero">{{ number_format((float) $flete->valor, 0, ',', '.') }}</td>
             </tr>
         @endforeach
+        <tr class="subtotal-row">
+            <td colspan="8" class="label-total">Total Flete</td>
+            <td class="numero">{{ number_format($liquidacion->total_creditos, 0, ',', '.') }}</td>
+        </tr>
     </table>
 @endif
 
@@ -220,6 +234,10 @@
                 <td class="numero">{{ number_format((float) $viatico->monto, 0, ',', '.') }}</td>
             </tr>
         @endforeach
+        <tr class="subtotal-row">
+            <td colspan="4" class="label-total">Total Viático</td>
+            <td class="numero">{{ number_format($liquidacion->viaticos->sum(fn ($v) => (float) $v->monto), 0, ',', '.') }}</td>
+        </tr>
     </table>
 @endif
 
@@ -244,6 +262,10 @@
                 <td class="numero">{{ number_format((float) $combustible->litros * (float) $combustible->importe, 0, ',', '.') }}</td>
             </tr>
         @endforeach
+        <tr class="subtotal-row">
+            <td colspan="5" class="label-total">Total Combustible</td>
+            <td class="numero">{{ number_format($liquidacion->combustibles->sum(fn ($c) => (float) $c->litros * (float) $c->importe), 0, ',', '.') }}</td>
+        </tr>
     </table>
 @endif
 
@@ -262,6 +284,10 @@
                 <td class="numero">{{ number_format((float) $gasto->valor, 0, ',', '.') }}</td>
             </tr>
         @endforeach
+        <tr class="subtotal-row">
+            <td colspan="2" class="label-total">Total Gastos Administrativos</td>
+            <td class="numero">{{ number_format($liquidacion->gastosAdministrativos->sum(fn ($g) => (float) $g->valor), 0, ',', '.') }}</td>
+        </tr>
     </table>
 @endif
 
