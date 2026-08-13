@@ -129,41 +129,6 @@
     </div>
 </template>
 
-<!-- DESCUENTO -->
-@php $descuentoTieneDatos = old('descuento.fecha') || old('descuento.concepto') || old('descuento.valor'); @endphp
-<div class="col-sm-12">
-    <hr>
-    <h5>
-        <div class="custom-control custom-checkbox d-inline-block align-middle mr-2">
-            <input type="checkbox" class="custom-control-input" id="descuento-incluir" {{ $descuentoTieneDatos ? 'checked' : '' }}>
-            <label class="custom-control-label" for="descuento-incluir">Incluir descuento</label>
-        </div>
-    </h5>
-
-    <div class="form-row" id="descuento-campos" style="{{ $descuentoTieneDatos ? '' : 'display:none;' }}">
-        <div class="form-group col-sm-4">
-            <label>Fecha</label>
-            <input type="date" name="descuento[fecha]" class="form-control" value="{{ old('descuento.fecha') }}" {{ $descuentoTieneDatos ? '' : 'disabled' }}>
-        </div>
-        <div class="form-group col-sm-4">
-            <label>Concepto</label>
-            <select name="descuento[concepto]" class="form-control" {{ $descuentoTieneDatos ? '' : 'disabled' }}>
-                <option value="">Seleccione un concepto</option>
-                {{-- "Faltante de Carga" no esta en esta lista a proposito: se calcula solo, por
-                     chapa, desde el Recargo de cada bloque de Flete (ver actualizarRecargo() mas
-                     abajo). Ofrecerlo tambien aca duplicaba el descuento si se cargaba a mano. --}}
-                @foreach(['Multa', 'Anticipo', 'Otro'] as $concepto)
-                    <option value="{{ $concepto }}" {{ old('descuento.concepto') === $concepto ? 'selected' : '' }}>{{ $concepto }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="form-group col-sm-4">
-            <label>Valor</label>
-            <input type="number" step="0.01" name="descuento[valor]" class="form-control liquidacion-debito" value="{{ old('descuento.valor') }}" {{ $descuentoTieneDatos ? '' : 'disabled' }}>
-        </div>
-    </div>
-</div>
-
 <!-- VIATICO -->
 <div class="col-sm-12">
     <hr>
@@ -629,22 +594,6 @@
 
         gastoAdminMontoSelect.addEventListener('change', actualizarGastoAdministrativo);
 
-        // --- Casillero Incluir descuento ---
-        var descuentoCheckbox = document.getElementById('descuento-incluir');
-        var descuentoCampos = document.getElementById('descuento-campos');
-
-        descuentoCheckbox.addEventListener('change', function () {
-            var incluir = descuentoCheckbox.checked;
-            descuentoCampos.style.display = incluir ? '' : 'none';
-            descuentoCampos.querySelectorAll('input, select').forEach(function (field) {
-                field.disabled = !incluir;
-                if (!incluir) {
-                    field.value = '';
-                }
-            });
-            recalcularTotales();
-        });
-
         // --- Filtros: Propietario -> Camion; Camion/Chofer -> Combustible/Viatico (checkboxes) ---
         // Acepta varios valores validos a la vez (Camion y Chofer tildan varias chapas/choferes,
         // y deben mostrar filas de cualquiera de los tildados).
@@ -802,9 +751,9 @@
         });
 
         // --- Validaciones que reflejan en el navegador las reglas de CreateLiquidacionRequest
-        // (Flete/Descuento/Gasto Administrativo), para que el usuario nunca llegue a ver un
-        // error del backend en el uso normal del formulario. El backend se deja como respaldo
-        // ante datos manipulados o JS deshabilitado.
+        // (Flete/Gasto Administrativo), para que el usuario nunca llegue a ver un error del
+        // backend en el uso normal del formulario. El backend se deja como respaldo ante datos
+        // manipulados o JS deshabilitado.
         //
         // Flete es obligatorio SIEMPRE (Tramo y Valor) para cada chapa tildada en Camión, sin
         // excepcion: no existe la posibilidad de tildar una chapa y dejar su bloque vacio.
@@ -821,26 +770,6 @@
                     var chapa = chapaHeading ? chapaHeading.textContent.replace(/^—\s*/, '') : '';
                     return 'Flete' + (chapa ? ' (' + chapa + ')' : '') + ': completá Tramo y Valor.';
                 }
-            }
-
-            return null;
-        }
-
-        function validarDescuentoManual() {
-            if (!descuentoCheckbox.checked) {
-                return null;
-            }
-
-            var fecha = descuentoCampos.querySelector('input[name="descuento[fecha]"]');
-            var concepto = descuentoCampos.querySelector('select[name="descuento[concepto]"]');
-            var valor = descuentoCampos.querySelector('input[name="descuento[valor]"]');
-
-            if (!fecha.value && !concepto.value && !valor.value) {
-                return null;
-            }
-
-            if (!concepto.value || !valor.value) {
-                return 'Descuento: completá Concepto y Valor (o destildá "Incluir descuento").';
             }
 
             return null;
@@ -883,13 +812,6 @@
                 if (errorFlete) {
                     event.preventDefault();
                     alert(errorFlete);
-                    return;
-                }
-
-                var errorDescuento = validarDescuentoManual();
-                if (errorDescuento) {
-                    event.preventDefault();
-                    alert(errorDescuento);
                     return;
                 }
 

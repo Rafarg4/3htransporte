@@ -126,6 +126,7 @@
             <h2>Liquidación N° {{ $liquidacion->id }}</h2>
             <div>Fecha: {{ $liquidacion->fecha }}</div>
             <div>Estado: {{ $liquidacion->estado }}</div>
+            <div>Facturado: {{ $liquidacion->facturado }}</div>
         </td>
     </tr>
 </table>
@@ -195,26 +196,6 @@
                 <td class="numero">{{ $flete->diferencia !== null && $flete->diferencia !== '' ? number_format((float) $flete->diferencia, 0, ',', '.') : '-' }}</td>
                 <td class="numero">{{ number_format((float) $flete->precio, 0, ',', '.') }}</td>
                 <td class="numero">{{ number_format((float) $flete->valor, 0, ',', '.') }}</td>
-            </tr>
-        @endforeach
-    </table>
-@endif
-
-@if($liquidacion->descuentos->isNotEmpty())
-    <div class="section-title">Descuento</div>
-    <table class="data-table">
-        <tr>
-            <th>Camión</th>
-            <th>Fecha</th>
-            <th>Concepto</th>
-            <th>Valor</th>
-        </tr>
-        @foreach($liquidacion->descuentos as $descuento)
-            <tr>
-                <td>{{ $descuento->camion->chapa ?? '-' }}</td>
-                <td>{{ $descuento->fecha }}</td>
-                <td>{{ $descuento->concepto }}</td>
-                <td class="numero">{{ number_format((float) $descuento->valor, 0, ',', '.') }}</td>
             </tr>
         @endforeach
     </table>
