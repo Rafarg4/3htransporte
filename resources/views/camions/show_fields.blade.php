@@ -27,6 +27,16 @@
 
 <div class="col-sm-4">
     <div class="camion-field">
+        <i class="fas fa-user-tie camion-field-icon"></i>
+        <div>
+            <small class="text-muted d-block">Propietario</small>
+            <span>{{ $camion->propietario ? trim($camion->propietario->nombre . ' ' . $camion->propietario->apellido) : 'Sin asignar' }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="col-sm-4">
+    <div class="camion-field">
         <i class="fas fa-hashtag camion-field-icon"></i>
         <div>
             <small class="text-muted d-block">Nro Chasis</small>
