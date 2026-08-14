@@ -36,9 +36,12 @@ class CreateLiquidacionRequest extends FormRequest
             'chofer_ids' => 'required|array|min:1',
             'chofer_ids.*' => 'exists:chofers,id',
 
-            // Flete: uno por camion tildado (flete[<id_camion>][...]). Si se completa cualquier
-            // campo de un bloque, Tramo y Valor pasan a ser obligatorios PARA ESE MISMO bloque
-            // (Laravel resuelve las referencias flete.*.x contra el mismo indice, no cruzado).
+            // Flete: uno o mas bloques por camion tildado (flete[<bloqueId>][...], bloqueId
+            // generado en el navegador, no es la chapa). Cada bloque declara su propia chapa en
+            // id_camion. Si se completa cualquier campo de un bloque, Tramo y Valor pasan a ser
+            // obligatorios PARA ESE MISMO bloque (Laravel resuelve flete.*.x contra el mismo
+            // indice, no cruzado).
+            'flete.*.id_camion' => 'required|exists:camions,id',
             'flete.*.fecha' => 'nullable|date',
             'flete.*.tramo' => 'required_with:flete.*.fecha,flete.*.kg_origen,flete.*.kg_destino,flete.*.precio,flete.*.valor',
             'flete.*.kg_origen' => 'nullable|numeric',
@@ -49,10 +52,11 @@ class CreateLiquidacionRequest extends FormRequest
             'flete.*.recargo_tolerancia' => 'nullable|numeric',
             'flete.*.recargo_precio' => 'nullable|numeric',
 
-            // Orden de Carga: una por camion tildado (opcional).
+            // Orden de Carga: una por bloque de Flete (opcional), misma clave bloqueId que flete.*.
             'orden_carga.*' => 'nullable|exists:orden_cargas,id',
 
-            // Descuento "Faltante de Carga" automatico por camion (concepto se fuerza en el servidor).
+            // Descuento "Faltante de Carga" automatico por bloque de Flete (concepto se fuerza
+            // en el servidor), misma clave bloqueId que flete.*.
             'descuento_auto.*.fecha' => 'nullable|date',
             'descuento_auto.*.valor' => 'nullable|numeric',
 
@@ -77,10 +81,10 @@ class CreateLiquidacionRequest extends FormRequest
     }
 
     /**
-     * Extra validation that plain rules() can't express: the flete/orden_carga/descuento_auto
-     * arrays are keyed by id_camion, and none of those columns have a real DB foreign key
-     * (they're all `text`), so this is the only barrier against a tampered/stale camion id
-     * that was never actually ticked in camion_ids.
+     * Extra validation that plain rules() can't express: flete/orden_carga/descuento_auto estan
+     * indexados por bloqueId (uno o mas bloques por chapa, no una chapa = un bloque), y ninguna
+     * de esas columnas tiene FK real en la base (son todas `text`), asi que esto es lo unico que
+     * impide que un id_camion o un bloqueId manipulado/desactualizado llegue a guardarse.
      *
      * @param \Illuminate\Validation\Validator $validator
      *
@@ -90,13 +94,27 @@ class CreateLiquidacionRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             $camionIds = array_map('strval', (array) $this->input('camion_ids', []));
+            $fletes = (array) $this->input('flete', []);
 
-            foreach (['flete', 'orden_carga', 'descuento_auto'] as $campo) {
+            // Cada bloque de Flete tiene que declarar una chapa que efectivamente este tildada.
+            foreach ($fletes as $bloqueId => $fila) {
+                $idCamion = (string) ($fila['id_camion'] ?? '');
+
+                if (!in_array($idCamion, $camionIds, true)) {
+                    $validator->errors()->add('flete.' . $bloqueId . '.id_camion', 'Hay un Flete para una chapa que no fue seleccionada.');
+                }
+            }
+
+            // orden_carga y descuento_auto comparten la misma clave bloqueId que flete: cualquier
+            // clave que no corresponda a un bloque de Flete real es un dato manipulado/huerfano.
+            $bloqueIdsFlete = array_map('strval', array_keys($fletes));
+
+            foreach (['orden_carga', 'descuento_auto'] as $campo) {
                 $claves = array_map('strval', array_keys((array) $this->input($campo, [])));
 
                 foreach ($claves as $clave) {
-                    if (!in_array($clave, $camionIds, true)) {
-                        $validator->errors()->add($campo, 'Hay datos de ' . $campo . ' para una chapa que no fue seleccionada.');
+                    if (!in_array($clave, $bloqueIdsFlete, true)) {
+                        $validator->errors()->add($campo, 'Hay datos de ' . $campo . ' para un bloque de Flete que no existe.');
                     }
                 }
             }
@@ -122,6 +140,7 @@ class CreateLiquidacionRequest extends FormRequest
             'chofer_ids' => 'chofer',
             'chofer_ids.*' => 'chofer',
 
+            'flete.*.id_camion' => 'chapa del flete',
             'flete.*.fecha' => 'fecha del flete',
             'flete.*.tramo' => 'tramo del flete',
             'flete.*.kg_origen' => 'kg origen del flete',

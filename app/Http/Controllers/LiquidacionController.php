@@ -126,13 +126,30 @@ class LiquidacionController extends AppBaseController
     public function store(CreateLiquidacionRequest $request)
     {
         DB::transaction(function () use ($request) {
-            $fletesPorCamion = $request->input('flete', []);
-            $ordenCargaPorCamion = $request->input('orden_carga', []);
+            // Cada bloque de Flete tiene su propio id (bloqueId), no la chapa: una chapa
+            // tildada puede tener varios fletes (boton "Otro flete"), asi que flete/orden_carga/
+            // descuento_auto quedan indexados por bloqueId, y cada fila de flete declara su
+            // propia chapa en id_camion (ver fields.blade.php).
+            $fletesPorBloque = $request->input('flete', []);
+            $ordenCargaPorBloque = $request->input('orden_carga', []);
             $idCamionPrincipal = $request->input('id_camion');
 
-            $idOrdenCargaCabecera = $ordenCargaPorCamion[$idCamionPrincipal] ?? null;
+            // Cabecera: primer bloque de Flete de la chapa principal que tenga Orden de Carga
+            // cargada; si ninguno la tiene, se usa la primera Orden de Carga de cualquier bloque.
+            $idOrdenCargaCabecera = collect($fletesPorBloque)
+                ->filter(function ($fila) use ($idCamionPrincipal) {
+                    return ($fila['id_camion'] ?? null) === $idCamionPrincipal;
+                })
+                ->keys()
+                ->map(function ($bloqueId) use ($ordenCargaPorBloque) {
+                    return $ordenCargaPorBloque[$bloqueId] ?? null;
+                })
+                ->first(function ($valor) {
+                    return !empty($valor);
+                });
+
             if (empty($idOrdenCargaCabecera)) {
-                $idOrdenCargaCabecera = collect($ordenCargaPorCamion)->first(function ($valor) {
+                $idOrdenCargaCabecera = collect($ordenCargaPorBloque)->first(function ($valor) {
                     return !empty($valor);
                 });
             }
@@ -150,8 +167,9 @@ class LiquidacionController extends AppBaseController
 
             $fechaCabecera = $request->input('fecha');
 
-            foreach ($fletesPorCamion as $idCamion => $filaFlete) {
-                $idOrdenCarga = $ordenCargaPorCamion[$idCamion] ?? null;
+            foreach ($fletesPorBloque as $bloqueId => $filaFlete) {
+                $idCamion = $filaFlete['id_camion'] ?? null;
+                $idOrdenCarga = $ordenCargaPorBloque[$bloqueId] ?? null;
 
                 $this->guardarLinea(
                     $liquidacion,
@@ -169,7 +187,9 @@ class LiquidacionController extends AppBaseController
                 }
             }
 
-            foreach ($request->input('descuento_auto', []) as $idCamion => $filaDescuentoAuto) {
+            foreach ($request->input('descuento_auto', []) as $bloqueId => $filaDescuentoAuto) {
+                $idCamion = $fletesPorBloque[$bloqueId]['id_camion'] ?? null;
+
                 $this->guardarLinea(
                     $liquidacion,
                     LiquidacionDescuento::class,

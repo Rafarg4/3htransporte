@@ -60,7 +60,7 @@
 <!-- FLETE (uno por cada chapa tildada en Camión) -->
 <div class="col-sm-12">
     <hr>
-    <h5>Flete <small class="text-muted font-weight-normal">(un bloque por cada chapa tildada, Tramo y Valor obligatorios)</small></h5>
+    <h5>Flete <small class="text-muted font-weight-normal">(un bloque por cada chapa tildada, Tramo y Valor obligatorios; usá "Otro flete" si una chapa hizo más de un viaje)</small></h5>
     <small class="text-muted d-block mb-2">
         Diferencia negativa: se genera solo un Descuento por "Faltante de Carga" para esa chapa, con Diferencia + (Tolerancia &times; Precio).
         Tolerancia y Precio Recargo se cargan por defecto desde <a href="{{ route('parametrizaciones.edit') }}" target="_blank">Parametrizaciones</a>, pero pueden ajustarse por chapa.
@@ -72,58 +72,69 @@
 
 <template id="flete-block-template">
     <div class="flete-bloque border rounded p-2 mb-3" data-flete-bloque>
-        <h6 class="mb-2">Flete <span class="text-primary" data-role="chapa-heading"></span></h6>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0">Flete <span class="text-primary" data-role="chapa-heading"></span></h6>
+            <div>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-role="agregar-flete" title="Agregar otro flete para esta chapa">
+                    <i class="fas fa-plus"></i> Otro flete
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-role="eliminar-bloque" title="Eliminar este flete">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+        <input type="hidden" data-role="id-camion" name="flete[__BLOQUE_ID__][id_camion]">
         <div class="form-row">
             <div class="form-group col-sm-2">
                 <label>Fecha</label>
-                <input type="date" class="form-control" data-role="fecha" name="flete[__CAMION_ID__][fecha]">
+                <input type="date" class="form-control" data-role="fecha" name="flete[__BLOQUE_ID__][fecha]">
             </div>
             <div class="form-group col-sm-3">
                 <label>Orden de Carga</label>
-                <select class="form-control" data-role="orden-carga" name="orden_carga[__CAMION_ID__]">
+                <select class="form-control" data-role="orden-carga" name="orden_carga[__BLOQUE_ID__]">
                     <option value="">Seleccione una orden de carga</option>
                 </select>
             </div>
             <div class="form-group col-sm-3">
                 <label>Tramo</label>
-                <input type="text" class="form-control" data-role="tramo" name="flete[__CAMION_ID__][tramo]" placeholder="Origen a destino">
+                <input type="text" class="form-control" data-role="tramo" name="flete[__BLOQUE_ID__][tramo]" placeholder="Origen a destino">
             </div>
             <div class="form-group col-sm-1">
                 <label>Kg Origen</label>
-                <input type="number" step="0.01" class="form-control" data-role="kg-origen" name="flete[__CAMION_ID__][kg_origen]">
+                <input type="number" step="0.01" class="form-control" data-role="kg-origen" name="flete[__BLOQUE_ID__][kg_origen]">
             </div>
             <div class="form-group col-sm-1">
                 <label>Kg Destino</label>
-                <input type="number" step="0.01" class="form-control" data-role="kg-destino" name="flete[__CAMION_ID__][kg_destino]">
+                <input type="number" step="0.01" class="form-control" data-role="kg-destino" name="flete[__BLOQUE_ID__][kg_destino]">
             </div>
             <div class="form-group col-sm-2">
                 <label>Diferencia</label>
                 <input type="text" class="form-control" data-role="diferencia" readonly tabindex="-1">
-                <input type="hidden" data-role="diferencia-raw" name="flete[__CAMION_ID__][diferencia]">
+                <input type="hidden" data-role="diferencia-raw" name="flete[__BLOQUE_ID__][diferencia]">
             </div>
         </div>
         <div class="form-row">
             <div class="form-group col-sm-2">
                 <label>Precio</label>
-                <input type="number" step="0.01" class="form-control" data-role="precio" name="flete[__CAMION_ID__][precio]">
+                <input type="number" step="0.01" class="form-control" data-role="precio" name="flete[__BLOQUE_ID__][precio]">
             </div>
             <div class="form-group col-sm-2">
                 <label>Valor</label>
-                <input type="number" step="0.01" class="form-control liquidacion-credito" data-role="valor" name="flete[__CAMION_ID__][valor]">
+                <input type="number" step="0.01" class="form-control liquidacion-credito" data-role="valor" name="flete[__BLOQUE_ID__][valor]">
             </div>
             <div class="form-group col-sm-2">
                 <label>Tolerancia (Kg)</label>
-                <input type="number" step="0.01" class="form-control" data-role="recargo-tolerancia" name="flete[__CAMION_ID__][recargo_tolerancia]" value="{{ $parametrizacion->recargo_tolerancia }}">
+                <input type="number" step="0.01" class="form-control" data-role="recargo-tolerancia" name="flete[__BLOQUE_ID__][recargo_tolerancia]" value="{{ $parametrizacion->recargo_tolerancia }}">
             </div>
             <div class="form-group col-sm-2">
                 <label>Precio Recargo</label>
-                <input type="number" step="0.01" class="form-control" data-role="recargo-precio" name="flete[__CAMION_ID__][recargo_precio]" value="{{ $parametrizacion->recargo_precio }}">
+                <input type="number" step="0.01" class="form-control" data-role="recargo-precio" name="flete[__BLOQUE_ID__][recargo_precio]" value="{{ $parametrizacion->recargo_precio }}">
             </div>
             <div class="form-group col-sm-4">
                 <label>Recargo (Faltante de Carga) <i class="fas fa-lock fa-xs text-muted" title="Se calcula automaticamente"></i></label>
                 <input type="text" class="form-control bg-light" data-role="recargo-preview" readonly tabindex="-1" placeholder="Sin recargo">
-                <input type="hidden" data-role="descuento-fecha" name="descuento_auto[__CAMION_ID__][fecha]">
-                <input type="hidden" class="liquidacion-debito" data-role="descuento-valor" name="descuento_auto[__CAMION_ID__][valor]">
+                <input type="hidden" data-role="descuento-fecha" name="descuento_auto[__BLOQUE_ID__][fecha]">
+                <input type="hidden" class="liquidacion-debito" data-role="descuento-valor" name="descuento_auto[__BLOQUE_ID__][valor]">
             </div>
         </div>
     </div>
@@ -223,7 +234,7 @@
 <div class="col-sm-12">
     <hr>
     <h5>Gastos Administrativos</h5>
-    <small class="text-muted d-block mb-2">El monto se multiplica por la cantidad de fletes tildados (una chapa tildada en Camión = un flete).</small>
+    <small class="text-muted d-block mb-2">El monto se multiplica por la cantidad de fletes cargados (una chapa puede tener más de uno).</small>
 
     <div class="form-row">
         <div class="form-group col-sm-3">
@@ -503,15 +514,26 @@
             }) || bloque.querySelector('[data-role="orden-carga"]').value;
         }
 
-        function crearBloqueFlete(camionId, chapaTexto) {
+        // Cada bloque de Flete tiene un id propio (bloqueId), independiente de la chapa: una
+        // chapa tildada puede tener varios bloques (boton "Otro flete"). bloqueId es solo la
+        // clave usada en flete[<bloqueId>]/orden_carga[<bloqueId>]/descuento_auto[<bloqueId>];
+        // la chapa real de cada bloque va en su propio hidden id_camion (ver crearBloqueFlete),
+        // que es lo que el backend usa para saber a que camion pertenece.
+        function nuevoBloqueId() {
+            return 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        }
+
+        function crearBloqueFlete(camionId, chapaTexto, bloqueId) {
             var fragmento = fleteBlockTemplate.content.cloneNode(true);
             var bloque = fragmento.querySelector('[data-flete-bloque]');
             bloque.dataset.camionId = camionId;
+            bloque.dataset.bloqueId = bloqueId;
 
             bloque.querySelectorAll('[name]').forEach(function (el) {
-                el.name = el.name.replace(/__CAMION_ID__/g, camionId);
+                el.name = el.name.replace(/__BLOQUE_ID__/g, bloqueId);
             });
 
+            bloque.querySelector('[data-role="id-camion"]').value = camionId;
             bloque.querySelector('[data-role="chapa-heading"]').textContent = chapaTexto ? '— ' + chapaTexto : '';
 
             var ordenCargaSelect = bloque.querySelector('[data-role="orden-carga"]');
@@ -521,7 +543,7 @@
                 }
             });
 
-            var datosViejos = oldFleteData[camionId];
+            var datosViejos = oldFleteData[bloqueId];
             if (datosViejos) {
                 ['fecha', 'tramo', 'kg_origen', 'kg_destino', 'precio', 'recargo_tolerancia', 'recargo_precio'].forEach(function (campo) {
                     var rol = campo.replace(/_/g, '-');
@@ -531,41 +553,101 @@
                     }
                 });
             }
-            if (oldOrdenCargaData[camionId]) {
-                ordenCargaSelect.value = oldOrdenCargaData[camionId];
+            if (oldOrdenCargaData[bloqueId]) {
+                ordenCargaSelect.value = oldOrdenCargaData[bloqueId];
             }
+
+            bloque.querySelector('[data-role="agregar-flete"]').addEventListener('click', function () {
+                agregarFleteAdicional(camionId, chapaTexto);
+            });
+
+            bloque.querySelector('[data-role="eliminar-bloque"]').addEventListener('click', function () {
+                eliminarBloquePorId(bloqueId);
+            });
 
             fleteBlocksContainer.appendChild(bloque);
             inicializarCalculoBloque(bloque);
             actualizarHintBloquesFlete();
         }
 
-        function eliminarBloqueFlete(camionId) {
-            var bloque = fleteBlocksContainer.querySelector('[data-camion-id="' + camionId + '"]');
-            if (bloque) {
-                bloque.remove();
+        // Crea el/los bloque(s) de una chapa recien tildada. Si el formulario se recarga tras
+        // un error de validacion y esa chapa ya tenia varios fletes cargados (old('flete')),
+        // los recrea todos; si no hay datos previos, crea un unico bloque en blanco (el default).
+        function crearBloquesParaCamion(camionId, chapaTexto) {
+            var bloqueIdsViejos = Object.keys(oldFleteData).filter(function (bloqueId) {
+                return oldFleteData[bloqueId].id_camion === camionId;
+            });
+
+            if (bloqueIdsViejos.length > 0) {
+                bloqueIdsViejos.forEach(function (bloqueId) {
+                    crearBloqueFlete(camionId, chapaTexto, bloqueId);
+                });
+            } else {
+                crearBloqueFlete(camionId, chapaTexto, nuevoBloqueId());
             }
+        }
+
+        // Boton "Otro flete": agrega un bloque en blanco mas para la misma chapa.
+        function agregarFleteAdicional(camionId, chapaTexto) {
+            crearBloqueFlete(camionId, chapaTexto, nuevoBloqueId());
+            recalcularTotales();
+            actualizarGastoAdministrativo();
+        }
+
+        // Elimina un unico bloque por su bloqueId (boton papelera). No se puede dejar una chapa
+        // tildada sin ningun bloque de Flete (es obligatorio), asi que si es el ultimo bloque de
+        // esa chapa se bloquea: para sacarlo hay que destildar la chapa en Camión.
+        function eliminarBloquePorId(bloqueId) {
+            var bloque = fleteBlocksContainer.querySelector('[data-bloque-id="' + bloqueId + '"]');
+            if (!bloque) {
+                return;
+            }
+
+            var camionId = bloque.dataset.camionId;
+            var bloquesDeLaChapa = fleteBlocksContainer.querySelectorAll('[data-camion-id="' + camionId + '"]');
+
+            if (bloquesDeLaChapa.length <= 1) {
+                alert('Esta chapa necesita al menos un Flete. Si no querés cargarle Flete, destildala en Camión.');
+                return;
+            }
+
+            if (!confirm('¿Eliminar este Flete adicional?')) {
+                return;
+            }
+
+            bloque.remove();
+            actualizarHintBloquesFlete();
+            recalcularTotales();
+            actualizarGastoAdministrativo();
+        }
+
+        function eliminarBloquesDeCamion(camionId) {
+            fleteBlocksContainer.querySelectorAll('[data-camion-id="' + camionId + '"]').forEach(function (bloque) {
+                bloque.remove();
+            });
             actualizarHintBloquesFlete();
         }
 
-        // Agrega un bloque de Flete por cada chapa recien tildada y quita el de las destildadas,
-        // sin tocar los bloques de chapas que siguen tildadas (no se pierden datos ya cargados).
+        // Agrega el/los bloque(s) por defecto de cada chapa recien tildada y quita TODOS los
+        // bloques (incluidos los adicionales agregados con "Otro flete") de las destildadas, sin
+        // tocar los bloques de chapas que siguen tildadas (no se pierden datos ya cargados).
         function sincronizarBloquesFlete() {
             var seleccionados = obtenerCamionesSeleccionados();
-            var renderizados = Array.prototype.map.call(
+            var camionesRenderizados = Array.prototype.map.call(
                 fleteBlocksContainer.querySelectorAll('[data-flete-bloque]'),
                 function (b) { return b.dataset.camionId; }
             );
 
-            renderizados
+            camionesRenderizados
+                .filter(function (id, indice) { return camionesRenderizados.indexOf(id) === indice; })
                 .filter(function (id) { return seleccionados.indexOf(id) === -1; })
-                .forEach(eliminarBloqueFlete);
+                .forEach(eliminarBloquesDeCamion);
 
             seleccionados
-                .filter(function (id) { return renderizados.indexOf(id) === -1; })
+                .filter(function (id) { return camionesRenderizados.indexOf(id) === -1; })
                 .forEach(function (id) {
                     var camion = camionesOriginales.find(function (c) { return c.value === id; });
-                    crearBloqueFlete(id, camion ? camion.text : '');
+                    crearBloquesParaCamion(id, camion ? camion.text : '');
                 });
 
             actualizarGastoAdministrativo();
@@ -689,8 +771,8 @@
                 .filter(function (id) { return seleccionActual.indexOf(id) !== -1; });
 
             var hayDatosEnRiesgo = idsAEliminar.some(function (id) {
-                var bloque = fleteBlocksContainer.querySelector('[data-camion-id="' + id + '"]');
-                return bloque && bloqueTieneDatos(bloque);
+                var bloques = fleteBlocksContainer.querySelectorAll('[data-camion-id="' + id + '"]');
+                return Array.prototype.some.call(bloques, bloqueTieneDatos);
             });
 
             if (hayDatosEnRiesgo && !confirm('Cambiar el Propietario va a quitar del formulario el Flete ya cargado para alguna de las chapas tildadas. ¿Querés continuar?')) {
