@@ -223,6 +223,12 @@
             || ($flete->recargo_precio !== null && $flete->recargo_precio !== '')
             || ($flete->recargo !== null && $flete->recargo !== '');
     });
+
+    $calcularDescuentoFaltante = function ($flete) {
+        $perdida = abs((float) $flete->diferencia);
+        $tolerancia = (float) $flete->recargo_tolerancia;
+        return $perdida > $tolerancia ? $tolerancia * (float) $flete->recargo_precio : 0;
+    };
 @endphp
 @if($fletesConRecargo->isNotEmpty())
     <div class="section-title">Descuento Faltante</div>
@@ -238,7 +244,7 @@
         </tr>
         @foreach($fletesConRecargo as $flete)
             @php
-                $valorDescuentoFaltante = (float) $flete->recargo_tolerancia * (float) $flete->recargo_precio;
+                $valorDescuentoFaltante = $calcularDescuentoFaltante($flete);
             @endphp
             <tr>
                 <td>{{ $flete->camion->chapa ?? '-' }}</td>
@@ -252,7 +258,7 @@
         @endforeach
         <tr class="subtotal-row">
             <td colspan="6" class="label-total">Total Descuento Faltante</td>
-            <td class="numero">{{ number_format($fletesConRecargo->sum(fn ($f) => (float) $f->recargo_tolerancia * (float) $f->recargo_precio), 0, ',', '.') }}</td>
+            <td class="numero">{{ number_format($fletesConRecargo->sum($calcularDescuentoFaltante), 0, ',', '.') }}</td>
         </tr>
     </table>
 @endif
