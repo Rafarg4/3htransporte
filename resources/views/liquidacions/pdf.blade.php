@@ -40,13 +40,15 @@
             margin: 8px 0 16px;
         }
         .section-title {
-            background: #f1f3f5;
+            background: #E8975A;
+            color: #1a1a1a;
             padding: 6px 10px;
             font-weight: bold;
             text-transform: uppercase;
             font-size: 11px;
             margin-top: 18px;
             margin-bottom: 6px;
+            border: 1px solid #c97a3c;
         }
         table.data-table {
             width: 100%;
@@ -193,9 +195,6 @@
             <th>Kg Destino</th>
             <th>Diferencia</th>
             <th>Precio</th>
-            <th>Tolerancia (Kg)</th>
-            <th>Precio Recargo</th>
-            <th>Recargo</th>
             <th>Valor</th>
         </tr>
         @foreach($liquidacion->fletes as $flete)
@@ -208,15 +207,52 @@
                 <td class="numero">{{ number_format((float) $flete->kg_destino, 0, ',', '.') }}</td>
                 <td class="numero">{{ $flete->diferencia !== null && $flete->diferencia !== '' ? number_format((float) $flete->diferencia, 0, ',', '.') : '-' }}</td>
                 <td class="numero">{{ number_format((float) $flete->precio, 0, ',', '.') }}</td>
-                <td class="numero">{{ $flete->recargo_tolerancia !== null && $flete->recargo_tolerancia !== '' ? number_format((float) $flete->recargo_tolerancia, 0, ',', '.') : '-' }}</td>
-                <td class="numero">{{ $flete->recargo_precio !== null && $flete->recargo_precio !== '' ? number_format((float) $flete->recargo_precio, 0, ',', '.') : '-' }}</td>
-                <td class="numero">{{ $flete->recargo !== null && $flete->recargo !== '' ? number_format((float) $flete->recargo, 0, ',', '.') : '-' }}</td>
                 <td class="numero">{{ number_format((float) $flete->valor, 0, ',', '.') }}</td>
             </tr>
         @endforeach
         <tr class="subtotal-row">
-            <td colspan="11" class="label-total">Total Flete</td>
+            <td colspan="8" class="label-total">Total Flete</td>
             <td class="numero">{{ number_format($liquidacion->total_creditos, 0, ',', '.') }}</td>
+        </tr>
+    </table>
+@endif
+
+@php
+    $fletesConRecargo = $liquidacion->fletes->filter(function ($flete) {
+        return ($flete->recargo_tolerancia !== null && $flete->recargo_tolerancia !== '')
+            || ($flete->recargo_precio !== null && $flete->recargo_precio !== '')
+            || ($flete->recargo !== null && $flete->recargo !== '');
+    });
+@endphp
+@if($fletesConRecargo->isNotEmpty())
+    <div class="section-title">Descuento Faltante</div>
+    <table class="data-table">
+        <tr>
+            <th>Camión</th>
+            <th>Fecha</th>
+            <th>Tramo</th>
+            <th>Diferencia</th>
+            <th>Tolerancia (Kg)</th>
+            <th>Precio Recargo</th>
+            <th>Valor</th>
+        </tr>
+        @foreach($fletesConRecargo as $flete)
+            @php
+                $valorDescuentoFaltante = (float) $flete->recargo_tolerancia * (float) $flete->recargo_precio;
+            @endphp
+            <tr>
+                <td>{{ $flete->camion->chapa ?? '-' }}</td>
+                <td>{{ $flete->fecha }}</td>
+                <td>{{ $flete->tramo }}</td>
+                <td class="numero">{{ $flete->diferencia !== null && $flete->diferencia !== '' ? number_format((float) $flete->diferencia, 0, ',', '.') : '-' }}</td>
+                <td class="numero">{{ $flete->recargo_tolerancia !== null && $flete->recargo_tolerancia !== '' ? number_format((float) $flete->recargo_tolerancia, 0, ',', '.') : '-' }}</td>
+                <td class="numero">{{ $flete->recargo_precio !== null && $flete->recargo_precio !== '' ? number_format((float) $flete->recargo_precio, 0, ',', '.') : '-' }}</td>
+                <td class="numero">{{ number_format($valorDescuentoFaltante, 0, ',', '.') }}</td>
+            </tr>
+        @endforeach
+        <tr class="subtotal-row">
+            <td colspan="6" class="label-total">Total Descuento Faltante</td>
+            <td class="numero">{{ number_format($fletesConRecargo->sum(fn ($f) => (float) $f->recargo_tolerancia * (float) $f->recargo_precio), 0, ',', '.') }}</td>
         </tr>
     </table>
 @endif

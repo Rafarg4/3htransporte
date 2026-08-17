@@ -284,7 +284,7 @@ class LiquidacionController extends AppBaseController
         $pdf = Pdf::loadView('liquidacions.pdf', [
             'liquidacion' => $liquidacion,
             'empresa' => $empresa,
-        ])->setPaper('a4', 'landscape');
+        ])->setPaper('a4', 'portrait');
 
         return $pdf->stream('Liquidacion ' . $liquidacion->id . '.pdf');
     }
