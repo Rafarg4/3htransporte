@@ -227,7 +227,7 @@
     $calcularDescuentoFaltante = function ($flete) {
         $perdida = abs((float) $flete->diferencia);
         $tolerancia = (float) $flete->recargo_tolerancia;
-        return $perdida > $tolerancia ? $tolerancia * (float) $flete->recargo_precio : 0;
+        return $perdida > $tolerancia ? ($perdida - $tolerancia) * (float) $flete->recargo_precio : 0;
     };
 @endphp
 @if($fletesConRecargo->isNotEmpty())
