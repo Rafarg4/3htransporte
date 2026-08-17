@@ -193,6 +193,9 @@
             <th>Kg Destino</th>
             <th>Diferencia</th>
             <th>Precio</th>
+            <th>Tolerancia (Kg)</th>
+            <th>Precio Recargo</th>
+            <th>Recargo</th>
             <th>Valor</th>
         </tr>
         @foreach($liquidacion->fletes as $flete)
@@ -205,11 +208,14 @@
                 <td class="numero">{{ number_format((float) $flete->kg_destino, 0, ',', '.') }}</td>
                 <td class="numero">{{ $flete->diferencia !== null && $flete->diferencia !== '' ? number_format((float) $flete->diferencia, 0, ',', '.') : '-' }}</td>
                 <td class="numero">{{ number_format((float) $flete->precio, 0, ',', '.') }}</td>
+                <td class="numero">{{ $flete->recargo_tolerancia !== null && $flete->recargo_tolerancia !== '' ? number_format((float) $flete->recargo_tolerancia, 0, ',', '.') : '-' }}</td>
+                <td class="numero">{{ $flete->recargo_precio !== null && $flete->recargo_precio !== '' ? number_format((float) $flete->recargo_precio, 0, ',', '.') : '-' }}</td>
+                <td class="numero">{{ $flete->recargo !== null && $flete->recargo !== '' ? number_format((float) $flete->recargo, 0, ',', '.') : '-' }}</td>
                 <td class="numero">{{ number_format((float) $flete->valor, 0, ',', '.') }}</td>
             </tr>
         @endforeach
         <tr class="subtotal-row">
-            <td colspan="8" class="label-total">Total Flete</td>
+            <td colspan="11" class="label-total">Total Flete</td>
             <td class="numero">{{ number_format($liquidacion->total_creditos, 0, ',', '.') }}</td>
         </tr>
     </table>
