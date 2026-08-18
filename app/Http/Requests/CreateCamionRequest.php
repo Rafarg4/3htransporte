@@ -25,8 +25,21 @@ class CreateCamionRequest extends FormRequest
     public function rules()
     {
         return array_merge(Camion::$rules, [
+            'chapa' => 'required|string|max:255|unique:camions,chapa,NULL,id,deleted_at,NULL',
             'documentos' => 'nullable|array',
             'documentos.*' => 'file|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array
+     */
+    public function messages()
+    {
+        return [
+            'chapa.unique' => 'Ya existe un camión creado con esta chapa.',
+        ];
     }
 }

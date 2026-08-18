@@ -26,9 +26,24 @@ class UpdateChoferRequest extends FormRequest
     {
         $rules = Chofer::$rules;
 
+        $idChofer = $this->route('chofer');
+
         return array_merge($rules, [
+            'documento' => 'required|string|max:255|unique:chofers,documento,' . $idChofer . ',id,deleted_at,NULL',
             'documentos' => 'nullable|array',
             'documentos.*' => 'file|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array
+     */
+    public function messages()
+    {
+        return [
+            'documento.unique' => 'Ya existe un chofer creado con este documento.',
+        ];
     }
 }

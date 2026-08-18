@@ -25,8 +25,21 @@ class CreateChoferRequest extends FormRequest
     public function rules()
     {
         return array_merge(Chofer::$rules, [
+            'documento' => 'required|string|max:255|unique:chofers,documento,NULL,id,deleted_at,NULL',
             'documentos' => 'nullable|array',
             'documentos.*' => 'file|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array
+     */
+    public function messages()
+    {
+        return [
+            'documento.unique' => 'Ya existe un chofer creado con este documento.',
+        ];
     }
 }

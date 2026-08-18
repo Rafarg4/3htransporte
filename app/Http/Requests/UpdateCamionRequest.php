@@ -26,9 +26,24 @@ class UpdateCamionRequest extends FormRequest
     {
         $rules = Camion::$rules;
 
+        $idCamion = $this->route('camion');
+
         return array_merge($rules, [
+            'chapa' => 'required|string|max:255|unique:camions,chapa,' . $idCamion . ',id,deleted_at,NULL',
             'documentos' => 'nullable|array',
             'documentos.*' => 'file|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array
+     */
+    public function messages()
+    {
+        return [
+            'chapa.unique' => 'Ya existe un camión creado con esta chapa.',
+        ];
     }
 }
