@@ -68,12 +68,30 @@
         <p>Viaticos</p>
     </a>
 </li>
-<li class="nav-item">
-    <a href="{{ route('liquidacions.index') }}"
-       class="nav-link {{ Request::is('liquidacions*') ? 'active' : '' }}">
+<li class="nav-item {{ Request::is('liquidacions*') ? 'menu-open' : '' }}">
+    <a href="#" class="nav-link {{ Request::is('liquidacions*') ? 'active' : '' }}">
         <i class="nav-icon fa fa-file-invoice-dollar"></i>
-        <p>Liquidaciones</p>
+        <p>
+            Liquidaciones
+            <i class="right fas fa-angle-left"></i>
+        </p>
     </a>
+    <ul class="nav nav-treeview">
+        <li class="nav-item">
+            <a href="{{ route('liquidacions.index') }}"
+               class="nav-link {{ Request::is('liquidacions') || Request::is('liquidacions/create') ? 'active' : '' }}">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Listado</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('liquidacions.reporte') }}"
+               class="nav-link {{ Request::is('liquidacions/reporte*') ? 'active' : '' }}">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Reporte</p>
+            </a>
+        </li>
+    </ul>
 </li>
 <li class="nav-item">
     <a href="{{ route('proveedors.index') }}"

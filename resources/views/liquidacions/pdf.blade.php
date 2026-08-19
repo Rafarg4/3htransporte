@@ -6,25 +6,25 @@
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;
-            font-size: 12px;
+            font-size: 10px;
             color: #333;
         }
         .header-table {
             width: 100%;
             border-collapse: collapse;
             border-spacing: 0;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
         }
         .header-table td {
             vertical-align: middle;
             padding: 0;
         }
         .logo {
-            max-height: 110px;
-            max-width: 200px;
+            max-height: 80px;
+            max-width: 150px;
         }
         .empresa-nombre {
-            font-size: 16px;
+            font-size: 13px;
             font-weight: bold;
         }
         .documento-titulo {
@@ -32,22 +32,22 @@
         }
         .documento-titulo h2 {
             margin: 0;
-            font-size: 18px;
+            font-size: 14px;
         }
         hr {
             border: none;
             border-top: 2px solid #333;
-            margin: 8px 0 16px;
+            margin: 6px 0 10px;
         }
         .section-title {
             background: #E8975A;
             color: #1a1a1a;
-            padding: 6px 10px;
+            padding: 4px 8px;
             font-weight: bold;
             text-transform: uppercase;
-            font-size: 11px;
-            margin-top: 18px;
-            margin-bottom: 6px;
+            font-size: 9px;
+            margin-top: 12px;
+            margin-bottom: 4px;
             border: 1px solid #c97a3c;
         }
         table.data-table {
@@ -56,14 +56,14 @@
         }
         table.data-table th,
         table.data-table td {
-            padding: 4px 8px;
+            padding: 3px 6px;
             border-bottom: 1px solid #eee;
             text-align: left;
         }
         table.data-table th {
             color: #666;
             font-weight: normal;
-            font-size: 10px;
+            font-size: 8px;
             text-transform: uppercase;
             border-bottom: 1px solid #ccc;
         }
@@ -81,10 +81,10 @@
         }
         .totales {
             width: 100%;
-            margin-top: 20px;
+            margin-top: 14px;
         }
         .totales td {
-            padding: 4px 8px;
+            padding: 3px 6px;
         }
         .totales .label {
             text-align: right;
@@ -92,11 +92,11 @@
         }
         .totales .valor {
             text-align: right;
-            width: 120px;
+            width: 100px;
             font-weight: bold;
         }
         .totales .saldo .valor {
-            font-size: 14px;
+            font-size: 12px;
             border-top: 2px solid #333;
         }
         .watermark {

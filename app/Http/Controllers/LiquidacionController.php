@@ -290,6 +290,144 @@ class LiquidacionController extends AppBaseController
     }
 
     /**
+     * Show the Reporte de Liquidaciones screen: a filtered listing (por
+     * fecha, facturado y pagado) with links to export it as PDF or Excel.
+     *
+     * @param Request $request
+     *
+     * @return Response
+     */
+    public function reporte(Request $request)
+    {
+        $liquidacions = $this->filtrarReporte($request)->get();
+
+        return view('liquidacions.reporte')
+            ->with('liquidacions', $liquidacions)
+            ->with('filtros', $this->getFiltrosReporte($request));
+    }
+
+    /**
+     * Stream the filtered Liquidacion listing as a PDF.
+     *
+     * @param Request $request
+     *
+     * @return Response
+     */
+    public function reportePdf(Request $request)
+    {
+        $liquidacions = $this->filtrarReporte($request)->get();
+        $empresa = Empresa::first();
+
+        $pdf = Pdf::loadView('liquidacions.reporte_pdf', [
+            'liquidacions' => $liquidacions,
+            'empresa' => $empresa,
+            'filtros' => $this->getFiltrosReporte($request),
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->stream('Reporte de Liquidaciones ' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    /**
+     * Download the filtered Liquidacion listing as a CSV file, with the
+     * Empresa data as header rows above the table.
+     *
+     * @param Request $request
+     *
+     * @return Response
+     */
+    public function reporteExcel(Request $request)
+    {
+        $liquidacions = $this->filtrarReporte($request)->get();
+        $empresa = Empresa::first();
+
+        $nombreArchivo = 'Reporte de Liquidaciones ' . now()->format('Y-m-d') . '.csv';
+
+        return response()->streamDownload(function () use ($liquidacions, $empresa) {
+            $handle = fopen('php://output', 'w');
+
+            // BOM, para que Excel detecte UTF-8 y muestre bien los acentos.
+            fwrite($handle, "\xEF\xBB\xBF");
+
+            if ($empresa) {
+                fputcsv($handle, [$empresa->nombre], ';');
+                fputcsv($handle, ['RUC: ' . $empresa->ruc], ';');
+                fputcsv($handle, [$empresa->direccion], ';');
+                fputcsv($handle, ['Tel: ' . $empresa->telefono], ';');
+                fputcsv($handle, [], ';');
+            }
+
+            fputcsv($handle, [
+                'Nro.', 'Fecha', 'Propietario', 'Chapa', 'Créditos', 'Débitos', 'Saldo', 'Facturado', 'Pagado',
+            ], ';');
+
+            foreach ($liquidacions as $liquidacion) {
+                fputcsv($handle, [
+                    $liquidacion->id,
+                    $liquidacion->fecha,
+                    $liquidacion->cliente ? trim($liquidacion->cliente->nombre . ' ' . $liquidacion->cliente->apellido) : '-',
+                    $liquidacion->chapas ?? '-',
+                    $liquidacion->total_creditos,
+                    $liquidacion->total_debitos,
+                    $liquidacion->saldo,
+                    $liquidacion->facturado === 'Si' ? 'Si' : 'No',
+                    $liquidacion->pagado === 'Si' ? 'Si' : 'No',
+                ], ';');
+            }
+
+            fclose($handle);
+        }, $nombreArchivo, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
+    }
+
+    /**
+     * Build the Liquidacion query for the Reporte screen, applying the
+     * fecha_desde/fecha_hasta/facturado/pagado filters if present in the
+     * request. Compara directo contra la columna de texto `fecha`
+     * (formato Y-m-d), que ordena igual que una fecha real.
+     *
+     * @param Request $request
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    private function filtrarReporte(Request $request)
+    {
+        $query = Liquidacion::with(['cliente', 'camion', 'fletes', 'descuentos', 'gastosAdministrativos', 'viaticos', 'combustibles'])
+            ->orderByDesc('id');
+
+        if ($request->filled('fecha_desde')) {
+            $query->where('fecha', '>=', $request->input('fecha_desde'));
+        }
+
+        if ($request->filled('fecha_hasta')) {
+            $query->where('fecha', '<=', $request->input('fecha_hasta'));
+        }
+
+        if ($request->filled('facturado')) {
+            $query->where('facturado', $request->input('facturado'));
+        }
+
+        if ($request->filled('pagado')) {
+            $query->where('pagado', $request->input('pagado'));
+        }
+
+        return $query;
+    }
+
+    /**
+     * Pull the filter values out of the request, to echo back into the form
+     * and forward to the PDF/Excel export links.
+     *
+     * @param Request $request
+     *
+     * @return array
+     */
+    private function getFiltrosReporte(Request $request)
+    {
+        return $request->only(['fecha_desde', 'fecha_hasta', 'facturado', 'pagado']);
+    }
+
+    /**
      * Instead of deleting, mark the specified Liquidacion as Anulado and
      * release the Viatico/Vale de Combustible attached to it.
      *

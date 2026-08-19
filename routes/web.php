@@ -101,6 +101,12 @@ Route::middleware('auth')->group(function () {
         ->name('liquidacions.create');
     Route::post('liquidacions', [App\Http\Controllers\LiquidacionController::class, 'store'])
         ->name('liquidacions.store');
+    Route::get('liquidacions/reporte', [App\Http\Controllers\LiquidacionController::class, 'reporte'])
+        ->name('liquidacions.reporte');
+    Route::get('liquidacions/reporte/pdf', [App\Http\Controllers\LiquidacionController::class, 'reportePdf'])
+        ->name('liquidacions.reporte.pdf');
+    Route::get('liquidacions/reporte/excel', [App\Http\Controllers\LiquidacionController::class, 'reporteExcel'])
+        ->name('liquidacions.reporte.excel');
     Route::get('liquidacions/{id}/pdf', [App\Http\Controllers\LiquidacionController::class, 'pdf'])
         ->name('liquidacions.pdf');
     Route::delete('liquidacions/{id}', [App\Http\Controllers\LiquidacionController::class, 'destroy'])
