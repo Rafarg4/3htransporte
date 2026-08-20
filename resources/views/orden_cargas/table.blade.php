@@ -27,21 +27,23 @@
                 </span>
             </td>
                 <td width="240">
-                    {!! Form::open(['route' => ['ordenCargas.destroy', $ordenCarga->id], 'method' => 'delete']) !!}
                     <div class="action-buttons d-flex justify-content-center">
-                        <a href="{{ route('ordenCargas.edit', [$ordenCarga->id]) }}" class="btn btn-warning">
-                            <i class="far fa-edit"></i> Editar
-                        </a>
                         <a href="{{ route('ordenCargas.pdf', $ordenCarga->id) }}" class="btn btn-danger" target="_blank">
                             <i class="far fa-file-pdf"></i> PDF
                         </a>
-                        {!! Form::button('<i class="fas fa-ban"></i> Anular', [
-                            'type' => 'submit',
-                            'class' => 'btn btn-info',
-                            'onclick' => "return confirm('¿Anular esta orden de carga?')",
-                        ]) !!}
+                        @if(strtolower($ordenCarga->estado) !== 'anulado')
+                            <a href="{{ route('ordenCargas.edit', [$ordenCarga->id]) }}" class="btn btn-warning">
+                                <i class="far fa-edit"></i> Editar
+                            </a>
+                            {!! Form::open(['route' => ['ordenCargas.destroy', $ordenCarga->id], 'method' => 'delete']) !!}
+                            {!! Form::button('<i class="fas fa-ban"></i> Anular', [
+                                'type' => 'submit',
+                                'class' => 'btn btn-info',
+                                'onclick' => "return confirm('¿Anular esta orden de carga?')",
+                            ]) !!}
+                            {!! Form::close() !!}
+                        @endif
                     </div>
-                    {!! Form::close() !!}
                 </td>
             </tr>
         @endforeach

@@ -143,6 +143,12 @@ class OrdenCargaController extends AppBaseController
             return redirect(route('ordenCargas.index'));
         }
 
+        if (strtolower($ordenCarga->estado) === 'anulado') {
+            Flash::error('La Orden Carga ya está anulada.');
+
+            return redirect(route('ordenCargas.index'));
+        }
+
         return view('orden_cargas.edit')
             ->with('ordenCarga', $ordenCarga)
             ->with($this->getListasParaSelect());
@@ -188,6 +194,12 @@ class OrdenCargaController extends AppBaseController
             return redirect(route('ordenCargas.index'));
         }
 
+        if (strtolower($ordenCarga->estado) === 'anulado') {
+            Flash::error('La Orden Carga ya está anulada.');
+
+            return redirect(route('ordenCargas.index'));
+        }
+
         $ordenCarga = $this->ordenCargaRepository->update($request->all(), $id);
 
         Flash::success('Orden Carga actualizada correctamente.');
@@ -208,6 +220,12 @@ class OrdenCargaController extends AppBaseController
 
         if (empty($ordenCarga)) {
             Flash::error('Orden Carga no encontrada');
+
+            return redirect(route('ordenCargas.index'));
+        }
+
+        if (strtolower($ordenCarga->estado) === 'anulado') {
+            Flash::error('La Orden Carga ya está anulada.');
 
             return redirect(route('ordenCargas.index'));
         }

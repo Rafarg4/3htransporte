@@ -70,18 +70,34 @@ class ViaticoController extends AppBaseController
      * Build the list of OrdenCarga options for the select field, including
      * the Chofer of each order's Camion so the form can filter by Chofer.
      *
+     * Only Activo orders are listed, except $idOrdenCargaActual (the order
+     * already assigned to the Viatico being edited), which is kept even if
+     * it was anulada in the meantime so the form doesn't lose its value.
+     *
+     * @param int|null $idOrdenCargaActual
+     *
      * @return array
      */
-    private function getOrdenCargasParaSelect()
+    private function getOrdenCargasParaSelect($idOrdenCargaActual = null)
     {
-        return OrdenCarga::with('camion')->orderByDesc('id')->get()->mapWithKeys(function ($ordenCarga) {
-            $numero = 'OC-' . str_pad($ordenCarga->id, 6, '0', STR_PAD_LEFT);
+        return OrdenCarga::with('camion')
+            ->where(function ($query) use ($idOrdenCargaActual) {
+                $query->where('estado', 'Activo');
 
-            return [$ordenCarga->id => [
-                'texto' => $numero . ' - ' . $ordenCarga->destino,
-                'id_chofer' => $ordenCarga->camion->id_chofer ?? '',
-            ]];
-        })->toArray();
+                if ($idOrdenCargaActual) {
+                    $query->orWhere('id', $idOrdenCargaActual);
+                }
+            })
+            ->orderByDesc('id')
+            ->get()
+            ->mapWithKeys(function ($ordenCarga) {
+                $numero = 'OC-' . str_pad($ordenCarga->id, 6, '0', STR_PAD_LEFT);
+
+                return [$ordenCarga->id => [
+                    'texto' => $numero . ' - ' . $ordenCarga->destino,
+                    'id_chofer' => $ordenCarga->camion->id_chofer ?? '',
+                ]];
+            })->toArray();
     }
 
     /**
@@ -177,7 +193,7 @@ class ViaticoController extends AppBaseController
         return view('viaticos.edit')
             ->with('viatico', $viatico->load('documentos'))
             ->with('choferes', $this->getChoferesParaSelect())
-            ->with('ordenCargas', $this->getOrdenCargasParaSelect());
+            ->with('ordenCargas', $this->getOrdenCargasParaSelect($viatico->id_orden_carga));
     }
 
     /**

@@ -137,7 +137,7 @@ class ValeCombustibleController extends AppBaseController
             return redirect(route('valeCombustibles.index'));
         }
 
-        $camions = $this->getCamionesParaSelect();
+        $camions = $this->getCamionesParaSelect($valeCombustible->id_camion);
 
         return view('vale_combustibles.edit')
             ->with('valeCombustible', $valeCombustible)
@@ -180,13 +180,29 @@ class ValeCombustibleController extends AppBaseController
     /**
      * Build the list of Camion options for the select field.
      *
+     * Only Activo camiones are listed, except $idCamionActual (the camion
+     * already assigned to the ValeCombustible being edited), which is kept
+     * even if it was inactivado in the meantime so the form doesn't lose
+     * its value.
+     *
+     * @param int|null $idCamionActual
+     *
      * @return array
      */
-    private function getCamionesParaSelect()
+    private function getCamionesParaSelect($idCamionActual = null)
     {
-        return Camion::orderBy('chapa')->get()->mapWithKeys(function ($camion) {
-            return [$camion->id => $camion->chapa];
-        })->toArray();
+        return Camion::where(function ($query) use ($idCamionActual) {
+                $query->where('estado', 'Activo');
+
+                if ($idCamionActual) {
+                    $query->orWhere('id', $idCamionActual);
+                }
+            })
+            ->orderBy('chapa')
+            ->get()
+            ->mapWithKeys(function ($camion) {
+                return [$camion->id => $camion->chapa];
+            })->toArray();
     }
 
     /**

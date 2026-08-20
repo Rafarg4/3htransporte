@@ -32,7 +32,7 @@
 <div class="form-group col-sm-6">
     {!! Form::label('id_orden_carga', 'Orden de Carga:') !!}
     @php $ordenCargaSeleccionada = old('id_orden_carga', isset($viatico) ? $viatico->id_orden_carga : null); @endphp
-    <select name="id_orden_carga" id="id_orden_carga" class="form-control" required>
+    <select name="id_orden_carga" id="id_orden_carga" class="form-control select2" style="width: 100%" required>
         <option value="">Seleccione una orden de carga</option>
         @foreach($ordenCargas as $id => $ordenCarga)
             <option value="{{ $id }}" data-chofer="{{ $ordenCarga['id_chofer'] }}" {{ (string) $ordenCargaSeleccionada === (string) $id ? 'selected' : '' }}>
@@ -91,6 +91,27 @@
 </div>
 
 <style>
+    #id_orden_carga + .select2-container .select2-selection--single {
+        height: calc(1.5em + .75rem + 2px);
+        border: 1px solid #ced4da;
+        border-radius: .25rem;
+    }
+    #id_orden_carga + .select2-container .select2-selection--single .select2-selection__rendered {
+        line-height: calc(1.5em + .75rem);
+        padding-left: .75rem;
+        color: #495057;
+    }
+    #id_orden_carga + .select2-container .select2-selection--single .select2-selection__arrow {
+        height: calc(1.5em + .75rem);
+        right: 6px;
+    }
+    #id_orden_carga + .select2-container--default.select2-container--focus .select2-selection--single,
+    #id_orden_carga + .select2-container--default .select2-selection--single:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 .2rem rgba(0,123,255,.25);
+    }
+
     .documentos-dropzone {
         border: 2px dashed #ced4da;
         border-radius: .25rem;
@@ -299,39 +320,55 @@
     })();
 </script>
 
-<script>
-    (function () {
-        var choferSelect = document.getElementById('id_chofer');
-        var ordenCargaSelect = document.getElementById('id_orden_carga');
+{{-- jQuery/Select2 solo estan disponibles despues de @yield('content'), asi que este
+     script se registra via @push('third_party_scripts') para ejecutarse recien al final
+     del body, cuando esas librerias ya cargaron. --}}
+@push('third_party_scripts')
+    <script>
+        $(function () {
+            var $choferSelect = $('#id_chofer');
+            var $ordenCargaSelect = $('#id_orden_carga');
 
-        if (!choferSelect || !ordenCargaSelect) {
-            return;
-        }
+            if (!$choferSelect.length || !$ordenCargaSelect.length) {
+                return;
+            }
 
-        function filtrarOrdenesPorChofer() {
-            var choferId = choferSelect.value;
-            var opcionSeleccionadaValida = false;
+            $ordenCargaSelect.select2({
+                width: '100%',
+                placeholder: 'Seleccione una orden de carga',
+                allowClear: true,
+                matcher: function (params, data) {
+                    if (!data.id) {
+                        return data;
+                    }
 
-            Array.prototype.forEach.call(ordenCargaSelect.options, function (opcion) {
-                if (!opcion.value) {
-                    return;
-                }
+                    var choferId = $choferSelect.val();
+                    if (choferId && String($(data.element).data('chofer')) !== String(choferId)) {
+                        return null;
+                    }
 
-                var mostrar = !choferId || opcion.dataset.chofer === choferId;
-                opcion.hidden = !mostrar;
-                opcion.disabled = !mostrar;
+                    if (!params.term) {
+                        return data;
+                    }
 
-                if (mostrar && opcion.selected) {
-                    opcionSeleccionadaValida = true;
+                    if (data.text.toUpperCase().indexOf(params.term.toUpperCase()) > -1) {
+                        return data;
+                    }
+
+                    return null;
                 }
             });
 
-            if (!opcionSeleccionadaValida) {
-                ordenCargaSelect.value = '';
-            }
-        }
+            function limpiarSiInvalida() {
+                var choferId = $choferSelect.val();
+                var $opcionSeleccionada = $ordenCargaSelect.find('option:selected');
 
-        choferSelect.addEventListener('change', filtrarOrdenesPorChofer);
-        filtrarOrdenesPorChofer();
-    })();
-</script>
+                if (choferId && $opcionSeleccionada.val() && String($opcionSeleccionada.data('chofer')) !== String(choferId)) {
+                    $ordenCargaSelect.val('').trigger('change');
+                }
+            }
+
+            $choferSelect.on('change', limpiarSiInvalida);
+        });
+    </script>
+@endpush
