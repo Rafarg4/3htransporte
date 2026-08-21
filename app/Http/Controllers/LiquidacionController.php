@@ -428,8 +428,8 @@ class LiquidacionController extends AppBaseController
     }
 
     /**
-     * Instead of deleting, mark the specified Liquidacion as Anulado and
-     * release the Viatico/Vale de Combustible attached to it.
+     * Mark the specified Liquidacion as Anulado and release the
+     * Viatico/Vale de Combustible/Orden de Carga attached to it.
      *
      * @param int $id
      *
@@ -437,12 +437,18 @@ class LiquidacionController extends AppBaseController
      *
      * @return Response
      */
-    public function destroy($id)
+    public function anular($id)
     {
         $liquidacion = $this->liquidacionRepository->find($id);
 
         if (empty($liquidacion)) {
             Flash::error('Liquidación no encontrada');
+
+            return redirect(route('liquidacions.index'));
+        }
+
+        if (strtolower($liquidacion->estado) === 'anulado') {
+            Flash::error('La Liquidación ya está anulada.');
 
             return redirect(route('liquidacions.index'));
         }
@@ -465,6 +471,44 @@ class LiquidacionController extends AppBaseController
         });
 
         Flash::success('Liquidación anulada correctamente.');
+
+        return redirect(route('liquidacions.index'));
+    }
+
+    /**
+     * Remove the specified Liquidacion from storage, along with its
+     * fletes/descuentos/gastos administrativos lines. Only allowed once the
+     * liquidacion is already Anulado (the Viatico/Vale de Combustible/Orden
+     * de Carga it used were already released back by anular()).
+     *
+     * @param int $id
+     *
+     * @return Response
+     */
+    public function destroy($id)
+    {
+        $liquidacion = $this->liquidacionRepository->find($id);
+
+        if (empty($liquidacion)) {
+            Flash::error('Liquidación no encontrada');
+
+            return redirect(route('liquidacions.index'));
+        }
+
+        if (strtolower($liquidacion->estado) !== 'anulado') {
+            Flash::error('Solo se puede eliminar una Liquidación que ya está anulada.');
+
+            return redirect(route('liquidacions.index'));
+        }
+
+        DB::transaction(function () use ($liquidacion) {
+            $liquidacion->fletes()->delete();
+            $liquidacion->descuentos()->delete();
+            $liquidacion->gastosAdministrativos()->delete();
+            $liquidacion->delete();
+        });
+
+        Flash::success('Liquidación eliminada correctamente.');
 
         return redirect(route('liquidacions.index'));
     }

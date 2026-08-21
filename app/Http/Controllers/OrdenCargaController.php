@@ -208,13 +208,13 @@ class OrdenCargaController extends AppBaseController
     }
 
     /**
-     * Instead of deleting, mark the specified OrdenCarga as Anulado.
+     * Mark the specified OrdenCarga as Anulado.
      *
      * @param int $id
      *
      * @return Response
      */
-    public function destroy($id)
+    public function anular($id)
     {
         $ordenCarga = $this->ordenCargaRepository->find($id);
 
@@ -234,6 +234,37 @@ class OrdenCargaController extends AppBaseController
         $ordenCarga->save();
 
         Flash::success('Orden Carga anulada correctamente.');
+
+        return redirect(route('ordenCargas.index'));
+    }
+
+    /**
+     * Remove the specified OrdenCarga from storage. Only allowed once the
+     * order is already Anulado, since an Activo order must be anulada first.
+     *
+     * @param int $id
+     *
+     * @return Response
+     */
+    public function destroy($id)
+    {
+        $ordenCarga = $this->ordenCargaRepository->find($id);
+
+        if (empty($ordenCarga)) {
+            Flash::error('Orden Carga no encontrada');
+
+            return redirect(route('ordenCargas.index'));
+        }
+
+        if (strtolower($ordenCarga->estado) !== 'anulado') {
+            Flash::error('Solo se puede eliminar una Orden Carga que ya está anulada.');
+
+            return redirect(route('ordenCargas.index'));
+        }
+
+        $this->ordenCargaRepository->delete($id);
+
+        Flash::success('Orden Carga eliminada correctamente.');
 
         return redirect(route('ordenCargas.index'));
     }

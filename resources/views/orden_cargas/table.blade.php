@@ -35,11 +35,19 @@
                             <a href="{{ route('ordenCargas.edit', [$ordenCarga->id]) }}" class="btn btn-warning">
                                 <i class="far fa-edit"></i> Editar
                             </a>
-                            {!! Form::open(['route' => ['ordenCargas.destroy', $ordenCarga->id], 'method' => 'delete']) !!}
+                            {!! Form::open(['route' => ['ordenCargas.anular', $ordenCarga->id], 'method' => 'put']) !!}
                             {!! Form::button('<i class="fas fa-ban"></i> Anular', [
                                 'type' => 'submit',
                                 'class' => 'btn btn-info',
                                 'onclick' => "return confirm('¿Anular esta orden de carga?')",
+                            ]) !!}
+                            {!! Form::close() !!}
+                        @else
+                            {!! Form::open(['route' => ['ordenCargas.destroy', $ordenCarga->id], 'method' => 'delete']) !!}
+                            {!! Form::button('<i class="fas fa-trash"></i> Eliminar', [
+                                'type' => 'submit',
+                                'class' => 'btn btn-secondary',
+                                'onclick' => "return confirm('¿Eliminar definitivamente esta orden de carga?')",
                             ]) !!}
                             {!! Form::close() !!}
                         @endif

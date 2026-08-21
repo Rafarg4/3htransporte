@@ -126,10 +126,10 @@
     </ul>
 </li>
 <li class="nav-item">
-    <a href="{{ route('empresas.index') }}"
-       class="nav-link {{ Request::is('empresas*') ? 'active' : '' }}">
-        <i class="nav-icon fa fa-building"></i>
-        <p>3H</p>
+    <a href="{{ route('parametrizaciones.edit') }}"
+       class="nav-link {{ Request::is('parametrizaciones*') ? 'active' : '' }}">
+        <i class="nav-icon fa fa-sliders-h"></i>
+        <p>Parametrizaciones</p>
     </a>
 </li>
 <li class="nav-item">
@@ -140,10 +140,10 @@
     </a>
 </li>
 <li class="nav-item">
-    <a href="{{ route('parametrizaciones.edit') }}"
-       class="nav-link {{ Request::is('parametrizaciones*') ? 'active' : '' }}">
-        <i class="nav-icon fa fa-sliders-h"></i>
-        <p>Parametrizaciones</p>
+    <a href="{{ route('empresas.index') }}"
+       class="nav-link {{ Request::is('empresas*') ? 'active' : '' }}">
+        <i class="nav-icon fa fa-building"></i>
+        <p>3H</p>
     </a>
 </li>
 {{-- SALIR --}}

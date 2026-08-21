@@ -66,6 +66,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('ordenCargas', App\Http\Controllers\OrdenCargaController::class);
     Route::get('ordenCargas/{id}/pdf', [App\Http\Controllers\OrdenCargaController::class, 'pdf'])
         ->name('ordenCargas.pdf');
+    Route::put('ordenCargas/{id}/anular', [App\Http\Controllers\OrdenCargaController::class, 'anular'])
+        ->name('ordenCargas.anular');
 
 
     Route::resource('valeCombustibles', App\Http\Controllers\ValeCombustibleController::class);
@@ -111,6 +113,8 @@ Route::middleware('auth')->group(function () {
         ->name('liquidacions.pdf');
     Route::delete('liquidacions/{id}', [App\Http\Controllers\LiquidacionController::class, 'destroy'])
         ->name('liquidacions.destroy');
+    Route::put('liquidacions/{id}/anular', [App\Http\Controllers\LiquidacionController::class, 'anular'])
+        ->name('liquidacions.anular');
     Route::post('liquidacions/{id}/facturado', [App\Http\Controllers\LiquidacionController::class, 'toggleFacturado'])
         ->name('liquidacions.facturado');
     Route::post('liquidacions/{id}/pagado', [App\Http\Controllers\LiquidacionController::class, 'togglePagado'])

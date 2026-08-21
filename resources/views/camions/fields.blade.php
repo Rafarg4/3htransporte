@@ -31,7 +31,7 @@
 <!-- Id Chofer Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('id_chofer', 'Chofer:') !!}
-    {!! Form::select('id_chofer', $choferes, null, ['class' => 'form-control', 'placeholder' => 'Seleccione un chofer', 'required' => 'required']) !!}
+    {!! Form::select('id_chofer', $choferes, null, ['class' => 'form-control select2', 'id' => 'id_chofer', 'style' => 'width: 100%', 'placeholder' => 'Seleccione un chofer', 'required' => 'required']) !!}
 </div>
 
 <!-- Chapa Field -->
@@ -171,6 +171,50 @@
         background: #b02a37;
     }
 </style>
+
+<style>
+    #id_chofer + .select2-container .select2-selection--single {
+        height: calc(1.5em + .75rem + 2px);
+        border: 1px solid #ced4da;
+        border-radius: .25rem;
+    }
+    #id_chofer + .select2-container .select2-selection--single .select2-selection__rendered {
+        line-height: calc(1.5em + .75rem);
+        padding-left: .75rem;
+        color: #495057;
+    }
+    #id_chofer + .select2-container .select2-selection--single .select2-selection__arrow {
+        height: calc(1.5em + .75rem);
+        right: 6px;
+    }
+    #id_chofer + .select2-container--default.select2-container--focus .select2-selection--single,
+    #id_chofer + .select2-container--default .select2-selection--single:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 .2rem rgba(0,123,255,.25);
+    }
+</style>
+
+{{-- jQuery/Select2 solo estan disponibles despues de @yield('content'), asi que este
+     script se registra via @push('third_party_scripts') para ejecutarse recien al final
+     del body, cuando esas librerias ya cargaron. --}}
+@push('third_party_scripts')
+    <script>
+        $(function () {
+            var $choferSelect = $('#id_chofer');
+
+            if (!$choferSelect.length) {
+                return;
+            }
+
+            $choferSelect.select2({
+                width: '100%',
+                placeholder: 'Seleccione un chofer',
+                allowClear: true
+            });
+        });
+    </script>
+@endpush
 
 <script>
     (function () {

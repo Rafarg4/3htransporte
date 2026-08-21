@@ -45,7 +45,7 @@
                             <a class="dropdown-item" href="{{ route('liquidacions.pdf', $liquidacion->id) }}" target="_blank">
                                 <i class="far fa-file-pdf"></i> PDF
                             </a>
-                            {{-- Anulada: solo PDF. El resto de acciones no tiene sentido sobre una liquidacion sin vigencia. --}}
+                            {{-- Anulada: solo PDF + Eliminar. El resto de acciones no tiene sentido sobre una liquidacion sin vigencia. --}}
                             @if(strtolower($liquidacion->estado) === 'activo')
                                 @if($liquidacion->facturado !== 'Si')
                                     {!! Form::open(['route' => ['liquidacions.facturado', $liquidacion->id], 'method' => 'post']) !!}
@@ -62,9 +62,16 @@
                                     {!! Form::close() !!}
                                 @endif
                                 <div class="dropdown-divider"></div>
-                                {!! Form::open(['route' => ['liquidacions.destroy', $liquidacion->id], 'method' => 'delete']) !!}
+                                {!! Form::open(['route' => ['liquidacions.anular', $liquidacion->id], 'method' => 'put']) !!}
                                 <button type="submit" class="dropdown-item text-danger" onclick="return confirm('¿Anular esta liquidación?')">
                                     <i class="fas fa-ban"></i> Anular
+                                </button>
+                                {!! Form::close() !!}
+                            @else
+                                <div class="dropdown-divider"></div>
+                                {!! Form::open(['route' => ['liquidacions.destroy', $liquidacion->id], 'method' => 'delete']) !!}
+                                <button type="submit" class="dropdown-item text-danger" onclick="return confirm('¿Eliminar definitivamente esta liquidación?')">
+                                    <i class="fas fa-trash"></i> Eliminar
                                 </button>
                                 {!! Form::close() !!}
                             @endif
