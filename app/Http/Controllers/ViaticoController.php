@@ -70,9 +70,10 @@ class ViaticoController extends AppBaseController
      * Build the list of OrdenCarga options for the select field, including
      * the Chofer of each order's Camion so the form can filter by Chofer.
      *
-     * Only Activo orders are listed, except $idOrdenCargaActual (the order
-     * already assigned to the Viatico being edited), which is kept even if
-     * it was anulada in the meantime so the form doesn't lose its value.
+     * Only Activo, no liquidadas orders are listed, except $idOrdenCargaActual
+     * (the order already assigned to the Viatico being edited), which is kept
+     * even if it was anulada/liquidada in the meantime so the form doesn't
+     * lose its value.
      *
      * @param int|null $idOrdenCargaActual
      *
@@ -82,7 +83,7 @@ class ViaticoController extends AppBaseController
     {
         return OrdenCarga::with('camion')
             ->where(function ($query) use ($idOrdenCargaActual) {
-                $query->where('estado', 'Activo');
+                $query->where('estado', 'Activo')->whereNull('liquidado');
 
                 if ($idOrdenCargaActual) {
                     $query->orWhere('id', $idOrdenCargaActual);
