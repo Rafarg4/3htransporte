@@ -46,6 +46,10 @@
             </div>
 
             <div class="card-body p-0">
+                @php
+                    $totalPrecio = $reportes->sum(fn ($r) => (float) $r->precio);
+                    $totalMonto = $reportes->sum(fn ($r) => (float) $r->monto);
+                @endphp
                 <div class="table-responsive" style="padding:15px;font-size: 12px;">
                     <table class="table" id="table">
                         <thead>
@@ -84,6 +88,15 @@
                             </tr>
                         @endforelse
                         </tbody>
+                        @if($reportes->isNotEmpty())
+                            <tfoot>
+                            <tr>
+                                <th colspan="9" class="text-right">Totales:</th>
+                                <th>{{ number_format($totalPrecio, 0, ',', '.') }}</th>
+                                <th>{{ number_format($totalMonto, 0, ',', '.') }}</th>
+                            </tr>
+                            </tfoot>
+                        @endif
                     </table>
                 </div>
 

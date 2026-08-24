@@ -54,6 +54,11 @@
             text-transform: uppercase;
             font-size: 10px;
         }
+        table.data-table tfoot td {
+            border-bottom: none;
+            border-top: 2px solid #333;
+            font-weight: bold;
+        }
         .total {
             margin-top: 10px;
             font-weight: bold;
@@ -88,6 +93,11 @@
 </table>
 
 <hr>
+
+@php
+    $totalPrecio = $reportes->sum(fn ($r) => (float) $r->precio);
+    $totalMonto = $reportes->sum(fn ($r) => (float) $r->monto);
+@endphp
 
 <table class="data-table">
     <thead>
@@ -126,6 +136,15 @@
         </tr>
     @endforelse
     </tbody>
+    @if($reportes->isNotEmpty())
+        <tfoot>
+        <tr>
+            <td colspan="9" style="text-align:right;">Totales:</td>
+            <td>{{ number_format($totalPrecio, 0, ',', '.') }}</td>
+            <td>{{ number_format($totalMonto, 0, ',', '.') }}</td>
+        </tr>
+        </tfoot>
+    @endif
 </table>
 
 <div class="total">Total de registros: {{ $reportes->count() }}</div>

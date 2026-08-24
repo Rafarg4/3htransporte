@@ -10,22 +10,44 @@
     {!! Form::date('fecha', old('fecha', now()->format('Y-m-d')), ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
-<!-- Propietario Field -->
-<div class="form-group col-sm-4">
-    {!! Form::label('id_cliente', 'Propietario:') !!}
-    {!! Form::select('id_cliente', $clientes, null, ['class' => 'form-control select2', 'style' => 'width:100%;', 'placeholder' => 'Seleccione un propietario', 'required' => 'required']) !!}
-</div>
-
 <!-- Camion (Chapa) Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('id_camion', 'Chapa:') !!}
-    {!! Form::select('id_camion', $camiones, null, ['class' => 'form-control select2', 'style' => 'width:100%;', 'placeholder' => 'Seleccione una chapa', 'required' => 'required']) !!}
+    @php $idCamionActual = old('id_camion', isset($reporte) ? $reporte->id_camion : null); @endphp
+    <select name="id_camion" id="id_camion" class="form-control select2" style="width:100%;" data-placeholder="Seleccione una chapa" required="required">
+        <option value=""></option>
+        @foreach($camiones as $camion)
+            <option value="{{ $camion->id }}" data-cliente="{{ $camion->id_cliente }}" data-chofer="{{ $camion->id_chofer }}" {{ (string) $idCamionActual === (string) $camion->id ? 'selected' : '' }}>
+                {{ $camion->chapa }}
+            </option>
+        @endforeach
+    </select>
 </div>
 
-<!-- Chofer Field -->
+<!-- Propietario Field (se completa solo al elegir la Chapa; select bloqueado con readonly) -->
+<div class="form-group col-sm-4">
+    {!! Form::label('id_cliente', 'Propietario:') !!}
+    @php $idClienteActual = old('id_cliente', isset($reporte) ? $reporte->id_cliente : null); @endphp
+    <select id="id_cliente_readonly" class="form-control select2" style="width:100%;" data-placeholder="Se completa al elegir la chapa" disabled="disabled">
+        <option value=""></option>
+        @foreach($clientes as $id => $nombre)
+            <option value="{{ $id }}" {{ (string) $idClienteActual === (string) $id ? 'selected' : '' }}>{{ $nombre }}</option>
+        @endforeach
+    </select>
+    {!! Form::hidden('id_cliente', $idClienteActual, ['id' => 'id_cliente']) !!}
+</div>
+
+<!-- Chofer Field (se completa solo al elegir la Chapa; select bloqueado con readonly) -->
 <div class="form-group col-sm-4">
     {!! Form::label('id_chofer', 'Chofer:') !!}
-    {!! Form::select('id_chofer', $choferes, null, ['class' => 'form-control select2', 'style' => 'width:100%;', 'placeholder' => 'Seleccione un chofer', 'required' => 'required']) !!}
+    @php $idChoferActual = old('id_chofer', isset($reporte) ? $reporte->id_chofer : null); @endphp
+    <select id="id_chofer_readonly" class="form-control select2" style="width:100%;" data-placeholder="Se completa al elegir la chapa" disabled="disabled">
+        <option value=""></option>
+        @foreach($choferes as $id => $nombre)
+            <option value="{{ $id }}" {{ (string) $idChoferActual === (string) $id ? 'selected' : '' }}>{{ $nombre }}</option>
+        @endforeach
+    </select>
+    {!! Form::hidden('id_chofer', $idChoferActual, ['id' => 'id_chofer']) !!}
 </div>
 
 <!-- Producto Field -->
@@ -43,7 +65,7 @@
 <!-- Kg Origen Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('kg_origen', 'Kg Origen:') !!}
-    {!! Form::text('kg_origen', null, ['class' => 'form-control', 'required' => 'required']) !!}
+    {!! Form::text('kg_origen', null, ['class' => 'form-control', 'id' => 'kg_origen', 'required' => 'required']) !!}
 </div>
 
 <!-- Kg Llegada Field -->
@@ -55,13 +77,13 @@
 <!-- Precio Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('precio', 'Precio:') !!}
-    {!! Form::text('precio', null, ['class' => 'form-control', 'required' => 'required']) !!}
+    {!! Form::text('precio', null, ['class' => 'form-control', 'id' => 'precio', 'required' => 'required']) !!}
 </div>
 
 <!-- Monto Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('monto', 'Monto:') !!}
-    {!! Form::text('monto', null, ['class' => 'form-control', 'required' => 'required']) !!}
+    {!! Form::text('monto', null, ['class' => 'form-control', 'id' => 'monto', 'readonly' => 'readonly', 'required' => 'required']) !!}
 </div>
 
 <style>
@@ -96,6 +118,48 @@
         $('.select2').select2({
             width: '100%',
             allowClear: true
+        });
+
+        // --- Chapa -> Propietario/Chofer: al elegir una chapa, se autocompletan
+        // el propietario y el chofer registrados para ese camion. Los selects
+        // visibles quedan bloqueados (disabled); el valor real que se envia
+        // en el formulario va en los hidden id_cliente/id_chofer. ---
+        var $camionSelect = $('#id_camion');
+        var $clienteSelectReadonly = $('#id_cliente_readonly');
+        var $choferSelectReadonly = $('#id_chofer_readonly');
+        var clienteHidden = document.getElementById('id_cliente');
+        var choferHidden = document.getElementById('id_chofer');
+
+        function autocompletarPropietarioYChofer() {
+            var opcion = $camionSelect.find('option:selected');
+            var idCliente = opcion.data('cliente') || '';
+            var idChofer = opcion.data('chofer') || '';
+
+            clienteHidden.value = idCliente;
+            $clienteSelectReadonly.val(idCliente).trigger('change');
+
+            choferHidden.value = idChofer;
+            $choferSelectReadonly.val(idChofer).trigger('change');
+        }
+
+        $camionSelect.on('change', autocompletarPropietarioYChofer);
+
+        // --- Monto = Kg Origen x Precio ---
+        var kgOrigenInput = document.getElementById('kg_origen');
+        var precioInput = document.getElementById('precio');
+        var montoInput = document.getElementById('monto');
+
+        function calcularMonto() {
+            var kgOrigen = parseFloat(kgOrigenInput.value) || 0;
+            var precio = parseFloat(precioInput.value) || 0;
+
+            if (kgOrigen && precio) {
+                montoInput.value = kgOrigen * precio;
+            }
+        }
+
+        [kgOrigenInput, precioInput].forEach(function (input) {
+            input.addEventListener('input', calcularMonto);
         });
     })();
 </script>

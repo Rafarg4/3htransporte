@@ -127,7 +127,7 @@ class ReporteController extends AppBaseController
             return [$cliente->id => trim($cliente->nombre . ' ' . $cliente->apellido)];
         });
 
-        $camiones = Camion::orderBy('chapa')->pluck('chapa', 'id');
+        $camiones = Camion::orderBy('chapa')->get();
 
         $choferes = Chofer::orderBy('nombre')->get()->mapWithKeys(function ($chofer) {
             return [$chofer->id => trim($chofer->nombre . ' ' . $chofer->apellido)];
