@@ -71,7 +71,7 @@
 <!-- Kg Llegada Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('kg_llegada', 'Kg Llegada:') !!}
-    {!! Form::text('kg_llegada', null, ['class' => 'form-control', 'required' => 'required']) !!}
+    {!! Form::text('kg_llegada', null, ['class' => 'form-control', 'id' => 'kg_llegada', 'required' => 'required']) !!}
 </div>
 
 <!-- Precio Field -->
@@ -144,21 +144,21 @@
 
         $camionSelect.on('change', autocompletarPropietarioYChofer);
 
-        // --- Monto = Kg Origen x Precio ---
-        var kgOrigenInput = document.getElementById('kg_origen');
+        // --- Monto = Kg Llegada x Precio ---
+        var kgLlegadaInput = document.getElementById('kg_llegada');
         var precioInput = document.getElementById('precio');
         var montoInput = document.getElementById('monto');
 
         function calcularMonto() {
-            var kgOrigen = parseFloat(kgOrigenInput.value) || 0;
+            var kgLlegada = parseFloat(kgLlegadaInput.value) || 0;
             var precio = parseFloat(precioInput.value) || 0;
 
-            if (kgOrigen && precio) {
-                montoInput.value = kgOrigen * precio;
+            if (kgLlegada && precio) {
+                montoInput.value = kgLlegada * precio;
             }
         }
 
-        [kgOrigenInput, precioInput].forEach(function (input) {
+        [kgLlegadaInput, precioInput].forEach(function (input) {
             input.addEventListener('input', calcularMonto);
         });
     })();
