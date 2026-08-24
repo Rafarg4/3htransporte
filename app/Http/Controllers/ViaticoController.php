@@ -50,7 +50,7 @@ class ViaticoController extends AppBaseController
     {
         return view('viaticos.create')
             ->with('choferes', $this->getChoferesParaSelect())
-            ->with('ordenCargas', $this->getOrdenCargasParaSelect())
+            ->with('ordenCargas', $this->getOrdenCargasParaSelect(old('id_orden_carga'), old('id_chofer')))
             ->with('proximoNumero', $this->getProximoNumero());
     }
 
@@ -67,23 +67,37 @@ class ViaticoController extends AppBaseController
     }
 
     /**
-     * Build the list of OrdenCarga options for the select field, including
-     * the Chofer of each order's Camion so the form can filter by Chofer.
+     * Build the list of OrdenCarga options for the select field. Las ordenes
+     * estan asignadas por Camion (no por Chofer), asi que para filtrar por
+     * Chofer se pasa por la relacion camion.id_chofer.
      *
-     * Only Activo, no liquidadas orders are listed, except $idOrdenCargaActual
-     * (the order already assigned to the Viatico being edited), which is kept
-     * even if it was anulada/liquidada in the meantime so the form doesn't
-     * lose its value.
+     * Sin $idChofer no se devuelve ninguna orden (evita traer/listar todas
+     * las ordenes de todos los choferes): el formulario recien las pide via
+     * AJAX (ver ordenesCargaPorChofer) al elegir un Chofer.
+     *
+     * Solo se listan las Activo/no liquidadas del Chofer indicado, excepto
+     * $idOrdenCargaActual (la orden ya asignada al Viatico que se esta
+     * editando), que se mantiene aunque haya cambiado de chofer/estado
+     * mientras tanto, para que el formulario no pierda su valor.
      *
      * @param int|null $idOrdenCargaActual
+     * @param int|null $idChofer
      *
      * @return array
      */
-    private function getOrdenCargasParaSelect($idOrdenCargaActual = null)
+    private function getOrdenCargasParaSelect($idOrdenCargaActual = null, $idChofer = null)
     {
         return OrdenCarga::with('camion')
-            ->where(function ($query) use ($idOrdenCargaActual) {
-                $query->where('estado', 'Activo')->whereNull('liquidado');
+            ->where(function ($query) use ($idOrdenCargaActual, $idChofer) {
+                if ($idChofer) {
+                    $query->where('estado', 'Activo')
+                        ->whereNull('liquidado')
+                        ->whereHas('camion', function ($q) use ($idChofer) {
+                            $q->where('id_chofer', $idChofer);
+                        });
+                } else {
+                    $query->whereRaw('0 = 1');
+                }
 
                 if ($idOrdenCargaActual) {
                     $query->orWhere('id', $idOrdenCargaActual);
@@ -99,6 +113,26 @@ class ViaticoController extends AppBaseController
                     'id_chofer' => $ordenCarga->camion->id_chofer ?? '',
                 ]];
             })->toArray();
+    }
+
+    /**
+     * AJAX: lista de OrdenCarga (id/texto) para el Chofer indicado, para que
+     * el select de Orden de Carga se recargue al elegir/cambiar el Chofer en
+     * el formulario, en vez de traer siempre todas las ordenes.
+     *
+     * @param Request $request
+     *
+     * @return Response
+     */
+    public function ordenesCargaPorChofer(Request $request)
+    {
+        $ordenCargas = $this->getOrdenCargasParaSelect(null, $request->query('id_chofer'));
+
+        return response()->json(
+            collect($ordenCargas)->map(function ($ordenCarga, $id) {
+                return ['id' => (string) $id, 'texto' => $ordenCarga['texto']];
+            })->values()
+        );
     }
 
     /**
@@ -194,7 +228,10 @@ class ViaticoController extends AppBaseController
         return view('viaticos.edit')
             ->with('viatico', $viatico->load('documentos'))
             ->with('choferes', $this->getChoferesParaSelect())
-            ->with('ordenCargas', $this->getOrdenCargasParaSelect($viatico->id_orden_carga));
+            ->with('ordenCargas', $this->getOrdenCargasParaSelect(
+                old('id_orden_carga', $viatico->id_orden_carga),
+                old('id_chofer', $viatico->id_chofer)
+            ));
     }
 
     /**

@@ -90,6 +90,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('users', App\Http\Controllers\UserController::class);
 
 
+    // Debe ir antes del Route::resource: si no, "viaticos/{viatico}" (show) la intercepta.
+    Route::get('viaticos/ordenes-carga', [App\Http\Controllers\ViaticoController::class, 'ordenesCargaPorChofer'])
+        ->name('viaticos.ordenes-carga');
     Route::resource('viaticos', App\Http\Controllers\ViaticoController::class);
     Route::get('viaticos/{id}/pdf', [App\Http\Controllers\ViaticoController::class, 'pdf'])
         ->name('viaticos.pdf');

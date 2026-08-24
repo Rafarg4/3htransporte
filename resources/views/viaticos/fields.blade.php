@@ -35,7 +35,7 @@
     <select name="id_orden_carga" id="id_orden_carga" class="form-control select2" style="width: 100%" required>
         <option value="">Seleccione una orden de carga</option>
         @foreach($ordenCargas as $id => $ordenCarga)
-            <option value="{{ $id }}" data-chofer="{{ $ordenCarga['id_chofer'] }}" {{ (string) $ordenCargaSeleccionada === (string) $id ? 'selected' : '' }}>
+            <option value="{{ $id }}" {{ (string) $ordenCargaSeleccionada === (string) $id ? 'selected' : '' }}>
                 {{ $ordenCarga['texto'] }}
             </option>
         @endforeach
@@ -336,39 +336,40 @@
             $ordenCargaSelect.select2({
                 width: '100%',
                 placeholder: 'Seleccione una orden de carga',
-                allowClear: true,
-                matcher: function (params, data) {
-                    if (!data.id) {
-                        return data;
-                    }
-
-                    var choferId = $choferSelect.val();
-                    if (choferId && String($(data.element).data('chofer')) !== String(choferId)) {
-                        return null;
-                    }
-
-                    if (!params.term) {
-                        return data;
-                    }
-
-                    if (data.text.toUpperCase().indexOf(params.term.toUpperCase()) > -1) {
-                        return data;
-                    }
-
-                    return null;
-                }
+                allowClear: true
             });
 
-            function limpiarSiInvalida() {
-                var choferId = $choferSelect.val();
-                var $opcionSeleccionada = $ordenCargaSelect.find('option:selected');
+            // Las ordenes de carga estan asignadas por Camion, no por Chofer, asi
+            // que se piden via AJAX (filtradas por el camion del chofer elegido)
+            // en vez de traer siempre todas: asi la lista no crece sin limite.
+            function cargarOrdenesCarga(idChofer) {
+                var valorPrevio = $ordenCargaSelect.val();
 
-                if (choferId && $opcionSeleccionada.val() && String($opcionSeleccionada.data('chofer')) !== String(choferId)) {
-                    $ordenCargaSelect.val('').trigger('change');
-                }
+                $.getJSON('{{ route('viaticos.ordenes-carga') }}', { id_chofer: idChofer })
+                    .done(function (ordenes) {
+                        $ordenCargaSelect.empty().append(new Option('', '', false, false));
+
+                        ordenes.forEach(function (orden) {
+                            $ordenCargaSelect.append(new Option(orden.texto, orden.id, false, false));
+                        });
+
+                        var siguePresente = valorPrevio
+                            && $ordenCargaSelect.find('option[value="' + valorPrevio + '"]').length;
+
+                        $ordenCargaSelect.val(siguePresente ? valorPrevio : '').trigger('change');
+                    });
             }
 
-            $choferSelect.on('change', limpiarSiInvalida);
+            $choferSelect.on('change', function () {
+                var idChofer = $choferSelect.val();
+
+                if (!idChofer) {
+                    $ordenCargaSelect.empty().append(new Option('', '', false, false)).trigger('change');
+                    return;
+                }
+
+                cargarOrdenesCarga(idChofer);
+            });
         });
     </script>
 @endpush
