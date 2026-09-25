@@ -131,10 +131,12 @@
             <div class="form-group col-sm-2">
                 <label>Precio</label>
                 <input type="number" step="0.01" class="form-control" data-role="precio" name="flete[__BLOQUE_ID__][precio]">
+                <small class="text-muted d-none" data-equivalente-de="precio"></small>
             </div>
             <div class="form-group col-sm-2">
                 <label>Valor</label>
                 <input type="number" step="0.01" class="form-control liquidacion-credito" data-role="valor" name="flete[__BLOQUE_ID__][valor]">
+                <small class="text-muted d-none" data-equivalente-de="valor"></small>
             </div>
             <div class="form-group col-sm-2">
                 <label>Tolerancia (Kg)</label>
@@ -143,6 +145,7 @@
             <div class="form-group col-sm-2">
                 <label>Precio Recargo</label>
                 <input type="number" step="0.01" class="form-control" data-role="recargo-precio" name="flete[__BLOQUE_ID__][recargo_precio]" value="{{ $parametrizacion->recargo_precio }}">
+                <small class="text-muted d-none" data-equivalente-de="recargo-precio"></small>
             </div>
             <div class="form-group col-sm-4">
                 <label>Recargo (Faltante de Carga) <i class="fas fa-lock fa-xs text-muted" title="Se calcula automaticamente"></i></label>
@@ -187,7 +190,7 @@
                             <td>{{ $viatico->fecha }}</td>
                             <td>{{ $viatico->chofer ? trim($viatico->chofer->nombre . ' ' . $viatico->chofer->apellido) : '-' }}</td>
                             <td>{{ $viatico->descripcion }}</td>
-                            <td class="text-right">{{ number_format((float) $viatico->monto, 0, ',', '.') }}</td>
+                            <td class="text-right" data-monto-gs="{{ (float) $viatico->monto }}">{{ number_format((float) $viatico->monto, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -233,8 +236,8 @@
                             <td>{{ $vale->camion->chapa ?? '-' }}</td>
                             <td>{{ $vale->nombre_estacion }}</td>
                             <td>{{ $vale->litros }} L</td>
-                            <td class="text-right">{{ number_format((float) $vale->importe, 0, ',', '.') }}</td>
-                            <td class="text-right">{{ number_format((float) $vale->litros * (float) $vale->importe, 0, ',', '.') }}</td>
+                            <td class="text-right" data-monto-gs="{{ (float) $vale->importe }}">{{ number_format((float) $vale->importe, 0, ',', '.') }}</td>
+                            <td class="text-right" data-monto-gs="{{ (float) $vale->litros * (float) $vale->importe }}">{{ number_format((float) $vale->litros * (float) $vale->importe, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -269,7 +272,7 @@
             <select name="gasto_administrativo[monto_unitario]" id="gasto-administrativo-monto-unitario" class="form-control">
                 <option value="">Seleccione un monto</option>
                 @foreach([25000, 30000, 50000] as $monto)
-                    <option value="{{ $monto }}" {{ (string) old('gasto_administrativo.monto_unitario') === (string) $monto ? 'selected' : '' }}>{{ number_format($monto, 0, ',', '.') }}</option>
+                    <option value="{{ $monto }}" data-monto-gs="{{ $monto }}" {{ (string) old('gasto_administrativo.monto_unitario') === (string) $monto ? 'selected' : '' }}>{{ number_format($monto, 0, ',', '.') }}</option>
                 @endforeach
             </select>
         </div>
@@ -440,7 +443,41 @@
             return new Intl.NumberFormat('es-PY', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(valor) + ' ' + codigo;
         }
 
-        document.getElementById('moneda-select').addEventListener('change', recalcularTotales);
+        // Monto en guaranies formateado segun la moneda elegida (en Gs. queda como siempre).
+        // Los precios unitarios usan 4 decimales porque en USD quedan muy chicos.
+        function formatoMonto(valorGs, decimales) {
+            var moneda = monedaSeleccionada();
+            if (moneda.codigo === 'PYG' || !moneda.cotizacion) {
+                return formatoNumero(valorGs);
+            }
+            var d = decimales || 2;
+            return new Intl.NumberFormat('es-PY', { minimumFractionDigits: 2, maximumFractionDigits: d }).format(valorGs / moneda.cotizacion) + ' ' + moneda.codigo;
+        }
+
+        // Montos de solo lectura (viaticos, combustible, opciones de gasto administrativo):
+        // guardan su valor en Gs. en data-monto-gs y solo se reescribe el texto.
+        function actualizarMontosConvertibles() {
+            document.querySelectorAll('[data-monto-gs]').forEach(function (el) {
+                el.textContent = formatoMonto(parseFloat(el.dataset.montoGs) || 0);
+            });
+        }
+
+        // Campos editables del Flete: se siguen cargando y guardando en Gs.; debajo se muestra
+        // el equivalente en la moneda elegida.
+        function actualizarEquivalente(input, destino, decimales) {
+            var moneda = monedaSeleccionada();
+            var valor = parseFloat(input.value);
+            var mostrar = moneda.codigo !== 'PYG' && moneda.cotizacion && !isNaN(valor);
+            destino.classList.toggle('d-none', !mostrar);
+            destino.textContent = mostrar ? '≈ ' + formatoMonto(valor, decimales) : '';
+        }
+
+        document.getElementById('moneda-select').addEventListener('change', function () {
+            actualizarMontosConvertibles();
+            document.dispatchEvent(new CustomEvent('liquidacion:moneda-cambiada'));
+            actualizarGastoAdministrativo();
+            recalcularTotales();
+        });
 
         document.addEventListener('input', function (event) {
             if (event.target.classList.contains('liquidacion-credito') || event.target.classList.contains('liquidacion-debito')) {
@@ -499,7 +536,7 @@
                     : null;
 
                 if (valorRecargo !== null) {
-                    recargoPreview.value = formatoNumero(valorRecargo);
+                    recargoPreview.value = formatoMonto(valorRecargo);
                     descuentoValor.value = valorRecargo;
                     descuentoFecha.value = bloqueFecha.value || (fechaCabecera ? fechaCabecera.value : '');
                 } else {
@@ -529,7 +566,25 @@
                     valor.value = Math.round(destino * precioValor);
                     recalcularTotales();
                 }
+                actualizarEquivalentesBloque();
             }
+
+            function actualizarEquivalentesBloque() {
+                actualizarEquivalente(precio, bloque.querySelector('[data-equivalente-de="precio"]'), 4);
+                actualizarEquivalente(valor, bloque.querySelector('[data-equivalente-de="valor"]'));
+                actualizarEquivalente(recargoPrecio, bloque.querySelector('[data-equivalente-de="recargo-precio"]'), 4);
+            }
+
+            [precio, valor, recargoPrecio].forEach(function (input) {
+                input.addEventListener('input', actualizarEquivalentesBloque);
+            });
+
+            document.addEventListener('liquidacion:moneda-cambiada', function () {
+                if (bloque.isConnected) {
+                    actualizarEquivalentesBloque();
+                    actualizarDiferencia();
+                }
+            });
 
             [kgOrigen, kgDestino].forEach(function (input) {
                 input.addEventListener('input', actualizarDiferencia);
@@ -548,6 +603,7 @@
             });
 
             actualizarDiferencia();
+            actualizarEquivalentesBloque();
         }
 
         function bloqueTieneDatos(bloque) {
@@ -709,7 +765,7 @@
             if (montoUnitario && cantidadFletes) {
                 var total = montoUnitario * cantidadFletes;
                 gastoAdminValorHidden.value = total;
-                gastoAdminValorPreview.value = formatoNumero(total) + ' (' + formatoNumero(montoUnitario) + ' x ' + cantidadFletes + ' flete' + (cantidadFletes === 1 ? '' : 's') + ')';
+                gastoAdminValorPreview.value = formatoMonto(total) + ' (' + formatoMonto(montoUnitario) + ' x ' + cantidadFletes + ' flete' + (cantidadFletes === 1 ? '' : 's') + ')';
             } else {
                 gastoAdminValorHidden.value = '';
                 gastoAdminValorPreview.value = '';
@@ -975,6 +1031,7 @@
         clienteSelect.dispatchEvent(new Event('change'));
         actualizarChoferPrincipalYFiltros();
 
+        actualizarMontosConvertibles();
         recalcularTotales();
     })();
 </script>
