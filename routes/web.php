@@ -138,3 +138,6 @@ Route::get('reportes/generar/pdf', [App\Http\Controllers\ReporteController::clas
 Route::get('reportes/generar/excel', [App\Http\Controllers\ReporteController::class, 'generarExcel'])
     ->name('reportes.generar.excel');
 Route::resource('reportes', App\Http\Controllers\ReporteController::class);
+
+
+Route::resource('monedas', App\Http\Controllers\MonedaController::class);

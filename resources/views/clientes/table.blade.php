@@ -1,7 +1,7 @@
  <div class="table-responsive" style="padding:15px;font-size: 12px;">
     <table class="table" id="table">
         <thead>
-        <tr>
+         <tr>
         <th>Nombre</th>
         <th>Apellido</th>
         <th>Tipo Propietario</th>

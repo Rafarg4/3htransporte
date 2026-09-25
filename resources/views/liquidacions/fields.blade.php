@@ -42,6 +42,20 @@
     {!! Form::date('fecha', old('fecha', now()->format('Y-m-d')), ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
+<!-- Moneda Field: los montos se cargan en guaranies; si se elige otra moneda se guarda su
+     cotizacion actual en la liquidacion y el PDF se muestra convertido con esa cotizacion. -->
+<div class="form-group col-sm-3">
+    <label for="moneda-select">Moneda:</label>
+    <select name="moneda" id="moneda-select" class="form-control">
+        <option value="PYG" data-cotizacion="1">Guaraníes</option>
+        @foreach($monedas as $moneda)
+            <option value="{{ $moneda->tipo_moneda }}" data-cotizacion="{{ $moneda->cotizacion }}" {{ old('moneda') === $moneda->tipo_moneda ? 'selected' : '' }}>
+                {{ $moneda->tipo_moneda }} (cotización {{ $moneda->monto }})
+            </option>
+        @endforeach
+    </select>
+</div>
+
 @php
     $ordenCargasData = $ordenCargas->map(function ($ordenCarga) {
         return [
@@ -284,6 +298,7 @@
             <strong id="total-saldo" class="text-primary">0</strong>
         </div>
     </div>
+    <small id="total-moneda-info" class="text-muted d-block text-right mt-1" style="display:none !important;"></small>
 </div>
 
 <!-- Facturado: se define recien al confirmar el modal de Guardar -->
@@ -393,10 +408,39 @@
                 debitos += parseFloat(checkbox.dataset.valor) || 0;
             });
 
-            document.getElementById('total-creditos').textContent = formatoNumero(creditos);
-            document.getElementById('total-debitos').textContent = formatoNumero(debitos);
-            document.getElementById('total-saldo').textContent = formatoNumero(creditos - debitos);
+            var moneda = monedaSeleccionada();
+            var info = document.getElementById('total-moneda-info');
+
+            if (moneda.codigo === 'PYG' || !moneda.cotizacion) {
+                document.getElementById('total-creditos').textContent = formatoNumero(creditos);
+                document.getElementById('total-debitos').textContent = formatoNumero(debitos);
+                document.getElementById('total-saldo').textContent = formatoNumero(creditos - debitos);
+                info.style.setProperty('display', 'none', 'important');
+                return;
+            }
+
+            document.getElementById('total-creditos').textContent = formatoMoneda(creditos / moneda.cotizacion, moneda.codigo);
+            document.getElementById('total-debitos').textContent = formatoMoneda(debitos / moneda.cotizacion, moneda.codigo);
+            document.getElementById('total-saldo').textContent = formatoMoneda((creditos - debitos) / moneda.cotizacion, moneda.codigo);
+            info.textContent = 'Cotización ' + moneda.codigo + ': ' + new Intl.NumberFormat('es-PY', { maximumFractionDigits: 2 }).format(moneda.cotizacion)
+                + ' Gs. — Saldo en guaraníes: ' + formatoNumero(creditos - debitos);
+            info.style.setProperty('display', 'block', 'important');
         }
+
+        function monedaSeleccionada() {
+            var select = document.getElementById('moneda-select');
+            var opcion = select ? select.options[select.selectedIndex] : null;
+            return {
+                codigo: opcion ? opcion.value : 'PYG',
+                cotizacion: opcion ? (parseFloat(opcion.dataset.cotizacion) || 0) : 1
+            };
+        }
+
+        function formatoMoneda(valor, codigo) {
+            return new Intl.NumberFormat('es-PY', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(valor) + ' ' + codigo;
+        }
+
+        document.getElementById('moneda-select').addEventListener('change', recalcularTotales);
 
         document.addEventListener('input', function (event) {
             if (event.target.classList.contains('liquidacion-credito') || event.target.classList.contains('liquidacion-debito')) {

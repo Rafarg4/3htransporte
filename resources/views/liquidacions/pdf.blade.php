@@ -114,6 +114,20 @@
 </head>
 <body>
 
+@php
+    // Sin moneda guardada todo se muestra en guaranies como siempre; con moneda los montos se
+    // dividen por la cotizacion congelada en la liquidacion (monto_moneda), asi un cambio en
+    // Monedas no altera liquidaciones ya hechas. Precios unitarios con 4 decimales (en USD quedan chicos).
+    $cotizacion = (float) $liquidacion->monto_moneda;
+    $moneda = $liquidacion->moneda && $cotizacion > 0 ? $liquidacion->moneda : null;
+    $monto = function ($valor, $decimalesMoneda = 2) use ($moneda, $cotizacion) {
+        if (!$moneda) {
+            return number_format((float) $valor, 0, ',', '.');
+        }
+        return number_format((float) $valor / $cotizacion, $decimalesMoneda, ',', '.');
+    };
+@endphp
+
 @if(strtolower($liquidacion->estado) === 'anulado')
     <div class="watermark">ANULADO</div>
 @endif
@@ -139,6 +153,11 @@
             <div>Estado: {{ $liquidacion->estado }}</div>
             <div>Facturado: {{ $liquidacion->facturado }}</div>
             <div>Pagado: {{ $liquidacion->pagado }}</div>
+            @if($moneda)
+                <div>Moneda: {{ $moneda }} (cotización {{ number_format($cotizacion, 2, ',', '.') }} Gs.)</div>
+            @else
+                <div>Moneda: Guaraníes</div>
+            @endif
         </td>
     </tr>
 </table>
@@ -206,13 +225,13 @@
                 <td class="numero">{{ number_format((float) $flete->kg_origen, 0, ',', '.') }}</td>
                 <td class="numero">{{ number_format((float) $flete->kg_destino, 0, ',', '.') }}</td>
                 <td class="numero">{{ $flete->diferencia !== null && $flete->diferencia !== '' ? number_format((float) $flete->diferencia, 0, ',', '.') : '-' }}</td>
-                <td class="numero">{{ number_format((float) $flete->precio, 0, ',', '.') }}</td>
-                <td class="numero">{{ number_format((float) $flete->valor, 0, ',', '.') }}</td>
+                <td class="numero">{{ $monto($flete->precio, 4) }}</td>
+                <td class="numero">{{ $monto($flete->valor) }}</td>
             </tr>
         @endforeach
         <tr class="subtotal-row">
             <td colspan="8" class="label-total">Total Flete</td>
-            <td class="numero">{{ number_format($liquidacion->total_creditos, 0, ',', '.') }}</td>
+            <td class="numero">{{ $monto($liquidacion->total_creditos) }}</td>
         </tr>
     </table>
 @endif
@@ -252,13 +271,13 @@
                 <td>{{ $flete->tramo }}</td>
                 <td class="numero">{{ $flete->diferencia !== null && $flete->diferencia !== '' ? number_format((float) $flete->diferencia, 0, ',', '.') : '-' }}</td>
                 <td class="numero">{{ $flete->recargo_tolerancia !== null && $flete->recargo_tolerancia !== '' ? number_format((float) $flete->recargo_tolerancia, 0, ',', '.') : '-' }}</td>
-                <td class="numero">{{ $flete->recargo_precio !== null && $flete->recargo_precio !== '' ? number_format((float) $flete->recargo_precio, 0, ',', '.') : '-' }}</td>
-                <td class="numero">{{ number_format($valorDescuentoFaltante, 0, ',', '.') }}</td>
+                <td class="numero">{{ $flete->recargo_precio !== null && $flete->recargo_precio !== '' ? $monto($flete->recargo_precio, 4) : '-' }}</td>
+                <td class="numero">{{ $monto($valorDescuentoFaltante) }}</td>
             </tr>
         @endforeach
         <tr class="subtotal-row">
             <td colspan="6" class="label-total">Total Descuento Faltante</td>
-            <td class="numero">{{ number_format($fletesConRecargo->sum($calcularDescuentoFaltante), 0, ',', '.') }}</td>
+            <td class="numero">{{ $monto($fletesConRecargo->sum($calcularDescuentoFaltante)) }}</td>
         </tr>
     </table>
 @endif
@@ -279,12 +298,12 @@
                 <td>{{ $viatico->fecha }}</td>
                 <td>{{ $viatico->chofer ? trim($viatico->chofer->nombre . ' ' . $viatico->chofer->apellido) : '-' }}</td>
                 <td>{{ $viatico->descripcion }}</td>
-                <td class="numero">{{ number_format((float) $viatico->monto, 0, ',', '.') }}</td>
+                <td class="numero">{{ $monto($viatico->monto) }}</td>
             </tr>
         @endforeach
         <tr class="subtotal-row">
             <td colspan="4" class="label-total">Total Viático</td>
-            <td class="numero">{{ number_format($liquidacion->viaticos->sum(fn ($v) => (float) $v->monto), 0, ',', '.') }}</td>
+            <td class="numero">{{ $monto($liquidacion->viaticos->sum(fn ($v) => (float) $v->monto)) }}</td>
         </tr>
     </table>
 @endif
@@ -306,13 +325,13 @@
                 <td>{{ $combustible->vigencia_desde }}</td>
                 <td>{{ $combustible->nombre_estacion }}</td>
                 <td class="numero">{{ number_format((float) $combustible->litros, 0, ',', '.') }}</td>
-                <td class="numero">{{ number_format((float) $combustible->importe, 0, ',', '.') }}</td>
-                <td class="numero">{{ number_format((float) $combustible->litros * (float) $combustible->importe, 0, ',', '.') }}</td>
+                <td class="numero">{{ $monto($combustible->importe) }}</td>
+                <td class="numero">{{ $monto((float) $combustible->litros * (float) $combustible->importe) }}</td>
             </tr>
         @endforeach
         <tr class="subtotal-row">
             <td colspan="5" class="label-total">Total Combustible</td>
-            <td class="numero">{{ number_format($liquidacion->combustibles->sum(fn ($c) => (float) $c->litros * (float) $c->importe), 0, ',', '.') }}</td>
+            <td class="numero">{{ $monto($liquidacion->combustibles->sum(fn ($c) => (float) $c->litros * (float) $c->importe)) }}</td>
         </tr>
     </table>
 @endif
@@ -329,12 +348,12 @@
             <tr>
                 <td>{{ $gasto->fecha }}</td>
                 <td>{{ $gasto->concepto }}</td>
-                <td class="numero">{{ number_format((float) $gasto->valor, 0, ',', '.') }}</td>
+                <td class="numero">{{ $monto($gasto->valor) }}</td>
             </tr>
         @endforeach
         <tr class="subtotal-row">
             <td colspan="2" class="label-total">Total Gastos Administrativos</td>
-            <td class="numero">{{ number_format($liquidacion->gastosAdministrativos->sum(fn ($g) => (float) $g->valor), 0, ',', '.') }}</td>
+            <td class="numero">{{ $monto($liquidacion->gastosAdministrativos->sum(fn ($g) => (float) $g->valor)) }}</td>
         </tr>
     </table>
 @endif
@@ -342,15 +361,15 @@
 <table class="totales">
     <tr>
         <td class="label">Créditos</td>
-        <td class="valor">{{ number_format($liquidacion->total_creditos, 0, ',', '.') }}</td>
+        <td class="valor">{{ $monto($liquidacion->total_creditos) }}</td>
     </tr>
     <tr>
         <td class="label">Débitos</td>
-        <td class="valor">{{ number_format($liquidacion->total_debitos, 0, ',', '.') }}</td>
+        <td class="valor">{{ $monto($liquidacion->total_debitos) }}</td>
     </tr>
     <tr class="saldo">
-        <td class="label">Saldo</td>
-        <td class="valor">{{ number_format($liquidacion->saldo, 0, ',', '.') }}</td>
+        <td class="label">Saldo{{ $moneda ? ' (' . $moneda . ')' : '' }}</td>
+        <td class="valor">{{ $monto($liquidacion->saldo) }}</td>
     </tr>
 </table>
 

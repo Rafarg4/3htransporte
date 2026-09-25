@@ -11,6 +11,7 @@ use App\Models\Liquidacion;
 use App\Models\LiquidacionDescuento;
 use App\Models\LiquidacionFlete;
 use App\Models\LiquidacionGastoAdministrativo;
+use App\Models\Moneda;
 use App\Models\OrdenCarga;
 use App\Models\Parametrizacion;
 use App\Models\ValeCombustible;
@@ -71,7 +72,33 @@ class LiquidacionController extends AppBaseController
             ->with('ordenCargas', OrdenCarga::whereNull('liquidado')->orderByDesc('id')->get())
             ->with('viaticosDisponibles', $this->getViaticosDisponibles())
             ->with('valeCombustiblesDisponibles', $this->getValeCombustiblesDisponibles())
-            ->with('parametrizacion', Parametrizacion::actual());
+            ->with('parametrizacion', Parametrizacion::actual())
+            ->with('monedas', Moneda::vigentes());
+    }
+
+    /**
+     * Moneda elegida en el formulario + su cotizacion vigente, para congelarla en la liquidacion.
+     * Guaranies (o una moneda sin cotizacion valida) guarda ambos campos en null.
+     *
+     * @param string|null $codigo
+     *
+     * @return array
+     */
+    private function getMonedaParaGuardar($codigo)
+    {
+        $codigo = strtoupper((string) $codigo);
+
+        if ($codigo === '' || $codigo === 'PYG') {
+            return ['moneda' => null, 'monto_moneda' => null];
+        }
+
+        $moneda = Moneda::where('tipo_moneda', $codigo)->orderByDesc('id')->first();
+
+        if (!$moneda || $moneda->cotizacion <= 0) {
+            return ['moneda' => null, 'monto_moneda' => null];
+        }
+
+        return ['moneda' => $moneda->tipo_moneda, 'monto_moneda' => $moneda->cotizacion];
     }
 
     /**
@@ -163,7 +190,7 @@ class LiquidacionController extends AppBaseController
                 'estado' => 'Activo',
                 'facturado' => $request->input('facturado', 'No'),
                 'pagado' => 'No',
-            ]);
+            ] + $this->getMonedaParaGuardar($request->input('moneda')));
 
             $fechaCabecera = $request->input('fecha');
 

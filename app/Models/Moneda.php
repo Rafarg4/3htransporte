@@ -1,0 +1,78 @@
+<?php
+
+namespace App\Models;
+
+use Eloquent as Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+/**
+ * Class Moneda
+ * @package App\Models
+ * @version September 24, 2026, 4:59 pm UTC
+ *
+ * @property string $tipo_moneda
+ * @property string $monto
+ */
+class Moneda extends Model
+{
+    use SoftDeletes;
+
+    use HasFactory;
+
+    public $table = 'monedas';
+
+
+    protected $dates = ['deleted_at'];
+
+
+
+    public $fillable = [
+        'tipo_moneda',
+        'monto'
+    ];
+
+    /**
+     * The attributes that should be casted to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'tipo_moneda' => 'string',
+        'monto' => 'string'
+    ];
+
+    /**
+     * Validation rules
+     *
+     * @var array
+     */
+    public static $rules = [
+        'tipo_moneda' => 'required|in:USD,EUR,ARS,BRL',
+        'monto' => 'required'
+    ];
+
+    /**
+     * Ultima cotizacion cargada de cada tipo de moneda.
+     */
+    public static function vigentes()
+    {
+        return static::orderByDesc('id')->get()->unique('tipo_moneda')->values();
+    }
+
+    /**
+     * Monto como numero: acepta "5780", "5.780", "5780,50" o "5.5" tal como se haya cargado.
+     */
+    public function getCotizacionAttribute()
+    {
+        $texto = trim((string) $this->monto);
+
+        if (strpos($texto, ',') !== false) {
+            $texto = str_replace(',', '.', str_replace('.', '', $texto));
+        } elseif (preg_match('/^\d{1,3}(\.\d{3})+$/', $texto)) {
+            $texto = str_replace('.', '', $texto);
+        }
+
+        return (float) $texto;
+    }
+}

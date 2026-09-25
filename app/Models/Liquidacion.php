@@ -37,7 +37,9 @@ class Liquidacion extends Model
         'fecha',
         'estado',
         'facturado',
-        'pagado'
+        'pagado',
+        'moneda',
+        'monto_moneda'
     ];
 
     protected $casts = [
@@ -48,7 +50,9 @@ class Liquidacion extends Model
         'fecha' => 'string',
         'estado' => 'string',
         'facturado' => 'string',
-        'pagado' => 'string'
+        'pagado' => 'string',
+        'moneda' => 'string',
+        'monto_moneda' => 'float'
     ];
 
     public static $rules = [

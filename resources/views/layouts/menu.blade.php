@@ -125,12 +125,30 @@
         </li>
     </ul>
 </li>
-<li class="nav-item">
-    <a href="{{ route('parametrizaciones.edit') }}"
-       class="nav-link {{ Request::is('parametrizaciones*') ? 'active' : '' }}">
+<li class="nav-item {{ Request::is('parametrizaciones*') || Request::is('monedas*') ? 'menu-open' : '' }}">
+    <a href="#" class="nav-link {{ Request::is('parametrizaciones*') || Request::is('monedas*') ? 'active' : '' }}">
         <i class="nav-icon fa fa-sliders-h"></i>
-        <p>Parametrizaciones</p>
+        <p>
+            Parametrizaciones
+            <i class="right fas fa-angle-left"></i>
+        </p>
     </a>
+    <ul class="nav nav-treeview">
+        <li class="nav-item">
+            <a href="{{ route('parametrizaciones.edit') }}"
+               class="nav-link {{ Request::is('parametrizaciones*') ? 'active' : '' }}">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Recargo</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('monedas.index') }}"
+               class="nav-link {{ Request::is('monedas*') ? 'active' : '' }}">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Moneda</p>
+            </a>
+        </li>
+    </ul>
 </li>
 <li class="nav-item">
     <a href="{{ route('users.index') }}"

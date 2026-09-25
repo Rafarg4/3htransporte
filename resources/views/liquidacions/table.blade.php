@@ -44,8 +44,7 @@
                         <div class="dropdown-menu dropdown-menu-right">
                             <a class="dropdown-item" href="{{ route('liquidacions.pdf', $liquidacion->id) }}" target="_blank">
                                 <i class="far fa-file-pdf"></i> PDF
-                            </a>
-                            {{-- Anulada: solo PDF + Eliminar. El resto de acciones no tiene sentido sobre una liquidacion sin vigencia. --}}
+                            </a>                            {{-- Anulada: solo PDF + Eliminar. El resto de acciones no tiene sentido sobre una liquidacion sin vigencia. --}}
                             @if(strtolower($liquidacion->estado) === 'activo')
                                 @if($liquidacion->facturado !== 'Si')
                                     {!! Form::open(['route' => ['liquidacions.facturado', $liquidacion->id], 'method' => 'post']) !!}
