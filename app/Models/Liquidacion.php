@@ -141,6 +141,19 @@ class Liquidacion extends Model
     }
 
     /**
+     * Formatea un monto en guaranies segun la moneda de la liquidacion: sin moneda queda en Gs.
+     * como siempre; con moneda se divide por la cotizacion guardada (monto_moneda) y se agrega el codigo.
+     */
+    public function formatearMonto($valor)
+    {
+        if ($this->moneda && (float) $this->monto_moneda > 0) {
+            return number_format((float) $valor / (float) $this->monto_moneda, 2, ',', '.') . ' ' . $this->moneda;
+        }
+
+        return number_format((float) $valor, 0, ',', '.');
+    }
+
+    /**
      * Chapa del camion de esta liquidacion, para mostrar en el listado.
      *
      * @return string|null

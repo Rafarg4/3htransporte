@@ -18,9 +18,9 @@
             <tr>
                 <td>{{ $liquidacion->cliente ? trim($liquidacion->cliente->nombre . ' ' . $liquidacion->cliente->apellido) : '-' }}</td>
                 <td>{{ $liquidacion->fecha }}</td>
-                <td>{{ number_format($liquidacion->total_creditos, 0, ',', '.') }}</td>
-                <td>{{ number_format($liquidacion->total_debitos, 0, ',', '.') }}</td>
-                <td>{{ number_format($liquidacion->saldo, 0, ',', '.') }}</td>
+                <td>{{ $liquidacion->formatearMonto($liquidacion->total_creditos) }}</td>
+                <td>{{ $liquidacion->formatearMonto($liquidacion->total_debitos) }}</td>
+                <td>{{ $liquidacion->formatearMonto($liquidacion->saldo) }}</td>
                 <td>
                     <span class="badge estado-badge estado-badge-{{ strtolower($liquidacion->estado) === 'activo' ? 'activo' : 'anulado' }}">
                         {{ $liquidacion->estado }}
@@ -115,6 +115,7 @@
                 language: {
                     url: '{{ asset('vendor/datatables/i18n/es-ES.json') }}'
                 },
+                order: [[1, 'desc']],
                 columnDefs: [
                     {orderable: false, targets: -1}
                 ]

@@ -52,7 +52,7 @@ class LiquidacionController extends AppBaseController
             'gastosAdministrativos',
             'viaticos',
             'combustibles',
-        ])->orderByDesc('id')->get();
+        ])->orderByDesc('fecha')->orderByDesc('id')->get();
 
         return view('liquidacions.index')
             ->with('liquidacions', $liquidacions);
