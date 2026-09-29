@@ -15,7 +15,7 @@
         <tbody>
         @foreach($ordenCargas as $ordenCarga)
             <tr>
-                <td>{{ $ordenCarga->numero }}</td>
+                <td data-order="{{ (int) $ordenCarga->numero }}">{{ $ordenCarga->numero }}</td>
             <td>{{ $ordenCarga->proveedor->nombre ?? '-' }}</td>
             <td>{{ $ordenCarga->producto->nombre ?? '-' }}</td>
             <td>{{ $ordenCarga->origen }}</td>
@@ -95,6 +95,7 @@
                 language: {
                     url: '{{ asset('vendor/datatables/i18n/es-ES.json') }}'
                 },
+                order: [],
                 columnDefs: [
                     {orderable: false, targets: -1}
                 ]

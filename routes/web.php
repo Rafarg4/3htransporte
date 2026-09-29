@@ -63,6 +63,12 @@ Route::middleware('auth')->group(function () {
     Route::resource('proveedors', App\Http\Controllers\ProveedorController::class);
 
 
+    Route::get('ordenCargas/reporte', [App\Http\Controllers\OrdenCargaController::class, 'reporte'])
+        ->name('ordenCargas.reporte');
+    Route::get('ordenCargas/reporte/pdf', [App\Http\Controllers\OrdenCargaController::class, 'reportePdf'])
+        ->name('ordenCargas.reporte.pdf');
+    Route::get('ordenCargas/reporte/excel', [App\Http\Controllers\OrdenCargaController::class, 'reporteExcel'])
+        ->name('ordenCargas.reporte.excel');
     Route::resource('ordenCargas', App\Http\Controllers\OrdenCargaController::class);
     Route::get('ordenCargas/{id}/pdf', [App\Http\Controllers\OrdenCargaController::class, 'pdf'])
         ->name('ordenCargas.pdf');

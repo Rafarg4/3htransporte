@@ -119,6 +119,10 @@
         <td class="label">Destino</td>
         <td>{{ $ordenCarga->destino }}</td>
     </tr>
+    <tr>
+        <td class="label">Obs</td>
+        <td>{!! nl2br(e($ordenCarga->observacion ?: '-')) !!}</td>
+    </tr>
 </table>
 
 <!-- Datos del proveedor -->

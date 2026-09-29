@@ -47,12 +47,30 @@
         <p>Productos</p>
     </a>
 </li>
-<li class="nav-item">
-    <a href="{{ route('ordenCargas.index') }}"
-       class="nav-link {{ Request::is('ordenCargas*') ? 'active' : '' }}">
+<li class="nav-item {{ Request::is('ordenCargas*') ? 'menu-open' : '' }}">
+    <a href="#" class="nav-link {{ Request::is('ordenCargas*') ? 'active' : '' }}">
         <i class="nav-icon fa fa-clipboard"></i>
-        <p>Orden de Carga</p>
+        <p>
+            Orden de Carga
+            <i class="right fas fa-angle-left"></i>
+        </p>
     </a>
+    <ul class="nav nav-treeview">
+        <li class="nav-item">
+            <a href="{{ route('ordenCargas.index') }}"
+               class="nav-link {{ Request::is('ordenCargas*') && !Request::is('ordenCargas/reporte*') ? 'active' : '' }}">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Listado</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('ordenCargas.reporte') }}"
+               class="nav-link {{ Request::is('ordenCargas/reporte*') ? 'active' : '' }}">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Reporte</p>
+            </a>
+        </li>
+    </ul>
 </li>
 <li class="nav-item">
     <a href="{{ route('valeCombustibles.index') }}"

@@ -34,6 +34,12 @@
     <p>{{ $ordenCarga->camion->chapa ?? '-' }}</p>
 </div>
 
+<!-- Observacion Field -->
+<div class="col-sm-12">
+    {!! Form::label('observacion', 'Obs:') !!}
+    <p>{{ $ordenCarga->observacion ?: '-' }}</p>
+</div>
+
 <!-- Estado Field -->
 <div class="col-sm-12">
     {!! Form::label('estado', 'Estado:') !!}

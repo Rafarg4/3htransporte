@@ -35,7 +35,10 @@ class OrdenCargaController extends AppBaseController
      */
     public function index(Request $request)
     {
-        $ordenCargas = $this->ordenCargaRepository->all();
+        // `numero` es una columna de texto: se castea para ordenar numericamente.
+        $ordenCargas = OrdenCarga::with(['proveedor', 'producto', 'camion'])
+            ->orderByRaw('CAST(numero AS UNSIGNED) DESC')
+            ->get();
 
         return view('orden_cargas.index')
             ->with('ordenCargas', $ordenCargas);
@@ -124,6 +127,141 @@ class OrdenCargaController extends AppBaseController
         ])->setPaper('a4', 'portrait');
 
         return $pdf->stream('Orden de Carga ' . $numero . '.pdf');
+    }
+
+    /**
+     * Display the Reporte screen: OrdenCarga listing filtered by
+     * proveedor and fecha de carga.
+     *
+     * @param Request $request
+     *
+     * @return Response
+     */
+    public function reporte(Request $request)
+    {
+        $ordenCargas = $this->filtrarReporte($request)->get();
+
+        return view('orden_cargas.reporte')
+            ->with('ordenCargas', $ordenCargas)
+            ->with('proveedores', $this->getListasParaSelect()['proveedores'])
+            ->with('filtros', $this->getFiltrosReporte($request));
+    }
+
+    /**
+     * Stream the filtered OrdenCarga listing as a PDF.
+     *
+     * @param Request $request
+     *
+     * @return Response
+     */
+    public function reportePdf(Request $request)
+    {
+        $ordenCargas = $this->filtrarReporte($request)->get();
+        $empresa = Empresa::first();
+
+        $pdf = Pdf::loadView('orden_cargas.reporte_pdf', [
+            'ordenCargas' => $ordenCargas,
+            'empresa' => $empresa,
+            'filtros' => $this->getFiltrosReporte($request),
+            'proveedor' => $request->filled('id_proveedor') ? Proveedor::find($request->input('id_proveedor')) : null,
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->stream('Reporte de Ordenes de Carga ' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    /**
+     * Download the filtered OrdenCarga listing as a CSV file, with the
+     * Empresa data as header rows above the table.
+     *
+     * @param Request $request
+     *
+     * @return Response
+     */
+    public function reporteExcel(Request $request)
+    {
+        $ordenCargas = $this->filtrarReporte($request)->get();
+        $empresa = Empresa::first();
+
+        $nombreArchivo = 'Reporte de Ordenes de Carga ' . now()->format('Y-m-d') . '.csv';
+
+        return response()->streamDownload(function () use ($ordenCargas, $empresa) {
+            $handle = fopen('php://output', 'w');
+
+            // BOM, para que Excel detecte UTF-8 y muestre bien los acentos.
+            fwrite($handle, "\xEF\xBB\xBF");
+
+            if ($empresa) {
+                fputcsv($handle, [$empresa->nombre], ';');
+                fputcsv($handle, ['RUC: ' . $empresa->ruc], ';');
+                fputcsv($handle, [$empresa->direccion], ';');
+                fputcsv($handle, ['Tel: ' . $empresa->telefono], ';');
+                fputcsv($handle, [], ';');
+            }
+
+            fputcsv($handle, [
+                'Numero', 'Fecha', 'Proveedor', 'Producto', 'Origen', 'Destino', 'Camión', 'Obs', 'Estado',
+            ], ';');
+
+            foreach ($ordenCargas as $ordenCarga) {
+                fputcsv($handle, [
+                    $ordenCarga->numero,
+                    $ordenCarga->created_at ? $ordenCarga->created_at->format('d/m/Y') : '-',
+                    $ordenCarga->proveedor->nombre ?? '-',
+                    $ordenCarga->producto->nombre ?? '-',
+                    $ordenCarga->origen,
+                    $ordenCarga->destino,
+                    $ordenCarga->camion->chapa ?? '-',
+                    $ordenCarga->observacion,
+                    $ordenCarga->estado,
+                ], ';');
+            }
+
+            fclose($handle);
+        }, $nombreArchivo, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
+    }
+
+    /**
+     * Build the OrdenCarga query for the Reporte screen, applying the
+     * id_proveedor/fecha_desde/fecha_hasta filters if present in the
+     * request. La fecha de carga es la fecha de creacion de la orden.
+     *
+     * @param Request $request
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    private function filtrarReporte(Request $request)
+    {
+        $query = OrdenCarga::with(['proveedor', 'producto', 'camion'])
+            ->orderByRaw('CAST(numero AS UNSIGNED) DESC');
+
+        if ($request->filled('id_proveedor')) {
+            $query->where('id_proveedor', $request->input('id_proveedor'));
+        }
+
+        if ($request->filled('fecha_desde')) {
+            $query->whereDate('created_at', '>=', $request->input('fecha_desde'));
+        }
+
+        if ($request->filled('fecha_hasta')) {
+            $query->whereDate('created_at', '<=', $request->input('fecha_hasta'));
+        }
+
+        return $query;
+    }
+
+    /**
+     * Pull the filter values out of the request, to echo back into the form
+     * and forward to the PDF/Excel export links.
+     *
+     * @param Request $request
+     *
+     * @return array
+     */
+    private function getFiltrosReporte(Request $request)
+    {
+        return $request->only(['id_proveedor', 'fecha_desde', 'fecha_hasta']);
     }
 
     /**

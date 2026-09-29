@@ -48,6 +48,12 @@
     {!! Form::select('id_camion', $camiones, null, ['class' => 'form-control select2', 'id' => 'id_camion', 'style' => 'width: 100%', 'placeholder' => 'Seleccione un camión', 'required' => 'required']) !!}
 </div>
 
+<!-- Observacion Field -->
+<div class="form-group col-sm-12">
+    {!! Form::label('observacion', 'Obs:') !!}
+    {!! Form::textarea('observacion', null, ['class' => 'form-control', 'rows' => 3]) !!}
+</div>
+
 
 <!-- Modal: Nuevo proveedor -->
 <div class="modal fade" id="modal-nuevo-proveedor" tabindex="-1" role="dialog">
