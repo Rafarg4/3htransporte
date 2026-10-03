@@ -46,8 +46,12 @@
      cotizacion actual en la liquidacion y el PDF se muestra convertido con esa cotizacion. -->
 <div class="form-group col-sm-3">
     <label for="moneda-select">Moneda:</label>
-    <select name="moneda" id="moneda-select" class="form-control">
-        <option value="PYG" data-cotizacion="1">Guaraníes</option>
+    <select name="moneda" id="moneda-select" class="form-control" required
+            data-cotizacion-usd="{{ $cotizacionUsd }}" data-cotizacion-pyg="{{ $cotizacionPyg }}">
+        <option value="" {{ old('moneda') ? '' : 'selected' }}>Seleccione una moneda</option>
+        <option value="PYG" data-cotizacion="1" {{ old('moneda') === 'PYG' ? 'selected' : '' }}>
+            Guaraníes{{ $monedaGuaranies ? ' (cotización ' . $monedaGuaranies->monto . ')' : '' }}
+        </option>
         @foreach($monedas as $moneda)
             <option value="{{ $moneda->tipo_moneda }}" data-cotizacion="{{ $moneda->cotizacion }}" {{ old('moneda') === $moneda->tipo_moneda ? 'selected' : '' }}>
                 {{ $moneda->tipo_moneda }} (cotización {{ $moneda->monto }})
@@ -173,24 +177,38 @@
                         <th>Fecha</th>
                         <th>Chofer</th>
                         <th>Descripción</th>
+                        <th>Moneda</th>
                         <th class="text-right">Monto</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($viaticosDisponibles as $viatico)
+                        @php
+                            // Se manda el monto tal como se cargo + su moneda; el JS lo pasa a Gs. con la
+                            // cotizacion que corresponde a la moneda elegida (ver valorEnGuaranies()).
+                            $viaticoEnUsd = $viatico->tipo_moneda === 'USD';
+                            $viaticoMonedaOriginal = $viaticoEnUsd ? 'USD' : 'PYG';
+                            $viaticoOriginal = $viaticoEnUsd
+                                ? number_format((float) $viatico->monto, 2, ',', '.') . ' USD'
+                                : number_format((float) $viatico->monto, 0, ',', '.') . ' Gs.';
+                        @endphp
                         <tr class="liquidacion-select-row" data-chofer="{{ $viatico->id_chofer }}">
                             <td>
                                 <input type="checkbox"
                                        class="liquidacion-debito-checkbox"
                                        name="viatico_ids[]"
                                        value="{{ $viatico->id }}"
-                                       data-valor="{{ $viatico->monto }}"
+                                       data-valor-original="{{ (float) $viatico->monto }}"
+                                       data-moneda-original="{{ $viaticoMonedaOriginal }}"
+                                       @if($viaticoEnUsd && !$cotizacionUsd && !$cotizacionPyg) disabled title="Falta cargar la cotización en Monedas" @endif
                                        {{ in_array($viatico->id, old('viatico_ids', [])) ? 'checked' : '' }}>
                             </td>
                             <td>{{ $viatico->fecha }}</td>
                             <td>{{ $viatico->chofer ? trim($viatico->chofer->nombre . ' ' . $viatico->chofer->apellido) : '-' }}</td>
                             <td>{{ $viatico->descripcion }}</td>
-                            <td class="text-right" data-monto-gs="{{ (float) $viatico->monto }}">{{ number_format((float) $viatico->monto, 0, ',', '.') }}</td>
+                            <td>{{ $viaticoEnUsd ? 'Dólares' : 'Guaraníes' }}</td>
+                            <td class="text-right" data-monto-original="{{ (float) $viatico->monto }}"
+                                data-moneda-original="{{ $viaticoMonedaOriginal }}" data-original="{{ $viaticoOriginal }}">{{ $viaticoOriginal }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -217,27 +235,45 @@
                         <th>Camión</th>
                         <th>Estación</th>
                         <th>Litros</th>
+                        <th>Moneda</th>
                         <th class="text-right">Precio</th>
                         <th class="text-right">Valor</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($valeCombustiblesDisponibles as $vale)
+                        @php
+                            // Igual que en Viatico: monto original + moneda, el JS lo pasa a Gs.
+                            $valeEnUsd = $vale->tipo_moneda === 'USD';
+                            $valeMonedaOriginal = $valeEnUsd ? 'USD' : 'PYG';
+                            $valeValorOriginal = (float) $vale->litros * (float) $vale->importe;
+                            $valeImporteTexto = $valeEnUsd
+                                ? number_format((float) $vale->importe, 2, ',', '.') . ' USD'
+                                : number_format((float) $vale->importe, 0, ',', '.') . ' Gs.';
+                            $valeValorTexto = $valeEnUsd
+                                ? number_format($valeValorOriginal, 2, ',', '.') . ' USD'
+                                : number_format($valeValorOriginal, 0, ',', '.') . ' Gs.';
+                        @endphp
                         <tr class="liquidacion-select-row" data-camion="{{ $vale->id_camion }}">
                             <td>
                                 <input type="checkbox"
                                        class="liquidacion-debito-checkbox"
                                        name="vale_combustible_ids[]"
                                        value="{{ $vale->id }}"
-                                       data-valor="{{ (float) $vale->litros * (float) $vale->importe }}"
+                                       data-valor-original="{{ $valeValorOriginal }}"
+                                       data-moneda-original="{{ $valeMonedaOriginal }}"
+                                       @if($valeEnUsd && !$cotizacionUsd && !$cotizacionPyg) disabled title="Falta cargar la cotización en Monedas" @endif
                                        {{ in_array($vale->id, old('vale_combustible_ids', [])) ? 'checked' : '' }}>
                             </td>
                             <td>{{ $vale->vigencia_desde }}</td>
                             <td>{{ $vale->camion->chapa ?? '-' }}</td>
                             <td>{{ $vale->nombre_estacion }}</td>
                             <td>{{ $vale->litros }} L</td>
-                            <td class="text-right" data-monto-gs="{{ (float) $vale->importe }}">{{ number_format((float) $vale->importe, 0, ',', '.') }}</td>
-                            <td class="text-right" data-monto-gs="{{ (float) $vale->litros * (float) $vale->importe }}">{{ number_format((float) $vale->litros * (float) $vale->importe, 0, ',', '.') }}</td>
+                            <td>{{ $valeEnUsd ? 'Dólares' : 'Guaraníes' }}</td>
+                            <td class="text-right" data-monto-original="{{ (float) $vale->importe }}"
+                                data-moneda-original="{{ $valeMonedaOriginal }}" data-original="{{ $valeImporteTexto }}">{{ $valeImporteTexto }}</td>
+                            <td class="text-right" data-monto-original="{{ $valeValorOriginal }}"
+                                data-moneda-original="{{ $valeMonedaOriginal }}" data-original="{{ $valeValorTexto }}">{{ $valeValorTexto }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -408,7 +444,7 @@
             });
 
             document.querySelectorAll('.liquidacion-debito-checkbox:checked').forEach(function (checkbox) {
-                debitos += parseFloat(checkbox.dataset.valor) || 0;
+                debitos += valorEnGuaranies(parseFloat(checkbox.dataset.valorOriginal) || 0, checkbox.dataset.monedaOriginal);
             });
 
             var moneda = monedaSeleccionada();
@@ -418,6 +454,7 @@
                 document.getElementById('total-creditos').textContent = formatoNumero(creditos);
                 document.getElementById('total-debitos').textContent = formatoNumero(debitos);
                 document.getElementById('total-saldo').textContent = formatoNumero(creditos - debitos);
+                info.textContent = '';
                 info.style.setProperty('display', 'none', 'important');
                 return;
             }
@@ -456,7 +493,39 @@
 
         // Montos de solo lectura (viaticos, combustible, opciones de gasto administrativo):
         // guardan su valor en Gs. en data-monto-gs y solo se reescribe el texto.
+        // Viaticos/vales cargados en USD se pasan a Gs.: si la liquidacion es en USD con la cotizacion
+        // del dolar (asi 100 USD vuelve a mostrarse como 100 USD); si no, con la cotizacion cargada
+        // como Guaranies en Monedas (o la del dolar si no hay). Mismo criterio que el backend.
+        function cotizacionParaItemsEnUsd() {
+            var select = document.getElementById('moneda-select');
+            var usd = parseFloat(select.dataset.cotizacionUsd) || 0;
+            var pyg = parseFloat(select.dataset.cotizacionPyg) || 0;
+            if (monedaSeleccionada().codigo === 'USD') {
+                return usd;
+            }
+            return pyg || usd;
+        }
+
+        function valorEnGuaranies(valorOriginal, monedaOriginal) {
+            return monedaOriginal === 'USD' ? valorOriginal * cotizacionParaItemsEnUsd() : valorOriginal;
+        }
+
         function actualizarMontosConvertibles() {
+            var codigo = monedaSeleccionada().codigo;
+
+            // Viaticos/vales: sin moneda elegida, o si ya estan en la moneda elegida, se muestran
+            // tal cual se cargaron; si no, se convierten y se aclara el monto original.
+            document.querySelectorAll('[data-monto-original]').forEach(function (el) {
+                if (!codigo || el.dataset.monedaOriginal === codigo) {
+                    el.textContent = el.dataset.original;
+                    return;
+                }
+                var montoGs = valorEnGuaranies(parseFloat(el.dataset.montoOriginal) || 0, el.dataset.monedaOriginal);
+                var convertido = codigo === 'PYG' ? formatoNumero(montoGs) + ' Gs.' : formatoMonto(montoGs);
+                el.textContent = convertido + ' (' + el.dataset.original + ')';
+            });
+
+            // Opciones de Gastos Administrativos (siempre en Gs.).
             document.querySelectorAll('[data-monto-gs]').forEach(function (el) {
                 el.textContent = formatoMonto(parseFloat(el.dataset.montoGs) || 0);
             });

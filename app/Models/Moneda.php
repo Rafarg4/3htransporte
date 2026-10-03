@@ -48,16 +48,17 @@ class Moneda extends Model
      * @var array
      */
     public static $rules = [
-        'tipo_moneda' => 'required|in:USD,EUR,ARS,BRL',
+        'tipo_moneda' => 'required|in:PYG,USD,EUR,ARS,BRL',
         'monto' => 'required'
     ];
 
     /**
-     * Ultima cotizacion cargada de cada tipo de moneda.
+     * Ultima cotizacion cargada de cada moneda extranjera (PYG queda afuera: es la moneda base
+     * y ya aparece fija como "Guaranies" en los selects que usan esta lista).
      */
     public static function vigentes()
     {
-        return static::orderByDesc('id')->get()->unique('tipo_moneda')->values();
+        return static::where('tipo_moneda', '!=', 'PYG')->orderByDesc('id')->get()->unique('tipo_moneda')->values();
     }
 
     /**

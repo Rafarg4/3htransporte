@@ -73,12 +73,52 @@ class LiquidacionController extends AppBaseController
             ->with('viaticosDisponibles', $this->getViaticosDisponibles())
             ->with('valeCombustiblesDisponibles', $this->getValeCombustiblesDisponibles())
             ->with('parametrizacion', Parametrizacion::actual())
-            ->with('monedas', Moneda::vigentes());
+            ->with('monedas', Moneda::vigentes())
+            ->with('monedaGuaranies', Moneda::where('tipo_moneda', 'PYG')->orderByDesc('id')->first())
+            ->with('cotizacionUsd', $this->getCotizacionVigente('USD'))
+            ->with('cotizacionPyg', $this->getCotizacionVigente('PYG'));
+    }
+
+    /**
+     * Ultima cotizacion cargada en Monedas para ese tipo (0 si no hay ninguna valida).
+     *
+     * @param string $codigo
+     *
+     * @return float
+     */
+    private function getCotizacionVigente($codigo)
+    {
+        $moneda = Moneda::where('tipo_moneda', $codigo)->orderByDesc('id')->first();
+
+        return $moneda ? max(0, $moneda->cotizacion) : 0;
+    }
+
+    /**
+     * Cotizacion con la que se pasan a guaranies los viaticos/vales cargados en USD:
+     * - liquidacion en USD: la del dolar, asi un viatico de 100 USD vuelve a mostrarse como 100 USD;
+     * - cualquier otra: la cargada como Guaranies en Monedas (si no hay, la del dolar).
+     *
+     * @param string|null $codigoMoneda
+     *
+     * @return float
+     */
+    private function getCotizacionParaItemsEnUsd($codigoMoneda)
+    {
+        $cotizacionUsd = $this->getCotizacionVigente('USD');
+
+        if (strtoupper((string) $codigoMoneda) === 'USD') {
+            return $cotizacionUsd;
+        }
+
+        $cotizacionPyg = $this->getCotizacionVigente('PYG');
+
+        return $cotizacionPyg > 0 ? $cotizacionPyg : $cotizacionUsd;
     }
 
     /**
      * Moneda elegida en el formulario + su cotizacion vigente, para congelarla en la liquidacion.
-     * Guaranies (o una moneda sin cotizacion valida) guarda ambos campos en null.
+     * Guaranies guarda su cotizacion (si hay una cargada) solo como referencia para el PDF: los
+     * montos ya estan en Gs. Una moneda sin cotizacion valida guarda ambos campos en null.
      *
      * @param string|null $codigo
      *
@@ -88,8 +128,14 @@ class LiquidacionController extends AppBaseController
     {
         $codigo = strtoupper((string) $codigo);
 
-        if ($codigo === '' || $codigo === 'PYG') {
+        if ($codigo === '') {
             return ['moneda' => null, 'monto_moneda' => null];
+        }
+
+        if ($codigo === 'PYG') {
+            $cotizacionPyg = $this->getCotizacionVigente('PYG');
+
+            return ['moneda' => 'PYG', 'monto_moneda' => $cotizacionPyg > 0 ? $cotizacionPyg : null];
         }
 
         $moneda = Moneda::where('tipo_moneda', $codigo)->orderByDesc('id')->first();
@@ -152,7 +198,19 @@ class LiquidacionController extends AppBaseController
      */
     public function store(CreateLiquidacionRequest $request)
     {
-        DB::transaction(function () use ($request) {
+        // Viaticos/vales cargados en USD se pasan a guaranies con la cotizacion que corresponde a
+        // la moneda elegida, y queda congelada en la liquidacion (cotizacion_usd). Sin cotizacion
+        // no se pueden sumar.
+        $cotizacionUsd = $this->getCotizacionParaItemsEnUsd($request->input('moneda'));
+        $hayItemsEnUsd = Viatico::whereIn('id', $request->input('viatico_ids', []))->where('tipo_moneda', 'USD')->exists()
+            || ValeCombustible::whereIn('id', $request->input('vale_combustible_ids', []))->where('tipo_moneda', 'USD')->exists();
+
+        if ($hayItemsEnUsd && $cotizacionUsd <= 0) {
+            return redirect()->back()->withInput()
+                ->withErrors(['moneda' => 'Hay viáticos o vales de combustible en dólares: cargá la cotización en Parametrizaciones > Moneda antes de liquidar.']);
+        }
+
+        DB::transaction(function () use ($request, $cotizacionUsd) {
             // Cada bloque de Flete tiene su propio id (bloqueId), no la chapa: una chapa
             // tildada puede tener varios fletes (boton "Otro flete"), asi que flete/orden_carga/
             // descuento_auto quedan indexados por bloqueId, y cada fila de flete declara su
@@ -190,6 +248,7 @@ class LiquidacionController extends AppBaseController
                 'estado' => 'Activo',
                 'facturado' => $request->input('facturado', 'No'),
                 'pagado' => 'No',
+                'cotizacion_usd' => $cotizacionUsd > 0 ? $cotizacionUsd : null,
             ] + $this->getMonedaParaGuardar($request->input('moneda')));
 
             $fechaCabecera = $request->input('fecha');

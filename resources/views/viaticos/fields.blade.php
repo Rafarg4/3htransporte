@@ -28,6 +28,15 @@
     {!! Form::text('monto', null, ['class' => 'form-control', 'id' => 'monto', 'required' => 'required']) !!}
 </div>
 
+<!-- Tipo Moneda Field -->
+<div class="form-group col-sm-6">
+    {!! Form::label('tipo_moneda', 'Moneda:') !!}
+    {!! Form::select('tipo_moneda', [
+        'PYG' => 'Guaraníes',
+        'USD' => 'Dólares'
+    ], isset($viatico) ? null : 'PYG', ['class' => 'form-control', 'required' => 'required']) !!}
+</div>
+
 <!-- Id Orden Carga Field -->
 <div class="form-group col-sm-6">
     {!! Form::label('id_orden_carga', 'Orden de Carga:') !!}

@@ -139,6 +139,15 @@
     </div>
 </div>
 
+<!-- Tipo Moneda Field -->
+<div class="form-group col-sm-4">
+    {!! Form::label('tipo_moneda', 'Moneda:') !!}
+    {!! Form::select('tipo_moneda', [
+        'PYG' => 'Guaraníes',
+        'USD' => 'Dólares'
+    ], isset($valeCombustible) ? null : 'PYG', ['class' => 'form-control', 'required' => 'required']) !!}
+</div>
+
 <!-- Importe Field -->
 <div class="form-group col-sm-4">
     {!! Form::label('importe', 'Precio (por litro):') !!}

@@ -39,7 +39,8 @@ class Liquidacion extends Model
         'facturado',
         'pagado',
         'moneda',
-        'monto_moneda'
+        'monto_moneda',
+        'cotizacion_usd'
     ];
 
     protected $casts = [
@@ -52,7 +53,8 @@ class Liquidacion extends Model
         'facturado' => 'string',
         'pagado' => 'string',
         'moneda' => 'string',
-        'monto_moneda' => 'float'
+        'monto_moneda' => 'float',
+        'cotizacion_usd' => 'float'
     ];
 
     public static $rules = [
@@ -124,15 +126,40 @@ class Liquidacion extends Model
             return (float) $item->valor;
         });
 
-        $viaticos = $this->viaticos->sum(function ($item) {
-            return (float) $item->monto;
+        $cotizacionUsd = $this->cotizacionDolar();
+
+        $viaticos = $this->viaticos->sum(function ($item) use ($cotizacionUsd) {
+            return $item->montoEnGuaranies($cotizacionUsd);
         });
 
-        $combustibles = $this->combustibles->sum(function ($item) {
-            return (float) $item->litros * (float) $item->importe;
+        $combustibles = $this->combustibles->sum(function ($item) use ($cotizacionUsd) {
+            return $item->valorEnGuaranies($cotizacionUsd);
         });
 
         return $descuentos + $gastos + $viaticos + $combustibles;
+    }
+
+    /**
+     * Cotizacion del dolar con la que se pasan a guaranies los viaticos/vales cargados en USD:
+     * la congelada al liquidar; si la liquidacion es anterior a ese campo, la de la liquidacion
+     * en USD o, en ultimo caso, la vigente en Monedas.
+     */
+    public function cotizacionDolar()
+    {
+        if ((float) $this->cotizacion_usd > 0) {
+            return (float) $this->cotizacion_usd;
+        }
+
+        if ($this->moneda === 'USD' && (float) $this->monto_moneda > 0) {
+            return (float) $this->monto_moneda;
+        }
+
+        static $vigente = null;
+        if ($vigente === null) {
+            $vigente = (float) optional(Moneda::where('tipo_moneda', 'USD')->orderByDesc('id')->first())->cotizacion;
+        }
+
+        return $vigente;
     }
 
     public function getSaldoAttribute()
@@ -146,7 +173,7 @@ class Liquidacion extends Model
      */
     public function formatearMonto($valor)
     {
-        if ($this->moneda && (float) $this->monto_moneda > 0) {
+        if ($this->moneda && $this->moneda !== 'PYG' && (float) $this->monto_moneda > 0) {
             return number_format((float) $valor / (float) $this->monto_moneda, 2, ',', '.') . ' ' . $this->moneda;
         }
 

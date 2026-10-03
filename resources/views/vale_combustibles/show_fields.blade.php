@@ -52,10 +52,16 @@
     <p>{{ $valeCombustible->litros }}</p>
 </div>
 
+<!-- Tipo Moneda Field -->
+<div class="col-sm-12">
+    {!! Form::label('tipo_moneda', 'Moneda:') !!}
+    <p>{{ $valeCombustible->tipo_moneda === 'USD' ? 'Dólares' : 'Guaraníes' }}</p>
+</div>
+
 <!-- Importe Field -->
 <div class="col-sm-12">
     {!! Form::label('importe', 'Precio (por litro):') !!}
-    <p>{{ number_format((float) $valeCombustible->importe, 0, ',', '.') }}</p>
+    <p>{{ $valeCombustible->tipo_moneda === 'USD' ? number_format((float) $valeCombustible->importe, 2, ',', '.') . ' USD' : number_format((float) $valeCombustible->importe, 0, ',', '.') . ' Gs.' }}</p>
 </div>
 
 <!-- Valor Field -->

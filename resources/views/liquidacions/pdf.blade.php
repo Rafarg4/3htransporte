@@ -115,16 +115,26 @@
 <body>
 
 @php
-    // Sin moneda guardada todo se muestra en guaranies como siempre; con moneda los montos se
-    // dividen por la cotizacion congelada en la liquidacion (monto_moneda), asi un cambio en
-    // Monedas no altera liquidaciones ya hechas. Precios unitarios con 4 decimales (en USD quedan chicos).
+    // Sin moneda guardada (o en PYG) todo se muestra en guaranies como siempre; con otra moneda
+    // los montos se dividen por la cotizacion congelada en la liquidacion (monto_moneda), asi un
+    // cambio en Monedas no altera liquidaciones ya hechas. Precios unitarios con 4 decimales.
     $cotizacion = (float) $liquidacion->monto_moneda;
-    $moneda = $liquidacion->moneda && $cotizacion > 0 ? $liquidacion->moneda : null;
+    $moneda = $liquidacion->moneda && $liquidacion->moneda !== 'PYG' && $cotizacion > 0 ? $liquidacion->moneda : null;
     $monto = function ($valor, $decimalesMoneda = 2) use ($moneda, $cotizacion) {
         if (!$moneda) {
             return number_format((float) $valor, 0, ',', '.');
         }
         return number_format((float) $valor / $cotizacion, $decimalesMoneda, ',', '.');
+    };
+
+    // Viaticos/vales cargados en USD se pasan a guaranies con la cotizacion del dolar congelada
+    // al liquidar; si el PDF no sale en USD se aclara debajo el monto original.
+    $cotizacionUsd = $liquidacion->cotizacionDolar();
+    $original = function ($valorUsd) use ($moneda) {
+        if ($moneda === 'USD') {
+            return '';
+        }
+        return '<br><small style="color:#888;">' . number_format((float) $valorUsd, 2, ',', '.') . ' USD</small>';
     };
 @endphp
 
@@ -156,7 +166,7 @@
             @if($moneda)
                 <div>Moneda: {{ $moneda }} (cotización {{ number_format($cotizacion, 2, ',', '.') }} Gs.)</div>
             @else
-                <div>Moneda: Guaraníes</div>
+                <div>Moneda: Guaraníes{{ $liquidacion->moneda === 'PYG' && $cotizacion > 0 ? ' (cotización ' . number_format($cotizacion, 2, ',', '.') . ' Gs.)' : '' }}</div>
             @endif
         </td>
     </tr>
@@ -298,12 +308,12 @@
                 <td>{{ $viatico->fecha }}</td>
                 <td>{{ $viatico->chofer ? trim($viatico->chofer->nombre . ' ' . $viatico->chofer->apellido) : '-' }}</td>
                 <td>{{ $viatico->descripcion }}</td>
-                <td class="numero">{{ $monto($viatico->monto) }}</td>
+                <td class="numero">{{ $monto($viatico->montoEnGuaranies($cotizacionUsd)) }}{!! $viatico->tipo_moneda === 'USD' ? $original($viatico->monto) : '' !!}</td>
             </tr>
         @endforeach
         <tr class="subtotal-row">
             <td colspan="4" class="label-total">Total Viático</td>
-            <td class="numero">{{ $monto($liquidacion->viaticos->sum(fn ($v) => (float) $v->monto)) }}</td>
+            <td class="numero">{{ $monto($liquidacion->viaticos->sum(fn ($v) => $v->montoEnGuaranies($cotizacionUsd))) }}</td>
         </tr>
     </table>
 @endif
@@ -325,13 +335,13 @@
                 <td>{{ $combustible->vigencia_desde }}</td>
                 <td>{{ $combustible->nombre_estacion }}</td>
                 <td class="numero">{{ number_format((float) $combustible->litros, 0, ',', '.') }}</td>
-                <td class="numero">{{ $monto($combustible->importe) }}</td>
-                <td class="numero">{{ $monto((float) $combustible->litros * (float) $combustible->importe) }}</td>
+                <td class="numero">{{ $monto($combustible->importeEnGuaranies($cotizacionUsd)) }}{!! $combustible->tipo_moneda === 'USD' ? $original($combustible->importe) : '' !!}</td>
+                <td class="numero">{{ $monto($combustible->valorEnGuaranies($cotizacionUsd)) }}{!! $combustible->tipo_moneda === 'USD' ? $original((float) $combustible->litros * (float) $combustible->importe) : '' !!}</td>
             </tr>
         @endforeach
         <tr class="subtotal-row">
             <td colspan="5" class="label-total">Total Combustible</td>
-            <td class="numero">{{ $monto($liquidacion->combustibles->sum(fn ($c) => (float) $c->litros * (float) $c->importe)) }}</td>
+            <td class="numero">{{ $monto($liquidacion->combustibles->sum(fn ($c) => $c->valorEnGuaranies($cotizacionUsd))) }}</td>
         </tr>
     </table>
 @endif

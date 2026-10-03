@@ -2,6 +2,7 @@
 <div class="form-group col-sm-6">
     {!! Form::label('tipo_moneda', 'Tipo Moneda:') !!}
     {!! Form::select('tipo_moneda', [
+        'PYG' => 'Guaraníes',
         'USD' => 'Dólares',
         'EUR' => 'Euros',
         'ARS' => 'Pesos Argentinos',

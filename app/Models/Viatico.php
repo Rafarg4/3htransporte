@@ -42,6 +42,7 @@ class Viatico extends Model
         'numero_remision',
         'descripcion',
         'monto',
+        'tipo_moneda',
         'id_orden_carga',
         'cargado_por',
         'estado',
@@ -61,6 +62,7 @@ class Viatico extends Model
         'numero_remision' => 'string',
         'descripcion' => 'string',
         'monto' => 'string',
+        'tipo_moneda' => 'string',
         'id_orden_carga' => 'string',
         'cargado_por' => 'string',
         'estado' => 'string',
@@ -82,6 +84,16 @@ class Viatico extends Model
         'id_orden_carga' => 'required',
         'cargado_por' => 'required'
     ];
+
+    /**
+     * Monto en guaranies: si el viatico se cargo en USD se multiplica por la cotizacion dada.
+     */
+    public function montoEnGuaranies($cotizacionUsd)
+    {
+        $monto = (float) $this->monto;
+
+        return $this->tipo_moneda === 'USD' ? $monto * (float) $cotizacionUsd : $monto;
+    }
 
     public function chofer()
     {

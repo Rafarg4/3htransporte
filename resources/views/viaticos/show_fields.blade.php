@@ -50,7 +50,7 @@
         <i class="fas fa-dollar-sign viatico-field-icon"></i>
         <div>
             <small class="text-muted d-block">Monto</small>
-            <span>{{ number_format((float) $viatico->monto, 0, ',', '.') }}</span>
+            <span>{{ $viatico->tipo_moneda === 'USD' ? number_format((float) $viatico->monto, 2, ',', '.') . ' USD' : number_format((float) $viatico->monto, 0, ',', '.') . ' Gs.' }}</span>
         </div>
     </div>
 </div>

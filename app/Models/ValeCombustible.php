@@ -48,6 +48,7 @@ class ValeCombustible extends Model
         'codigo',
         'direccion',
         'producto',
+        'tipo_moneda',
         'importe',
         'litros',
         'realizado_por',
@@ -70,6 +71,7 @@ class ValeCombustible extends Model
         'codigo' => 'string',
         'direccion' => 'string',
         'producto' => 'string',
+        'tipo_moneda' => 'string',
         'importe' => 'string',
         'litros' => 'string',
         'realizado_por' => 'string',
@@ -86,6 +88,24 @@ class ValeCombustible extends Model
     public static $rules = [
         // Validado en el HTML5 del formulario (resources/views/vale_combustibles/fields.blade.php).
     ];
+
+    /**
+     * Precio por litro en guaranies: si el vale se cargo en USD se multiplica por la cotizacion dada.
+     */
+    public function importeEnGuaranies($cotizacionUsd)
+    {
+        $importe = (float) $this->importe;
+
+        return $this->tipo_moneda === 'USD' ? $importe * (float) $cotizacionUsd : $importe;
+    }
+
+    /**
+     * Valor total del vale (litros x precio) en guaranies.
+     */
+    public function valorEnGuaranies($cotizacionUsd)
+    {
+        return (float) $this->litros * $this->importeEnGuaranies($cotizacionUsd);
+    }
 
     public function camion()
     {
