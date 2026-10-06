@@ -161,30 +161,50 @@ class LiquidacionController extends AppBaseController
 
     /**
      * Viaticos activos que todavia no fueron usados en ninguna liquidacion,
-     * disponibles para tildar (filtrados por el Chofer de la cabecera en JS).
+     * disponibles para tildar (filtrados por el Chofer de la cabecera en JS). Al editar,
+     * tambien los que ya usa esa liquidacion ($idLiquidacion).
+     *
+     * @param int|null $idLiquidacion
      *
      * @return \Illuminate\Support\Collection
      */
-    private function getViaticosDisponibles()
+    private function getViaticosDisponibles($idLiquidacion = null)
     {
         return Viatico::with('chofer')
-            ->whereNull('liquidado')
-            ->where('estado', 'Activo')
+            ->where(function ($query) use ($idLiquidacion) {
+                $query->where(function ($disponibles) {
+                    $disponibles->whereNull('liquidado')->where('estado', 'Activo');
+                });
+
+                if ($idLiquidacion) {
+                    $query->orWhere('id_liquidacion', $idLiquidacion);
+                }
+            })
             ->orderByDesc('id')
             ->get();
     }
 
     /**
      * Vales de combustible activos que todavia no fueron usados en ninguna liquidacion,
-     * disponibles para tildar (filtrados por el Camion de la cabecera en JS).
+     * disponibles para tildar (filtrados por el Camion de la cabecera en JS). Al editar,
+     * tambien los que ya usa esa liquidacion ($idLiquidacion).
+     *
+     * @param int|null $idLiquidacion
      *
      * @return \Illuminate\Support\Collection
      */
-    private function getValeCombustiblesDisponibles()
+    private function getValeCombustiblesDisponibles($idLiquidacion = null)
     {
         return ValeCombustible::with('camion')
-            ->whereNull('liquidado')
-            ->where('estado', 'Activo')
+            ->where(function ($query) use ($idLiquidacion) {
+                $query->where(function ($disponibles) {
+                    $disponibles->whereNull('liquidado')->where('estado', 'Activo');
+                });
+
+                if ($idLiquidacion) {
+                    $query->orWhere('id_liquidacion', $idLiquidacion);
+                }
+            })
             ->orderByDesc('id')
             ->get();
     }
@@ -211,39 +231,11 @@ class LiquidacionController extends AppBaseController
         }
 
         DB::transaction(function () use ($request, $cotizacionUsd) {
-            // Cada bloque de Flete tiene su propio id (bloqueId), no la chapa: una chapa
-            // tildada puede tener varios fletes (boton "Otro flete"), asi que flete/orden_carga/
-            // descuento_auto quedan indexados por bloqueId, y cada fila de flete declara su
-            // propia chapa en id_camion (ver fields.blade.php).
-            $fletesPorBloque = $request->input('flete', []);
-            $ordenCargaPorBloque = $request->input('orden_carga', []);
-            $idCamionPrincipal = $request->input('id_camion');
-
-            // Cabecera: primer bloque de Flete de la chapa principal que tenga Orden de Carga
-            // cargada; si ninguno la tiene, se usa la primera Orden de Carga de cualquier bloque.
-            $idOrdenCargaCabecera = collect($fletesPorBloque)
-                ->filter(function ($fila) use ($idCamionPrincipal) {
-                    return ($fila['id_camion'] ?? null) === $idCamionPrincipal;
-                })
-                ->keys()
-                ->map(function ($bloqueId) use ($ordenCargaPorBloque) {
-                    return $ordenCargaPorBloque[$bloqueId] ?? null;
-                })
-                ->first(function ($valor) {
-                    return !empty($valor);
-                });
-
-            if (empty($idOrdenCargaCabecera)) {
-                $idOrdenCargaCabecera = collect($ordenCargaPorBloque)->first(function ($valor) {
-                    return !empty($valor);
-                });
-            }
-
             $liquidacion = Liquidacion::create([
                 'id_cliente' => $request->input('id_cliente'),
-                'id_camion' => $idCamionPrincipal,
+                'id_camion' => $request->input('id_camion'),
                 'id_chofer' => $request->input('id_chofer'),
-                'id_orden_carga' => $idOrdenCargaCabecera,
+                'id_orden_carga' => $this->getOrdenCargaCabecera($request),
                 'fecha' => $request->input('fecha'),
                 'estado' => 'Activo',
                 'facturado' => $request->input('facturado', 'No'),
@@ -251,56 +243,322 @@ class LiquidacionController extends AppBaseController
                 'cotizacion_usd' => $cotizacionUsd > 0 ? $cotizacionUsd : null,
             ] + $this->getMonedaParaGuardar($request->input('moneda')));
 
-            $fechaCabecera = $request->input('fecha');
-
-            foreach ($fletesPorBloque as $bloqueId => $filaFlete) {
-                $idCamion = $filaFlete['id_camion'] ?? null;
-                $idOrdenCarga = $ordenCargaPorBloque[$bloqueId] ?? null;
-
-                $this->guardarLinea(
-                    $liquidacion,
-                    LiquidacionFlete::class,
-                    $filaFlete,
-                    ['fecha', 'tramo', 'kg_origen', 'kg_destino', 'diferencia', 'precio', 'valor', 'recargo_tolerancia', 'recargo_precio'],
-                    $fechaCabecera,
-                    ['id_camion' => $idCamion, 'id_orden_carga' => $idOrdenCarga]
-                );
-
-                if (!empty($idOrdenCarga)) {
-                    OrdenCarga::where('id', $idOrdenCarga)
-                        ->whereNull('liquidado')
-                        ->update(['liquidado' => 'S']);
-                }
-            }
-
-            foreach ($request->input('descuento_auto', []) as $bloqueId => $filaDescuentoAuto) {
-                $idCamion = $fletesPorBloque[$bloqueId]['id_camion'] ?? null;
-
-                $this->guardarLinea(
-                    $liquidacion,
-                    LiquidacionDescuento::class,
-                    $filaDescuentoAuto,
-                    ['fecha', 'valor'],
-                    $fechaCabecera,
-                    ['id_camion' => $idCamion, 'concepto' => 'Faltante de Carga']
-                );
-            }
-
-            $this->guardarLinea($liquidacion, LiquidacionDescuento::class, $request->input('descuento', []), ['fecha', 'concepto', 'valor'], $fechaCabecera);
-            $this->guardarLinea($liquidacion, LiquidacionGastoAdministrativo::class, $request->input('gasto_administrativo', []), ['fecha', 'concepto', 'valor'], $fechaCabecera);
-
-            Viatico::whereIn('id', $request->input('viatico_ids', []))
-                ->whereNull('liquidado')
-                ->update(['id_liquidacion' => $liquidacion->id, 'liquidado' => 'S']);
-
-            ValeCombustible::whereIn('id', $request->input('vale_combustible_ids', []))
-                ->whereNull('liquidado')
-                ->update(['id_liquidacion' => $liquidacion->id, 'liquidado' => 'S']);
+            $this->guardarDetalle($liquidacion, $request);
         });
 
         Flash::success('Liquidación guardada correctamente.');
 
         return redirect(route('liquidacions.index'));
+    }
+
+    /**
+     * Show the form for editing the specified Liquidacion (vista edit_fields.blade.php,
+     * separada del formulario de alta). Solo se pueden editar liquidaciones activas.
+     *
+     * @param int $id
+     *
+     * @return Response
+     */
+    public function edit($id)
+    {
+        $liquidacion = Liquidacion::with(['fletes', 'descuentos', 'gastosAdministrativos', 'viaticos', 'combustibles'])->find($id);
+
+        if (empty($liquidacion)) {
+            Flash::error('Liquidación no encontrada');
+
+            return redirect(route('liquidacions.index'));
+        }
+
+        if (strtolower($liquidacion->estado) !== 'activo') {
+            Flash::error('Solo se puede editar una Liquidación activa.');
+
+            return redirect(route('liquidacions.index'));
+        }
+
+        // Ademas de lo disponible, se listan las Ordenes de Carga / Viaticos / Vales que ya usa
+        // esta liquidacion, para que sigan apareciendo (y tildados) en el formulario.
+        $idsOrdenCarga = $this->getIdsOrdenCarga($liquidacion);
+
+        return view('liquidacions.edit')
+            ->with('liquidacion', $liquidacion)
+            ->with('datosEdicion', $this->getDatosEdicion($liquidacion))
+            ->with('clientes', $this->getClientesParaSelect())
+            ->with('camions', Camion::orderBy('chapa')->get())
+            ->with('choferes', Chofer::orderBy('nombre')->get())
+            ->with('ordenCargas', OrdenCarga::where(function ($query) use ($idsOrdenCarga) {
+                $query->whereNull('liquidado')->orWhereIn('id', $idsOrdenCarga);
+            })->orderByDesc('id')->get())
+            ->with('viaticosDisponibles', $this->getViaticosDisponibles($liquidacion->id))
+            ->with('valeCombustiblesDisponibles', $this->getValeCombustiblesDisponibles($liquidacion->id))
+            ->with('parametrizacion', Parametrizacion::actual())
+            ->with('monedas', Moneda::vigentes())
+            ->with('monedaGuaranies', Moneda::where('tipo_moneda', 'PYG')->orderByDesc('id')->first())
+            ->with('cotizacionUsd', $this->getCotizacionVigente('USD'))
+            ->with('cotizacionPyg', $this->getCotizacionVigente('PYG'));
+    }
+
+    /**
+     * Update the specified Liquidacion: libera los viaticos/vales/ordenes de carga que usaba,
+     * borra sus lineas y las vuelve a grabar con lo que llega del formulario (mismo proceso que
+     * store()). Si se mantiene la moneda, se conservan las cotizaciones congeladas al crearla;
+     * si se cambia, se toman las vigentes.
+     *
+     * @param int $id
+     * @param CreateLiquidacionRequest $request
+     *
+     * @return Response
+     */
+    public function update($id, CreateLiquidacionRequest $request)
+    {
+        $liquidacion = Liquidacion::with('fletes')->find($id);
+
+        if (empty($liquidacion)) {
+            Flash::error('Liquidación no encontrada');
+
+            return redirect(route('liquidacions.index'));
+        }
+
+        if (strtolower($liquidacion->estado) !== 'activo') {
+            Flash::error('Solo se puede editar una Liquidación activa.');
+
+            return redirect(route('liquidacions.index'));
+        }
+
+        $mismaMoneda = $liquidacion->moneda
+            && strtoupper((string) $request->input('moneda')) === strtoupper($liquidacion->moneda);
+
+        $cotizacionUsd = ($mismaMoneda && $liquidacion->cotizacion_usd > 0)
+            ? $liquidacion->cotizacion_usd
+            : $this->getCotizacionParaItemsEnUsd($request->input('moneda'));
+
+        $datosMoneda = $mismaMoneda
+            ? ['moneda' => $liquidacion->moneda, 'monto_moneda' => $liquidacion->monto_moneda]
+            : $this->getMonedaParaGuardar($request->input('moneda'));
+
+        $hayItemsEnUsd = Viatico::whereIn('id', $request->input('viatico_ids', []))->where('tipo_moneda', 'USD')->exists()
+            || ValeCombustible::whereIn('id', $request->input('vale_combustible_ids', []))->where('tipo_moneda', 'USD')->exists();
+
+        if ($hayItemsEnUsd && $cotizacionUsd <= 0) {
+            return redirect()->back()->withInput()
+                ->withErrors(['moneda' => 'Hay viáticos o vales de combustible en dólares: cargá la cotización en Parametrizaciones > Moneda antes de liquidar.']);
+        }
+
+        DB::transaction(function () use ($liquidacion, $request, $cotizacionUsd, $datosMoneda) {
+            Viatico::where('id_liquidacion', $liquidacion->id)->update(['id_liquidacion' => null, 'liquidado' => null]);
+            ValeCombustible::where('id_liquidacion', $liquidacion->id)->update(['id_liquidacion' => null, 'liquidado' => null]);
+
+            $idsOrdenCarga = $this->getIdsOrdenCarga($liquidacion);
+            if ($idsOrdenCarga->isNotEmpty()) {
+                OrdenCarga::whereIn('id', $idsOrdenCarga)->update(['liquidado' => null]);
+            }
+
+            // Los descuentos que no son "Faltante de Carga" no se cargan desde el formulario,
+            // asi que se conservan tal cual.
+            $liquidacion->fletes()->delete();
+            $liquidacion->descuentos()->where('concepto', 'Faltante de Carga')->delete();
+            $liquidacion->gastosAdministrativos()->delete();
+
+            $liquidacion->update([
+                'id_cliente' => $request->input('id_cliente'),
+                'id_camion' => $request->input('id_camion'),
+                'id_chofer' => $request->input('id_chofer'),
+                'id_orden_carga' => $this->getOrdenCargaCabecera($request),
+                'fecha' => $request->input('fecha'),
+                'cotizacion_usd' => $cotizacionUsd > 0 ? $cotizacionUsd : null,
+            ] + $datosMoneda);
+
+            $this->guardarDetalle($liquidacion, $request);
+        });
+
+        Flash::success('Liquidación actualizada correctamente.');
+
+        return redirect(route('liquidacions.index'));
+    }
+
+    /**
+     * Ordenes de Carga que usa la liquidacion (las de sus fletes + la de la cabecera).
+     *
+     * @param Liquidacion $liquidacion
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    private function getIdsOrdenCarga(Liquidacion $liquidacion)
+    {
+        return $liquidacion->fletes->pluck('id_orden_carga')
+            ->push($liquidacion->id_orden_carga)
+            ->filter()
+            ->unique()
+            ->values();
+    }
+
+    /**
+     * Datos guardados de la liquidacion con la misma forma que el request del formulario,
+     * para precargar edit_fields.blade.php. Cada flete usa "e<id>" como bloqueId. Las chapas
+     * tildadas salen de los fletes y los choferes de los viaticos usados (en la cabecera solo
+     * se guarda la chapa y el chofer principal).
+     *
+     * @param Liquidacion $liquidacion
+     *
+     * @return array
+     */
+    private function getDatosEdicion(Liquidacion $liquidacion)
+    {
+        $fecha = function ($valor) {
+            return $valor ? substr((string) $valor, 0, 10) : null;
+        };
+
+        $flete = [];
+        $ordenCarga = [];
+
+        foreach ($liquidacion->fletes as $fila) {
+            $bloqueId = 'e' . $fila->id;
+
+            $flete[$bloqueId] = [
+                'id_camion' => (string) $fila->id_camion,
+                'fecha' => $fecha($fila->fecha),
+                'tramo' => $fila->tramo,
+                'kg_origen' => $fila->kg_origen,
+                'kg_destino' => $fila->kg_destino,
+                'precio' => $fila->precio,
+                'valor' => $fila->valor,
+                'recargo_tolerancia' => $fila->recargo_tolerancia,
+                'recargo_precio' => $fila->recargo_precio,
+            ];
+            $ordenCarga[$bloqueId] = $fila->id_orden_carga;
+        }
+
+        $gasto = $liquidacion->gastosAdministrativos->first();
+        $gastoAdministrativo = [];
+
+        if ($gasto) {
+            $montoUnitario = round((float) $gasto->valor / max(1, $liquidacion->fletes->count()), 2);
+
+            $gastoAdministrativo = [
+                'fecha' => $fecha($gasto->fecha),
+                'concepto' => $gasto->concepto,
+                'monto_unitario' => $montoUnitario == (int) $montoUnitario ? (int) $montoUnitario : $montoUnitario,
+            ];
+        }
+
+        $soloIds = function ($ids) {
+            return collect($ids)->filter()->map(function ($id) {
+                return (string) $id;
+            })->unique()->values()->all();
+        };
+
+        return [
+            'id_cliente' => $liquidacion->id_cliente,
+            'id_camion' => $liquidacion->id_camion,
+            'id_chofer' => $liquidacion->id_chofer,
+            'camion_ids' => $soloIds(collect([$liquidacion->id_camion])->merge($liquidacion->fletes->pluck('id_camion'))),
+            'chofer_ids' => $soloIds(collect([$liquidacion->id_chofer])->merge($liquidacion->viaticos->pluck('id_chofer'))),
+            'fecha' => $fecha($liquidacion->fecha),
+            'moneda' => $liquidacion->moneda,
+            'facturado' => $liquidacion->facturado ?: 'No',
+            'flete' => $flete,
+            'orden_carga' => $ordenCarga,
+            'gasto_administrativo' => $gastoAdministrativo,
+            'viatico_ids' => $liquidacion->viaticos->pluck('id')->all(),
+            'vale_combustible_ids' => $liquidacion->combustibles->pluck('id')->all(),
+        ];
+    }
+
+    /**
+     * Orden de Carga de la cabecera: primer bloque de Flete de la chapa principal que tenga
+     * Orden de Carga cargada; si ninguno la tiene, la primera Orden de Carga de cualquier bloque.
+     *
+     * @param Request $request
+     *
+     * @return string|null
+     */
+    private function getOrdenCargaCabecera(Request $request)
+    {
+        $ordenCargaPorBloque = $request->input('orden_carga', []);
+        $idCamionPrincipal = $request->input('id_camion');
+
+        $idOrdenCargaCabecera = collect($request->input('flete', []))
+            ->filter(function ($fila) use ($idCamionPrincipal) {
+                return ($fila['id_camion'] ?? null) === $idCamionPrincipal;
+            })
+            ->keys()
+            ->map(function ($bloqueId) use ($ordenCargaPorBloque) {
+                return $ordenCargaPorBloque[$bloqueId] ?? null;
+            })
+            ->first(function ($valor) {
+                return !empty($valor);
+            });
+
+        if (empty($idOrdenCargaCabecera)) {
+            $idOrdenCargaCabecera = collect($ordenCargaPorBloque)->first(function ($valor) {
+                return !empty($valor);
+            });
+        }
+
+        return $idOrdenCargaCabecera;
+    }
+
+    /**
+     * Graba las lineas de la liquidacion (fletes, descuentos, gastos administrativos) y marca
+     * como liquidados los viaticos, vales y ordenes de carga elegidos. Lo usan store() y update().
+     *
+     * Cada bloque de Flete tiene su propio id (bloqueId), no la chapa: una chapa tildada puede
+     * tener varios fletes (boton "Otro flete"), asi que flete/orden_carga/descuento_auto quedan
+     * indexados por bloqueId, y cada fila de flete declara su propia chapa en id_camion.
+     *
+     * @param Liquidacion $liquidacion
+     * @param Request $request
+     *
+     * @return void
+     */
+    private function guardarDetalle(Liquidacion $liquidacion, Request $request)
+    {
+        $fletesPorBloque = $request->input('flete', []);
+        $ordenCargaPorBloque = $request->input('orden_carga', []);
+        $fechaCabecera = $request->input('fecha');
+
+        foreach ($fletesPorBloque as $bloqueId => $filaFlete) {
+            $idCamion = $filaFlete['id_camion'] ?? null;
+            $idOrdenCarga = $ordenCargaPorBloque[$bloqueId] ?? null;
+
+            $this->guardarLinea(
+                $liquidacion,
+                LiquidacionFlete::class,
+                $filaFlete,
+                ['fecha', 'tramo', 'kg_origen', 'kg_destino', 'diferencia', 'precio', 'valor', 'recargo_tolerancia', 'recargo_precio'],
+                $fechaCabecera,
+                ['id_camion' => $idCamion, 'id_orden_carga' => $idOrdenCarga]
+            );
+
+            if (!empty($idOrdenCarga)) {
+                OrdenCarga::where('id', $idOrdenCarga)
+                    ->whereNull('liquidado')
+                    ->update(['liquidado' => 'S']);
+            }
+        }
+
+        foreach ($request->input('descuento_auto', []) as $bloqueId => $filaDescuentoAuto) {
+            $idCamion = $fletesPorBloque[$bloqueId]['id_camion'] ?? null;
+
+            $this->guardarLinea(
+                $liquidacion,
+                LiquidacionDescuento::class,
+                $filaDescuentoAuto,
+                ['fecha', 'valor'],
+                $fechaCabecera,
+                ['id_camion' => $idCamion, 'concepto' => 'Faltante de Carga']
+            );
+        }
+
+        $this->guardarLinea($liquidacion, LiquidacionDescuento::class, $request->input('descuento', []), ['fecha', 'concepto', 'valor'], $fechaCabecera);
+        $this->guardarLinea($liquidacion, LiquidacionGastoAdministrativo::class, $request->input('gasto_administrativo', []), ['fecha', 'concepto', 'valor'], $fechaCabecera);
+
+        Viatico::whereIn('id', $request->input('viatico_ids', []))
+            ->whereNull('liquidado')
+            ->update(['id_liquidacion' => $liquidacion->id, 'liquidado' => 'S']);
+
+        ValeCombustible::whereIn('id', $request->input('vale_combustible_ids', []))
+            ->whereNull('liquidado')
+            ->update(['id_liquidacion' => $liquidacion->id, 'liquidado' => 'S']);
     }
 
     /**

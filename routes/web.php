@@ -120,7 +120,11 @@ Route::middleware('auth')->group(function () {
         ->name('liquidacions.reporte.excel');
     Route::get('liquidacions/{id}/pdf', [App\Http\Controllers\LiquidacionController::class, 'pdf'])
         ->name('liquidacions.pdf');
-    Route::delete('liquidacions/{id}', [App\Http\Controllers\LiquidacionController::class, 'destroy'])
+    Route::get('liquidacions/{id}/edit', [App\Http\Controllers\LiquidacionController::class, 'edit'])
+        ->name('liquidacions.edit');
+    Route::put('liquidacions/{id}', [App\Http\Controllers\LiquidacionController::class, 'update'])
+        ->name('liquidacions.update');
+    Route::delete('liquidacions/{id}',[App\Http\Controllers\LiquidacionController::class, 'destroy'])
         ->name('liquidacions.destroy');
     Route::put('liquidacions/{id}/anular', [App\Http\Controllers\LiquidacionController::class, 'anular'])
         ->name('liquidacions.anular');

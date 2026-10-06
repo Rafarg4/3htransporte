@@ -46,6 +46,9 @@
                                 <i class="far fa-file-pdf"></i> PDF
                             </a>                            {{-- Anulada: solo PDF + Eliminar. El resto de acciones no tiene sentido sobre una liquidacion sin vigencia. --}}
                             @if(strtolower($liquidacion->estado) === 'activo')
+                                <a class="dropdown-item" href="{{ route('liquidacions.edit', $liquidacion->id) }}">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
                                 @if($liquidacion->facturado !== 'Si')
                                     {!! Form::open(['route' => ['liquidacions.facturado', $liquidacion->id], 'method' => 'post']) !!}
                                     <button type="submit" class="dropdown-item" onclick="return confirm('¿Confirmar marcar esta liquidación como facturada?')">
