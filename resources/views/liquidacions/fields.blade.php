@@ -42,8 +42,9 @@
     {!! Form::date('fecha', old('fecha', now()->format('Y-m-d')), ['class' => 'form-control', 'required' => 'required']) !!}
 </div>
 
-<!-- Moneda Field: los montos se cargan en guaranies; si se elige otra moneda se guarda su
-     cotizacion actual en la liquidacion y el PDF se muestra convertido con esa cotizacion. -->
+<!-- Moneda Field: Precio/Valor/Precio Recargo del flete se cargan en la moneda elegida; al guardar
+     se pasan a guaranies con su cotizacion actual, que queda en la liquidacion, y el PDF se
+     muestra convertido con esa cotizacion. -->
 <div class="form-group col-sm-3">
     <label for="moneda-select">Moneda:</label>
     <select name="moneda" id="moneda-select" class="form-control" required
@@ -133,12 +134,12 @@
         </div>
         <div class="form-row">
             <div class="form-group col-sm-2">
-                <label>Precio</label>
+                <label>Precio <small class="text-muted" data-role="moneda-flete"></small></label>
                 <input type="number" step="0.01" class="form-control" data-role="precio" name="flete[__BLOQUE_ID__][precio]">
                 <small class="text-muted d-none" data-equivalente-de="precio"></small>
             </div>
             <div class="form-group col-sm-2">
-                <label>Valor</label>
+                <label>Valor <small class="text-muted" data-role="moneda-flete"></small></label>
                 <input type="number" step="0.01" class="form-control liquidacion-credito" data-role="valor" name="flete[__BLOQUE_ID__][valor]">
                 <small class="text-muted d-none" data-equivalente-de="valor"></small>
             </div>
@@ -147,7 +148,7 @@
                 <input type="number" step="0.01" class="form-control" data-role="recargo-tolerancia" name="flete[__BLOQUE_ID__][recargo_tolerancia]" value="{{ $parametrizacion->recargo_tolerancia }}">
             </div>
             <div class="form-group col-sm-2">
-                <label>Precio Recargo</label>
+                <label>Precio Recargo <small class="text-muted" data-role="moneda-flete"></small></label>
                 <input type="number" step="0.01" class="form-control" data-role="recargo-precio" name="flete[__BLOQUE_ID__][recargo_precio]" value="{{ $parametrizacion->recargo_precio }}">
                 <small class="text-muted d-none" data-equivalente-de="recargo-precio"></small>
             </div>
@@ -315,7 +316,7 @@
         <div class="form-group col-sm-3">
             <label>Valor total <i class="fas fa-lock fa-xs text-muted" title="Se calcula automaticamente: monto x cantidad de fletes"></i></label>
             <input type="text" class="form-control bg-light" id="gasto-administrativo-valor-preview" readonly tabindex="-1" placeholder="Sin fletes">
-            <input type="hidden" name="gasto_administrativo[valor]" id="gasto-administrativo-valor" class="liquidacion-debito">
+            <input type="hidden" name="gasto_administrativo[valor]" id="gasto-administrativo-valor" class="liquidacion-debito" data-en-guaranies="1">
         </div>
     </div>
 </div>
@@ -433,14 +434,17 @@
         }
 
         function recalcularTotales() {
+            // Valor del flete y descuento por faltante estan en la moneda elegida: se pasan a Gs.
+            // para sumar. El gasto administrativo (data-en-guaranies) ya esta en Gs.
+            var factor = factorMoneda();
             var creditos = 0;
             document.querySelectorAll('.liquidacion-credito').forEach(function (input) {
-                creditos += parseFloat(input.value) || 0;
+                creditos += (parseFloat(input.value) || 0) * factor;
             });
 
             var debitos = 0;
             document.querySelectorAll('.liquidacion-debito:not([disabled])').forEach(function (input) {
-                debitos += parseFloat(input.value) || 0;
+                debitos += (parseFloat(input.value) || 0) * (input.dataset.enGuaranies ? 1 : factor);
             });
 
             document.querySelectorAll('.liquidacion-debito-checkbox:checked').forEach(function (checkbox) {
@@ -478,6 +482,54 @@
 
         function formatoMoneda(valor, codigo) {
             return new Intl.NumberFormat('es-PY', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(valor) + ' ' + codigo;
+        }
+
+        // Cotizacion de la moneda elegida (1 en guaranies o sin elegir). Precio, Valor y Precio
+        // Recargo del flete se cargan en esa moneda; multiplicando por esto quedan en Gs.
+        function factorMoneda() {
+            var moneda = monedaSeleccionada();
+            return (moneda.codigo && moneda.codigo !== 'PYG' && moneda.cotizacion) ? moneda.cotizacion : 1;
+        }
+
+        // Monto que ya esta en la moneda elegida (campos del flete, recargo).
+        function formatoEnMoneda(valor) {
+            return factorMoneda() === 1 ? formatoNumero(valor) : formatoMoneda(valor, monedaSeleccionada().codigo);
+        }
+
+        function redondear(valor, decimales) {
+            var f = Math.pow(10, decimales);
+            return Math.round(valor * f) / f;
+        }
+
+        function actualizarEtiquetasMonedaFlete(raiz) {
+            var texto = factorMoneda() === 1 ? '(Gs.)' : '(' + monedaSeleccionada().codigo + ')';
+            (raiz || document).querySelectorAll('[data-role="moneda-flete"]').forEach(function (el) {
+                el.textContent = texto;
+            });
+        }
+
+        // Al cambiar de moneda, Precio/Valor/Precio Recargo ya cargados se pasan de la moneda
+        // anterior a la nueva (el recargo despues se recalcula con el nuevo Precio Recargo).
+        // Cada campo recuerda su valor exacto en Gs. mientras no se edite, para que ir y volver
+        // de moneda no acumule redondeos (ej. 2.700 Gs. -> 0,4671 USD -> 2.700 Gs.).
+        function convertirCamposFlete(factorAnterior, factorNuevo) {
+            if (factorAnterior === factorNuevo) {
+                return;
+            }
+            var decimalesValor = factorNuevo === 1 ? 0 : 2;
+            [['precio', 4], ['valor', decimalesValor], ['recargo-precio', 4]].forEach(function (par) {
+                fleteBlocksContainer.querySelectorAll('[data-role="' + par[0] + '"]').forEach(function (input) {
+                    var valor = parseFloat(input.value);
+                    if (isNaN(valor)) {
+                        return;
+                    }
+                    var sinEditar = input.dataset.gsExacto && input.dataset.ultimoValor === input.value;
+                    var gsExacto = sinEditar ? parseFloat(input.dataset.gsExacto) : valor * factorAnterior;
+                    input.value = redondear(gsExacto / factorNuevo, par[1]);
+                    input.dataset.gsExacto = gsExacto;
+                    input.dataset.ultimoValor = input.value;
+                });
+            });
         }
 
         // Monto en guaranies formateado segun la moneda elegida (en Gs. queda como siempre).
@@ -531,17 +583,21 @@
             });
         }
 
-        // Campos editables del Flete: se siguen cargando y guardando en Gs.; debajo se muestra
-        // el equivalente en la moneda elegida.
-        function actualizarEquivalente(input, destino, decimales) {
-            var moneda = monedaSeleccionada();
+        // Campos editables del Flete: se cargan en la moneda elegida; si no es guaranies, debajo
+        // se muestra el equivalente en Gs. (que es como se guarda).
+        function actualizarEquivalente(input, destino) {
+            var factor = factorMoneda();
             var valor = parseFloat(input.value);
-            var mostrar = moneda.codigo !== 'PYG' && moneda.cotizacion && !isNaN(valor);
+            var mostrar = factor !== 1 && !isNaN(valor);
             destino.classList.toggle('d-none', !mostrar);
-            destino.textContent = mostrar ? '≈ ' + formatoMonto(valor, decimales) : '';
+            destino.textContent = mostrar ? '≈ ' + formatoNumero(valor * factor) + ' Gs.' : '';
         }
 
+        var factorMonedaAnterior = factorMoneda();
         document.getElementById('moneda-select').addEventListener('change', function () {
+            convertirCamposFlete(factorMonedaAnterior, factorMoneda());
+            factorMonedaAnterior = factorMoneda();
+            actualizarEtiquetasMonedaFlete();
             actualizarMontosConvertibles();
             document.dispatchEvent(new CustomEvent('liquidacion:moneda-cambiada'));
             actualizarGastoAdministrativo();
@@ -605,7 +661,9 @@
                     : null;
 
                 if (valorRecargo !== null) {
-                    recargoPreview.value = formatoMonto(valorRecargo);
+                    // Precio Recargo esta en la moneda elegida, asi que el recargo tambien.
+                    valorRecargo = factorMoneda() === 1 ? valorRecargo : redondear(valorRecargo, 2);
+                    recargoPreview.value = formatoEnMoneda(valorRecargo);
                     descuentoValor.value = valorRecargo;
                     descuentoFecha.value = bloqueFecha.value || (fechaCabecera ? fechaCabecera.value : '');
                 } else {
@@ -632,7 +690,7 @@
                 var destino = parseFloat(kgDestino.value) || 0;
                 var precioValor = parseFloat(precio.value) || 0;
                 if (destino && precioValor) {
-                    valor.value = Math.round(destino * precioValor);
+                    valor.value = redondear(destino * precioValor, factorMoneda() === 1 ? 0 : 2);
                     recalcularTotales();
                 }
                 actualizarEquivalentesBloque();
@@ -725,6 +783,17 @@
             if (oldOrdenCargaData[bloqueId]) {
                 ordenCargaSelect.value = oldOrdenCargaData[bloqueId];
             }
+
+            // El Precio Recargo por defecto (Parametrizaciones) esta en Gs.: en moneda extranjera
+            // se convierte, salvo que el bloque ya venga con un valor cargado.
+            var recargoPrecioInput = bloque.querySelector('[data-role="recargo-precio"]');
+            if (!(datosViejos && datosViejos.recargo_precio) && factorMoneda() !== 1 && recargoPrecioInput.value !== '') {
+                var recargoPrecioGs = parseFloat(recargoPrecioInput.value);
+                recargoPrecioInput.value = redondear(recargoPrecioGs / factorMoneda(), 4);
+                recargoPrecioInput.dataset.gsExacto = recargoPrecioGs;
+                recargoPrecioInput.dataset.ultimoValor = recargoPrecioInput.value;
+            }
+            actualizarEtiquetasMonedaFlete(bloque);
 
             bloque.querySelector('[data-role="agregar-flete"]').addEventListener('click', function () {
                 agregarFleteAdicional(camionId, chapaTexto);
@@ -1100,6 +1169,7 @@
         clienteSelect.dispatchEvent(new Event('change'));
         actualizarChoferPrincipalYFiltros();
 
+        actualizarEtiquetasMonedaFlete();
         actualizarMontosConvertibles();
         recalcularTotales();
     })();

@@ -410,6 +410,16 @@ class LiquidacionController extends AppBaseController
         $flete = [];
         $ordenCarga = [];
 
+        // Los montos del flete se guardan en Gs.; en una liquidacion en moneda extranjera el
+        // formulario los muestra (y se editan) en esa moneda, como se cargaron.
+        $cotizacion = $this->getCotizacionCargaFlete($liquidacion);
+        $enMoneda = function ($valor, $decimales) use ($cotizacion) {
+            if ($cotizacion == 1.0 || $valor === null || $valor === '' || !is_numeric($valor)) {
+                return $valor;
+            }
+            return round((float) $valor / $cotizacion, $decimales);
+        };
+
         foreach ($liquidacion->fletes as $fila) {
             $bloqueId = 'e' . $fila->id;
 
@@ -419,10 +429,10 @@ class LiquidacionController extends AppBaseController
                 'tramo' => $fila->tramo,
                 'kg_origen' => $fila->kg_origen,
                 'kg_destino' => $fila->kg_destino,
-                'precio' => $fila->precio,
-                'valor' => $fila->valor,
+                'precio' => $enMoneda($fila->precio, 4),
+                'valor' => $enMoneda($fila->valor, 2),
                 'recargo_tolerancia' => $fila->recargo_tolerancia,
-                'recargo_precio' => $fila->recargo_precio,
+                'recargo_precio' => $enMoneda($fila->recargo_precio, 4),
             ];
             $ordenCarga[$bloqueId] = $fila->id_orden_carga;
         }
@@ -516,6 +526,11 @@ class LiquidacionController extends AppBaseController
         $ordenCargaPorBloque = $request->input('orden_carga', []);
         $fechaCabecera = $request->input('fecha');
 
+        // Con una moneda extranjera, Precio/Valor/Precio Recargo del flete y el descuento por
+        // faltante se cargan en esa moneda: se pasan a guaranies con la cotizacion de la
+        // liquidacion, porque las lineas siempre se guardan en Gs.
+        $cotizacion = $this->getCotizacionCargaFlete($liquidacion);
+
         foreach ($fletesPorBloque as $bloqueId => $filaFlete) {
             $idCamion = $filaFlete['id_camion'] ?? null;
             $idOrdenCarga = $ordenCargaPorBloque[$bloqueId] ?? null;
@@ -523,7 +538,7 @@ class LiquidacionController extends AppBaseController
             $this->guardarLinea(
                 $liquidacion,
                 LiquidacionFlete::class,
-                $filaFlete,
+                $this->aGuaranies($filaFlete, ['precio', 'valor', 'recargo_precio'], $cotizacion),
                 ['fecha', 'tramo', 'kg_origen', 'kg_destino', 'diferencia', 'precio', 'valor', 'recargo_tolerancia', 'recargo_precio'],
                 $fechaCabecera,
                 ['id_camion' => $idCamion, 'id_orden_carga' => $idOrdenCarga]
@@ -542,7 +557,7 @@ class LiquidacionController extends AppBaseController
             $this->guardarLinea(
                 $liquidacion,
                 LiquidacionDescuento::class,
-                $filaDescuentoAuto,
+                $this->aGuaranies($filaDescuentoAuto, ['valor'], $cotizacion),
                 ['fecha', 'valor'],
                 $fechaCabecera,
                 ['id_camion' => $idCamion, 'concepto' => 'Faltante de Carga']
@@ -559,6 +574,48 @@ class LiquidacionController extends AppBaseController
         ValeCombustible::whereIn('id', $request->input('vale_combustible_ids', []))
             ->whereNull('liquidado')
             ->update(['id_liquidacion' => $liquidacion->id, 'liquidado' => 'S']);
+    }
+
+    /**
+     * Cotizacion con la que se cargan los montos del flete: la de la moneda de la liquidacion si
+     * es extranjera (USD, etc.), o 1 si es en guaranies / sin moneda.
+     *
+     * @param Liquidacion $liquidacion
+     *
+     * @return float
+     */
+    private function getCotizacionCargaFlete(Liquidacion $liquidacion)
+    {
+        if ($liquidacion->moneda && $liquidacion->moneda !== 'PYG' && (float) $liquidacion->monto_moneda > 0) {
+            return (float) $liquidacion->monto_moneda;
+        }
+
+        return 1.0;
+    }
+
+    /**
+     * Multiplica por la cotizacion los $campos numericos de la fila (montos cargados en moneda
+     * extranjera -> guaranies). Los campos vacios quedan vacios.
+     *
+     * @param array $fila
+     * @param array $campos
+     * @param float $cotizacion
+     *
+     * @return array
+     */
+    private function aGuaranies(array $fila, array $campos, $cotizacion)
+    {
+        if ($cotizacion == 1.0) {
+            return $fila;
+        }
+
+        foreach ($campos as $campo) {
+            if (isset($fila[$campo]) && $fila[$campo] !== '' && is_numeric($fila[$campo])) {
+                $fila[$campo] = round((float) $fila[$campo] * $cotizacion, 4);
+            }
+        }
+
+        return $fila;
     }
 
     /**
