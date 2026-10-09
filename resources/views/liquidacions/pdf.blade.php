@@ -127,6 +127,23 @@
         return number_format((float) $valor / $cotizacion, $decimalesMoneda, ',', '.');
     };
 
+    // Peso del flete en toneladas. Se carga de dos formas: en kilos (32970, precio por kg) o ya en
+    // toneladas con punto decimal (31.920, precio por tonelada). Desde 1.000 es kilos y se divide;
+    // por debajo ya son toneladas. El 1 de los fletes de precio cerrado queda como antes.
+    $peso = function ($valor) {
+        $valor = (float) $valor;
+        $toneladas = function ($t) {
+            return rtrim(rtrim(number_format($t, 3, ',', '.'), '0'), ',') . ' t';
+        };
+        if (abs($valor) >= 1000) {
+            return $toneladas($valor / 1000);
+        }
+        if (abs($valor) > 1) {
+            return $toneladas($valor);
+        }
+        return number_format($valor, 0, ',', '.');
+    };
+
     // Viaticos/vales cargados en USD se pasan a guaranies con la cotizacion del dolar congelada
     // al liquidar; si el PDF no sale en USD se aclara debajo el monto original.
     $cotizacionUsd = $liquidacion->cotizacionDolar();
@@ -220,8 +237,8 @@
             <th>Orden de Carga</th>
             <th>Fecha</th>
             <th>Tramo</th>
-            <th>Kg Origen</th>
-            <th>Kg Destino</th>
+            <th>Peso Origen</th>
+            <th>Peso Destino</th>
             <th>Diferencia</th>
             <th>Precio</th>
             <th>Valor</th>
@@ -232,8 +249,8 @@
                 <td>{{ $flete->ordenCarga ? 'OC-' . str_pad($flete->ordenCarga->id, 6, '0', STR_PAD_LEFT) : '-' }}</td>
                 <td>{{ $flete->fecha }}</td>
                 <td>{{ $flete->tramo }}</td>
-                <td class="numero">{{ number_format((float) $flete->kg_origen, 0, ',', '.') }}</td>
-                <td class="numero">{{ number_format((float) $flete->kg_destino, 0, ',', '.') }}</td>
+                <td class="numero">{{ $peso($flete->kg_origen) }}</td>
+                <td class="numero">{{ $peso($flete->kg_destino) }}</td>
                 <td class="numero">{{ $flete->diferencia !== null && $flete->diferencia !== '' ? number_format((float) $flete->diferencia, 0, ',', '.') : '-' }}</td>
                 <td class="numero">{{ $monto($flete->precio, 4) }}</td>
                 <td class="numero">{{ $monto($flete->valor) }}</td>
