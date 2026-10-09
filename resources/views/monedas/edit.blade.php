@@ -5,7 +5,7 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-12">
-                    <h1>Editar Moneda</h1>
+                    <h1>Actualizar cotización de {{ $moneda->nombre }}</h1>
                 </div>
             </div>
         </div>

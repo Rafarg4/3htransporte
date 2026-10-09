@@ -2,24 +2,26 @@
     <table class="table" id="table">
         <thead>
         <tr>
-            <th>Tipo Moneda</th>
-        <th>Monto</th>
+            <th>Moneda</th>
+            <th>Cotización</th>
+            <th>Última actualización</th>
             <th>Accion</th>
         </tr>
         </thead>
         <tbody>
         @foreach($monedas as $moneda)
             <tr>
-                <td>{{ $moneda->tipo_moneda }}</td>
-            <td>{{ $moneda->monto }}</td>
-                <td width="120">
+                <td>{{ $moneda->nombre }} ({{ $moneda->tipo_moneda }})</td>
+                <td>{{ $moneda->monto }}</td>
+                <td data-order="{{ optional($moneda->updated_at)->timestamp }}">{{ optional($moneda->updated_at)->format('d/m/Y H:i') }}</td>
+                <td width="220">
                     {!! Form::open(['route' => ['monedas.destroy', $moneda->id], 'method' => 'delete']) !!}
-                    <div class='btn-group'>
+                    <div class='btn-group action-buttons'>
                         <a href="{{ route('monedas.edit', [$moneda->id]) }}"
-                           class='btn btn-default btn-xs'>
-                            <i class="far fa-edit"></i>
+                           class='btn btn-primary btn-xs'>
+                            <i class="fas fa-sync-alt"></i> Actualizar cotización
                         </a>
-                        {!! Form::button('<i class="far fa-trash-alt"></i>', ['type' => 'submit', 'class' => 'btn btn-danger btn-xs', 'onclick' => "return confirm('Are you sure?')"]) !!}
+                        {!! Form::button('<i class="far fa-trash-alt"></i>', ['type' => 'submit', 'class' => 'btn btn-danger btn-xs', 'title' => 'Eliminar', 'onclick' => "return confirm('¿Seguro que desea eliminar esta moneda?')"]) !!}
                     </div>
                     {!! Form::close() !!}
                 </td>

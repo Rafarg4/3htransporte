@@ -22,6 +22,14 @@ class Moneda extends Model
 
     public $table = 'monedas';
 
+    const NOMBRES = [
+        'PYG' => 'Guaraníes',
+        'USD' => 'Dólares',
+        'EUR' => 'Euros',
+        'ARS' => 'Pesos Argentinos',
+        'BRL' => 'Reales Brasileros',
+    ];
+
 
     protected $dates = ['deleted_at'];
 
@@ -59,6 +67,19 @@ class Moneda extends Model
     public static function vigentes()
     {
         return static::where('tipo_moneda', '!=', 'PYG')->orderByDesc('id')->get()->unique('tipo_moneda')->values();
+    }
+
+    /**
+     * Una sola fila por moneda (la ultima cargada), que es la que usa el resto del sistema.
+     */
+    public static function actuales()
+    {
+        return static::orderByDesc('id')->get()->unique('tipo_moneda')->sortBy('tipo_moneda')->values();
+    }
+
+    public function getNombreAttribute()
+    {
+        return self::NOMBRES[$this->tipo_moneda] ?? $this->tipo_moneda;
     }
 
     /**

@@ -324,16 +324,22 @@ class LiquidacionController extends AppBaseController
             return redirect(route('liquidacions.index'));
         }
 
-        $mismaMoneda = $liquidacion->moneda
-            && strtoupper((string) $request->input('moneda')) === strtoupper($liquidacion->moneda);
+        // Con moneda ya guardada, la moneda y sus cotizaciones quedan fijas: se ignora lo que venga
+        // en el request y nunca se toma la cotizacion vigente en Monedas.
+        if ($liquidacion->moneda) {
+            $datosMoneda = ['moneda' => $liquidacion->moneda, 'monto_moneda' => $liquidacion->monto_moneda];
 
-        $cotizacionUsd = ($mismaMoneda && $liquidacion->cotizacion_usd > 0)
-            ? $liquidacion->cotizacion_usd
-            : $this->getCotizacionParaItemsEnUsd($request->input('moneda'));
-
-        $datosMoneda = $mismaMoneda
-            ? ['moneda' => $liquidacion->moneda, 'monto_moneda' => $liquidacion->monto_moneda]
-            : $this->getMonedaParaGuardar($request->input('moneda'));
+            if ($liquidacion->moneda === 'USD' && $liquidacion->monto_moneda > 0) {
+                $cotizacionUsd = $liquidacion->monto_moneda;
+            } elseif ($liquidacion->cotizacion_usd > 0) {
+                $cotizacionUsd = $liquidacion->cotizacion_usd;
+            } else {
+                $cotizacionUsd = $this->getCotizacionParaItemsEnUsd($liquidacion->moneda);
+            }
+        } else {
+            $cotizacionUsd = $this->getCotizacionParaItemsEnUsd($request->input('moneda'));
+            $datosMoneda = $this->getMonedaParaGuardar($request->input('moneda'));
+        }
 
         $hayItemsEnUsd = Viatico::whereIn('id', $request->input('viatico_ids', []))->where('tipo_moneda', 'USD')->exists()
             || ValeCombustible::whereIn('id', $request->input('vale_combustible_ids', []))->where('tipo_moneda', 'USD')->exists();

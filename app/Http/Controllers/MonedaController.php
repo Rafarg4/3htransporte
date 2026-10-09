@@ -6,6 +6,7 @@ use App\Http\Requests\CreateMonedaRequest;
 use App\Http\Requests\UpdateMonedaRequest;
 use App\Repositories\MonedaRepository;
 use App\Http\Controllers\AppBaseController;
+use App\Models\Moneda;
 use Illuminate\Http\Request;
 use Flash;
 use Response;
@@ -29,10 +30,11 @@ class MonedaController extends AppBaseController
      */
     public function index(Request $request)
     {
-        $monedas = $this->monedaRepository->all();
+        $monedas = Moneda::actuales();
 
         return view('monedas.index')
-            ->with('monedas', $monedas);
+            ->with('monedas', $monedas)
+            ->with('faltantes', $this->monedasFaltantes());
     }
 
     /**
@@ -42,7 +44,25 @@ class MonedaController extends AppBaseController
      */
     public function create()
     {
-        return view('monedas.create');
+        $faltantes = $this->monedasFaltantes();
+
+        if (empty($faltantes)) {
+            Flash::info('Todas las monedas ya están cargadas. Para cambiar la cotización usá el botón "Actualizar cotización".');
+
+            return redirect(route('monedas.index'));
+        }
+
+        return view('monedas.create')->with('opciones', $faltantes);
+    }
+
+    /**
+     * Monedas que todavia no tienen ninguna cotizacion cargada.
+     */
+    private function monedasFaltantes()
+    {
+        $cargadas = Moneda::pluck('tipo_moneda')->unique()->all();
+
+        return array_diff_key(Moneda::NOMBRES, array_flip($cargadas));
     }
 
     /**
@@ -56,9 +76,20 @@ class MonedaController extends AppBaseController
     {
         $input = $request->all();
 
+        // Si la moneda ya existe no se duplica: se actualiza su cotizacion.
+        $existente = Moneda::where('tipo_moneda', $input['tipo_moneda'])->orderByDesc('id')->first();
+
+        if ($existente) {
+            $this->monedaRepository->update(['monto' => $input['monto']], $existente->id);
+
+            Flash::info('La moneda ' . $existente->nombre . ' ya existía, así que se actualizó su cotización a ' . $input['monto'] . '.');
+
+            return redirect(route('monedas.index'));
+        }
+
         $moneda = $this->monedaRepository->create($input);
 
-        Flash::success('Moneda saved successfully.');
+        Flash::success('Moneda ' . $moneda->nombre . ' creada correctamente.');
 
         return redirect(route('monedas.index'));
     }
@@ -121,9 +152,10 @@ class MonedaController extends AppBaseController
             return redirect(route('monedas.index'));
         }
 
-        $moneda = $this->monedaRepository->update($request->all(), $id);
+        // Solo se cambia la cotizacion; el tipo de moneda queda fijo.
+        $moneda = $this->monedaRepository->update(['monto' => $request->input('monto')], $id);
 
-        Flash::success('Moneda updated successfully.');
+        Flash::success('Cotización de ' . $moneda->nombre . ' actualizada a ' . $moneda->monto . '.');
 
         return redirect(route('monedas.index'));
     }

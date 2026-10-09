@@ -59,7 +59,28 @@
 @php
     $monedaOriginal = $liquidacion->moneda;
     $monedaOriginalEnLista = $monedaOriginal === 'PYG' || $monedas->contains('tipo_moneda', $monedaOriginal);
+    // Cotizacion con la que se pasan a Gs. los viaticos/vales en USD, congelada al liquidar
+    // (en una liquidacion en USD es la misma cotizacion de la liquidacion).
+    $cotizacionItemsOriginal = ($monedaOriginal === 'USD' && $liquidacion->monto_moneda > 0)
+        ? $liquidacion->monto_moneda
+        : $liquidacion->cotizacion_usd;
 @endphp
+@if($monedaOriginal)
+    {{-- Liquidacion con moneda ya guardada: queda fija con la cotizacion de ese momento.
+         El select se mantiene (deshabilitado, sin name) porque el JS lee de ahi la cotizacion. --}}
+    <div class="form-group col-sm-3">
+        <label for="moneda-select">Moneda:</label>
+        <input type="hidden" name="moneda" value="{{ $monedaOriginal }}">
+        <select id="moneda-select" class="form-control" disabled
+                data-cotizacion-usd="{{ $cotizacionUsd }}" data-cotizacion-pyg="{{ $cotizacionPyg }}"
+                data-moneda-original="{{ $monedaOriginal }}" data-cotizacion-items-original="{{ $cotizacionItemsOriginal }}">
+            <option value="{{ $monedaOriginal }}" data-cotizacion="{{ $monedaOriginal === 'PYG' ? 1 : $liquidacion->monto_moneda }}" selected>
+                {{ $monedaOriginal === 'PYG' ? 'Guaraníes' : $monedaOriginal }}{{ $liquidacion->monto_moneda > 0 ? ' (cotización ' . number_format((float) $liquidacion->monto_moneda, 0, ',', '.') . ')' : '' }}
+            </option>
+        </select>
+        <small class="form-text text-muted">Cotización guardada al liquidar, no se modifica.</small>
+    </div>
+@else
 <div class="form-group col-sm-3">
     <label for="moneda-select">Moneda:</label>
     <select name="moneda" id="moneda-select" class="form-control" required
@@ -85,6 +106,7 @@
         @endif
     </select>
 </div>
+@endif
 
 @php
     $ordenCargasData = $ordenCargas->map(function ($ordenCarga) {

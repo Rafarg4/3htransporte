@@ -146,12 +146,14 @@ class Liquidacion extends Model
      */
     public function cotizacionDolar()
     {
-        if ((float) $this->cotizacion_usd > 0) {
-            return (float) $this->cotizacion_usd;
-        }
-
+        // Liquidacion en USD: una sola cotizacion del dolar, la guardada al liquidar (asi 400 USD
+        // de viatico vuelven a salir como 400 USD en el PDF).
         if ($this->moneda === 'USD' && (float) $this->monto_moneda > 0) {
             return (float) $this->monto_moneda;
+        }
+
+        if ((float) $this->cotizacion_usd > 0) {
+            return (float) $this->cotizacion_usd;
         }
 
         static $vigente = null;

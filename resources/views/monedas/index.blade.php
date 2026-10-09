@@ -8,10 +8,12 @@
                     <h1>Monedas</h1>
                 </div>
                 <div class="col-sm-6">
-                    <a class="btn btn-primary float-right"
-                       href="{{ route('monedas.create') }}">
-                        Nuevo
-                    </a>
+                    @if(!empty($faltantes))
+                        <a class="btn btn-primary float-right"
+                           href="{{ route('monedas.create') }}">
+                            Nuevo
+                        </a>
+                    @endif
                 </div>
             </div>
         </div>
@@ -22,6 +24,12 @@
         @include('flash::message')
 
         <div class="clearfix"></div>
+
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            Cuando cambie la cotización, <strong>no cargue una moneda nueva</strong>:
+            presione <strong>"Actualizar cotización"</strong> en la moneda correspondiente.
+        </div>
 
         <div class="card">
             <div class="card-body p-0">
